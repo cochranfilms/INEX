@@ -1,0 +1,540 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>INEX Systems Portal — Concept Demo</title>
+<meta name="description" content="White-label portal demo for INEX Systems & Designs. Clickthrough UI for Projects, Jobs, Inventory, RMA, SLAs, Knowledge, Clients, Careers, Settings." />
+<style>
+  :root{
+    --inex-charcoal:#191919;
+    --inex-maroon:#A62E3F;
+    --inex-maroon-600:#8d2634;
+    --ink:#111;
+    --muted:#666;
+    --border:#e6e6e6;
+    --bg:#f5f6f8;
+    --panel:#ffffff;
+    --panel-ink:#222;
+    --accent:#FFB200;
+    --radius:16px;
+    --radius-sm:12px;
+    --shadow:0 3px 16px rgba(0,0,0,.08);
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--panel-ink);
+       font:14px/1.55 system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,"Helvetica Neue",Arial,"Noto Sans","Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol";}
+  .topbar{position:sticky;top:0;z-index:20;display:flex;align-items:center;gap:.75rem;padding:.9rem 1.25rem;background:var(--inex-charcoal);color:#fff;border-bottom:3px solid #2a2a2a}
+  .brand{display:flex;align-items:center;gap:.75rem;font-weight:700;letter-spacing:.2px}
+  .brand img{height:36px;width:auto;display:block}
+  .spacer{flex:1}
+  .wrap{display:grid;grid-template-columns:260px minmax(0,1fr);min-height:calc(100vh - 64px)}
+  aside{background:#fafafa;border-right:1px solid var(--border);padding:1rem}
+  .nav h3{margin:.25rem 0 .6rem 0;font-size:12px;text-transform:uppercase;letter-spacing:.12em;color:#888}
+  .nav a{display:flex;align-items:center;gap:.6rem;padding:.6rem .7rem;border-radius:10px;color:#333;text-decoration:none}
+  .nav a:hover,.nav a:focus-visible{background:#f0f0f0}
+  .nav a.active{color:var(--inex-maroon);background:#f8f1f2;font-weight:600;border:1px solid #f0d8dc}
+  main{padding:1.25rem;max-width:1400px;margin-inline:auto}
+  .header{display:flex;align-items:baseline;gap:1rem;flex-wrap:wrap;margin:.25rem 0 1rem 0}
+  .header h1{margin:0;font-size:24px;color:var(--ink)}
+  .muted{color:var(--muted)}
+  .cards{display:grid;gap:1rem;grid-template-columns:repeat(12,minmax(0,1fr))}
+  .card{background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow)}
+  .head{padding:.8rem 1rem;background:#f8f8f8;border-bottom:1px solid var(--border);font-weight:700}
+  .body{padding:1rem}
+  .list{margin:0;padding-left:1.1rem}
+  .list li{margin:.3rem 0}
+  .pill{display:inline-block;background:#f7f7f7;border:1px solid var(--border);border-radius:999px;padding:.35rem .65rem;font-size:12px}
+  .btn{display:inline-flex;align-items:center;justify-content:center;padding:.8rem 1rem;border-radius:10px;border:1px solid transparent;text-decoration:none;font-weight:700;cursor:pointer}
+  .btn.primary{background:var(--inex-maroon);color:#fff;border-color:var(--inex-maroon-600)}
+  .btn.secondary{background:var(--accent);color:#000;border-color:#e6a300}
+  .btn.ghost{background:#fff;color:var(--inex-maroon);border-color:#e9c6cc}
+  .btn:hover,.btn:focus-visible{filter:brightness(.97)}
+  .table{width:100%;border-collapse:separate;border-spacing:0;border:1px solid var(--border);border-radius:12px;overflow:hidden}
+  .table th,.table td{padding:.75rem .9rem;border-bottom:1px solid var(--border);text-align:left}
+  .table thead th{background:#191919;color:#FFB200;font-weight:700}
+  .table tr:nth-child(even) td{background:#fbfbfb}
+  .grid-2{display:grid;gap:1rem;grid-template-columns:1fr 1fr}
+  .grid-3{display:grid;gap:1rem;grid-template-columns:repeat(3,1fr)}
+  .grid-4{display:grid;gap:1rem;grid-template-columns:repeat(4,1fr)}
+  .span-3{grid-column:span 3}.span-4{grid-column:span 4}.span-6{grid-column:span 6}.span-8{grid-column:span 8}.span-12{grid-column:1/-1}
+  .tag{display:inline-block;padding:.2rem .5rem;border-radius:999px;font-size:12px;font-weight:700}
+  .tag.neutral{background:#f3f3f3;color:#222}.tag.ok{background:#e8f6ef;color:#157347}.tag.warn{background:#fff1d6;color:#8b5e00}.tag.danger{background:#fde8ec;color:#a61e3a}
+  .diagram{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+  .diagram .col{background:#fcfcfc;border:1px solid var(--border);border-radius:12px;padding:1rem}
+  .search{display:flex;gap:.5rem;flex-wrap:wrap}
+  .search input,.search select{padding:.55rem .7rem;border:1px solid var(--border);border-radius:10px;background:#fff}
+  .meta{display:flex;gap:1rem;flex-wrap:wrap}
+  .footer{color:#999;font-size:12px;text-align:center;padding:1.2rem}
+  @media (max-width:1000px){
+    .wrap{grid-template-columns:1fr}
+    .span-3,.span-4,.span-6,.span-8{grid-column:1/-1}
+    .diagram{grid-template-columns:1fr}
+  }
+</style>
+</head>
+<body>
+<header class="topbar">
+  <div class="brand">
+    <!-- Replace with your file or URL -->
+    <img src="inex-logo.png" alt="INEX Systems & Designs Logo" />
+    <span>INEX Systems Portal</span>
+  </div>
+  <div class="spacer"></div>
+  <small>Concept by Cochran Films · Systems Division</small>
+</header>
+
+<div class="wrap">
+  <!-- Sidebar -->
+  <aside>
+    <nav class="nav">
+      <h3>Navigation</h3>
+      <a href="#/dashboard" data-route="dashboard" class="active">🏠 Dashboard</a>
+      <a href="#/projects"  data-route="projects">📁 Projects</a>
+      <a href="#/jobs"      data-route="jobs">🗓️ Jobs &amp; Scheduling</a>
+      <a href="#/inventory" data-route="inventory">📦 Inventory</a>
+      <a href="#/rma"       data-route="rma">↩️ RMA &amp; Warranties</a>
+      <a href="#/slas"      data-route="slas">⏱️ SLAs &amp; Performance</a>
+      <a href="#/knowledge" data-route="knowledge">📚 Knowledge Base</a>
+      <a href="#/clients"   data-route="clients">👥 Clients</a>
+      <a href="#/careers"   data-route="careers">🧰 Careers</a>
+      <a href="#/settings"  data-route="settings">⚙️ Settings</a>
+    </nav>
+  </aside>
+
+  <!-- Main -->
+  <main id="view">
+    <!-- Content is swapped by the script below -->
+  </main>
+</div>
+
+<script>
+  // ---------- View Templates (HTML strings) ----------
+  const Views = {
+    dashboard: `
+      <div class="header">
+        <h1>Welcome, INEX Team</h1>
+        <span class="muted">At‑a‑glance metrics and controls for conference room deployments</span>
+      </div>
+      <section class="cards">
+        <article class="card span-4">
+          <div class="head">Project Timeline</div>
+          <div class="body">
+            <ul class="list">
+              <li><strong>RICE · Room 4A</strong> — Install complete ✅</li>
+              <li><strong>RICE · Room 2C</strong> — Audio tuning (Wed)</li>
+              <li><strong>RICE · Auditorium</strong> — Cabling in progress</li>
+            </ul>
+            <div style="margin-top:.5rem;display:flex;gap:.5rem;flex-wrap:wrap">
+              <span class="pill">3 active sites</span><span class="pill">8 rooms this week</span>
+            </div>
+          </div>
+        </article>
+        <article class="card span-4">
+          <div class="head">Open Tickets</div>
+          <div class="body">
+            <ul class="list">
+              <li>Mic echo · Room 3B <span class="tag warn">P2</span></li>
+              <li>Replace ClickShare dongle · 1A <span class="tag neutral">P3</span></li>
+              <li>Display sync delay · 5C <span class="tag neutral">P3</span></li>
+            </ul>
+            <div style="margin-top:.6rem" class="meta"><span class="pill">3 open</span><span class="pill">Avg response 1h</span></div>
+          </div>
+        </article>
+        <article class="card span-4">
+          <div class="head">Today’s Installs</div>
+          <div class="body">
+            <ul class="list">
+              <li>Team A → 2 sites · 9:00a</li>
+              <li>Team B → 1 site · 1:00p</li>
+              <li>ETA updates via tech mobile app</li>
+            </ul>
+            <div style="margin-top:.75rem;display:flex;gap:.6rem;flex-wrap:wrap">
+              <a class="btn secondary" href="#/jobs">View Dispatch Board</a>
+              <a class="btn primary" href="#/jobs">New Service Ticket</a>
+            </div>
+          </div>
+        </article>
+
+        <article class="card span-8">
+          <div class="head">ClickShare Alone vs. ClickShare Integrated by INEX</div>
+          <div class="body">
+            <div class="diagram">
+              <div class="col">
+                <span class="tag neutral">Off‑the‑Shelf (Alone)</span>
+                <ul class="list" style="margin-top:.5rem">
+                  <li>Buy device, plug into TV/projector</li>
+                  <li>Basic wireless screen sharing works</li>
+                  <li>No room design or acoustics plan</li>
+                  <li>Ad‑hoc cabling/mounting; security not tuned</li>
+                  <li>Every room feels different to use</li>
+                </ul>
+              </div>
+              <div class="col">
+                <span class="tag danger">INEX Integrated</span>
+                <ul class="list" style="margin-top:.5rem">
+                  <li>Room‑by‑room AV architecture design</li>
+                  <li>Cameras/mics/speakers positioned for clarity</li>
+                  <li>Network &amp; security configured with IT</li>
+                  <li>One‑click start (pre‑programmed scenes)</li>
+                  <li>Standardized UX across rooms + training</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </article>
+
+        <article class="card span-4">
+          <div class="head">Quick Actions</div>
+          <div class="body">
+            <div style="display:grid;gap:.6rem">
+              <a class="btn secondary" href="#/projects">Create Project</a>
+              <a class="btn primary" href="#/jobs">New Service Ticket</a>
+              <a class="btn primary" href="#/inventory">Add Inventory</a>
+              <a class="btn primary" href="#/careers">Post Job Listing</a>
+            </div>
+          </div>
+        </article>
+
+        <article class="card span-12">
+          <div class="head">How Cochran Films Systems Extends INEX’s Work</div>
+          <div class="body">
+            <ul class="list">
+              <li><strong>INEX‑Branded Client Portal:</strong> project timelines, service requests, invoices, manuals &amp; videos.</li>
+              <li><strong>Jobs &amp; Scheduling:</strong> assign crews, install checklists, photo proof, technician mobile app.</li>
+              <li><strong>Inventory + RMA:</strong> ClickShare units, cameras, parts; automated vendor replacements.</li>
+              <li><strong>SLAs &amp; Performance:</strong> response/resolution targets, alerts, reporting across sites.</li>
+              <li><strong>Careers Hub:</strong> recruit AV techs with a branded job board &amp; quick onboarding.</li>
+            </ul>
+          </div>
+        </article>
+      </section>
+      <p class="footer">Demo UI · No live data · © Cochran Films — Systems Division</p>
+    `,
+
+    projects: `
+      <div class="header">
+        <h1>Projects</h1><span class="muted">Installations &amp; rollouts by site</span>
+        <div class="spacer"></div>
+      </div>
+      <div class="card" style="margin-bottom:1rem">
+        <div class="body search">
+          <input placeholder="Search projects (RICE, Auditorium, Room 2C…)" />
+          <select><option>Status: All</option><option>Planned</option><option>In Progress</option><option>Complete</option></select>
+          <select><option>Site: All</option><option>RICE</option><option>HQ</option></select>
+          <a class="btn primary" href="#">New Project</a>
+        </div>
+      </div>
+      <div class="cards">
+        <article class="card span-6">
+          <div class="head">RICE · Auditorium — Modernization</div>
+          <div class="body">
+            <div class="meta"><span class="pill">Phase: Cabling</span><span class="pill">Owner: Team A</span><span class="pill">Due: Aug 28</span></div>
+            <ul class="list"><li>ClickShare base, dual 98" displays</li><li>DSP &amp; ceiling mic arrays</li><li>Room control scene: <em>Town Hall</em></li></ul>
+            <div style="margin-top:.75rem"><a class="btn ghost" href="#">View Gantt</a> <a class="btn primary" href="#">Open</a></div>
+          </div>
+        </article>
+        <article class="card span-6">
+          <div class="head">RICE · Room 2C — Audio Tuning</div>
+          <div class="body">
+            <div class="meta"><span class="pill">Phase: Commission</span><span class="pill">Owner: Team B</span><span class="pill">Due: Aug 13</span></div>
+            <ul class="list"><li>Mic placement &amp; DSP profile</li><li>ClickShare pairing verification</li><li>Preset: <em>VC Focus</em></li></ul>
+            <div style="margin-top:.75rem"><a class="btn ghost" href="#">Docs</a> <a class="btn primary" href="#">Open</a></div>
+          </div>
+        </article>
+        <article class="card span-6">
+          <div class="head">HQ · Boardroom — Refresh</div>
+          <div class="body">
+            <div class="meta"><span class="pill">Phase: Planned</span><span class="pill">Owner: Team C</span><span class="pill">Due: Sep 05</span></div>
+            <ul class="list"><li>Single 86" + camera reposition</li><li>Ceiling speakers + amp</li><li>ClickShare upgrade</li></ul>
+            <div style="margin-top:.75rem"><a class="btn ghost" href="#">SOW</a> <a class="btn primary" href="#">Open</a></div>
+          </div>
+        </article>
+        <article class="card span-6">
+          <div class="head">RICE · Room 4A — Complete</div>
+          <div class="body">
+            <div class="meta"><span class="pill">Phase: Complete</span><span class="tag ok">Signed Off</span></div>
+            <table class="table" aria-label="Milestones">
+              <thead><tr><th>Milestone</th><th>Owner</th><th>Status</th></tr></thead>
+              <tbody>
+                <tr><td>Install &amp; wiring</td><td>Team A</td><td>✅</td></tr>
+                <tr><td>DSP program</td><td>Audio</td><td>✅</td></tr>
+                <tr><td>End‑user training</td><td>PM</td><td>✅</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </article>
+      </div>
+    `,
+
+    jobs: `
+      <div class="header">
+        <h1>Jobs &amp; Scheduling</h1><span class="muted">Dispatch board &amp; technician workload</span>
+      </div>
+      <div class="cards">
+        <article class="card span-8">
+          <div class="head">Weekly Dispatch</div>
+          <div class="body">
+            <table class="table">
+              <thead><tr><th>Job</th><th>Site</th><th>Team</th><th>Start</th><th>ETA</th><th>Priority</th><th>Status</th></tr></thead>
+              <tbody>
+                <tr><td>Audio Tuning — 2C</td><td>RICE</td><td>Team B</td><td>Wed 9:00a</td><td>Same Day</td><td><span class="tag warn">P2</span></td><td>Scheduled</td></tr>
+                <tr><td>ClickShare Dongle Replace</td><td>RICE</td><td>Team C</td><td>Thu 10:00a</td><td>Thu</td><td><span class="tag neutral">P3</span></td><td>Queued</td></tr>
+                <tr><td>Auditorium Cabling</td><td>RICE</td><td>Team A</td><td>Daily 9:30a</td><td>Fri</td><td><span class="tag neutral">P3</span></td><td>In Progress</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </article>
+        <article class="card span-4">
+          <div class="head">Create Ticket</div>
+          <div class="body">
+            <div class="search">
+              <input placeholder="Title (ex: Mic echo Room 3B)" />
+              <select><option>Priority</option><option>P1</option><option selected>P2</option><option>P3</option></select>
+              <select><option>Assign</option><option>Team A</option><option selected>Team B</option><option>Team C</option></select>
+              <a class="btn primary" href="#">Add Ticket</a>
+            </div>
+            <p class="muted" style="margin-top:.75rem">Technicians update status &amp; upload photos via the mobile app.</p>
+          </div>
+        </article>
+      </div>
+    `,
+
+    inventory: `
+      <div class="header">
+        <h1>Inventory</h1><span class="muted">ClickShare units, cameras, mics, cables</span>
+      </div>
+      <div class="card" style="margin-bottom:1rem">
+        <div class="body search">
+          <input placeholder="Search SKU or item (CX‑50, PTZ, DSP…)" />
+          <select><option>Type: All</option><option>ClickShare</option><option>Camera</option><option>Audio</option><option>Cabling</option></select>
+          <select><option>Location: All</option><option>Warehouse</option><option>RICE</option><option>Truck A</option></select>
+          <a class="btn primary" href="#">Add Item</a>
+        </div>
+      </div>
+      <table class="table">
+        <thead><tr><th>Item</th><th>SKU</th><th>Qty</th><th>Location</th><th>Status</th><th>Last Scan</th></tr></thead>
+        <tbody>
+          <tr><td>Barco ClickShare CX‑50</td><td>CX50‑BK</td><td>6</td><td>Warehouse</td><td><span class="tag ok">Ready</span></td><td>Aug 08</td></tr>
+          <tr><td>PTZ Camera 4K</td><td>PTZ‑4K‑PRO</td><td>3</td><td>Truck A</td><td><span class="tag warn">Low</span></td><td>Aug 07</td></tr>
+          <tr><td>Ceiling Mic Array</td><td>MIC‑ARR‑X</td><td>8</td><td>Warehouse</td><td><span class="tag ok">Ready</span></td><td>Aug 09</td></tr>
+          <tr><td>HDMI 50ft Active</td><td>HDMI‑50A</td><td>22</td><td>Warehouse</td><td><span class="tag ok">Ready</span></td><td>Aug 06</td></tr>
+        </tbody>
+      </table>
+      <p class="muted" style="margin-top:.6rem">Track kits by room, auto‑reserve for scheduled installs, and tie usage to jobs.</p>
+    `,
+
+    rma: `
+      <div class="header">
+        <h1>RMA &amp; Warranties</h1><span class="muted">Defects, replacements, and vendor workflows</span>
+      </div>
+      <div class="cards">
+        <article class="card span-6">
+          <div class="head">Open RMAs</div>
+          <div class="body">
+            <table class="table">
+              <thead><tr><th>RMA #</th><th>Item</th><th>Client/Room</th><th>Status</th><th>Raised</th></tr></thead>
+              <tbody>
+                <tr><td>RMA‑1027</td><td>ClickShare Button</td><td>RICE 1A</td><td><span class="tag warn">Awaiting Vendor</span></td><td>Aug 05</td></tr>
+                <tr><td>RMA‑1028</td><td>PTZ Camera 4K</td><td>RICE 3B</td><td><span class="tag danger">Ship Device</span></td><td>Aug 08</td></tr>
+                <tr><td>RMA‑1029</td><td>DSP Unit</td><td>RICE Auditorium</td><td><span class="tag neutral">Under Review</span></td><td>Aug 09</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </article>
+        <article class="card span-6">
+          <div class="head">Create RMA</div>
+          <div class="body">
+            <div class="search">
+              <input placeholder="Item/SKU" />
+              <input placeholder="Serial #" />
+              <select><option>Reason</option><option>Defective</option><option>Dead on Arrival</option><option>Warranty Replacement</option></select>
+              <a class="btn primary" href="#">Generate RMA</a>
+            </div>
+            <p class="muted" style="margin-top:.6rem">Attach logs &amp; photos, auto‑email vendor with packing slip.</p>
+          </div>
+        </article>
+      </div>
+    `,
+
+    slas: `
+      <div class="header">
+        <h1>SLAs &amp; Performance</h1><span class="muted">Response &amp; resolution targets across sites</span>
+      </div>
+      <div class="cards">
+        <article class="card span-4">
+          <div class="head">This Week</div>
+          <div class="body">
+            <ul class="list">
+              <li>Avg Response: <strong>1h 12m</strong></li>
+              <li>Avg Resolution: <strong>6h 45m</strong></li>
+              <li>Tickets Met SLA: <strong>94%</strong></li>
+            </ul>
+          </div>
+        </article>
+        <article class="card span-8">
+          <div class="head">Recent Tickets</div>
+          <div class="body">
+            <table class="table">
+              <thead><tr><th>Ticket</th><th>Priority</th><th>Responded</th><th>Resolved</th><th>SLA</th></tr></thead>
+              <tbody>
+                <tr><td>Mic echo · 3B</td><td><span class="tag warn">P2</span></td><td>53m</td><td>4h 10m</td><td><span class="tag ok">Met</span></td></tr>
+                <tr><td>Dongle Replace · 1A</td><td><span class="tag neutral">P3</span></td><td>1h 40m</td><td>6h 52m</td><td><span class="tag ok">Met</span></td></tr>
+                <tr><td>Display Sync · 5C</td><td><span class="tag neutral">P3</span></td><td>2h 05m</td><td>9h 30m</td><td><span class="tag neutral">Near</span></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </article>
+        <article class="card span-12">
+          <div class="head">Notes</div>
+          <div class="body">
+            <p class="muted">Targets: P1 → 30m response / 4h resolution · P2 → 2h / 8h · P3 → 4h / 24h. Alerts trigger when risk of breach is detected.</p>
+          </div>
+        </article>
+      </div>
+    `,
+
+    knowledge: `
+      <div class="header">
+        <h1>Knowledge Base</h1><span class="muted">Guides, quick‑starts, and training videos</span>
+      </div>
+      <div class="cards">
+        <article class="card span-6">
+          <div class="head">ClickShare Quick‑Start</div>
+          <div class="body">
+            <ul class="list">
+              <li>1) Tap the meeting preset</li>
+              <li>2) Connect via Button or App</li>
+              <li>3) Select camera/mic</li>
+              <li>4) Share screen</li>
+            </ul>
+            <div style="margin-top:.75rem"><a class="btn primary" href="#">Open Guide</a> <a class="btn ghost" href="#">Download PDF</a></div>
+          </div>
+        </article>
+        <article class="card span-6">
+          <div class="head">Room Presets — Best Practices</div>
+          <div class="body">
+            <p>Preset library: <em>VC Focus, Boardroom, Town Hall</em>. Calibrations per room for audio gain &amp; camera framing.</p>
+            <a class="btn primary" href="#">View Presets</a>
+          </div>
+        </article>
+        <article class="card span-6">
+          <div class="head">End‑User Training Video</div>
+          <div class="body">
+            <p class="muted">A 3‑minute walkthrough for first‑time room users.</p>
+            <a class="btn secondary" href="#">Play Video</a>
+          </div>
+        </article>
+        <article class="card span-6">
+          <div class="head">Troubleshooting Tree</div>
+          <div class="body">
+            <p>Step‑by‑step checks for audio, video, and network symptoms.</p>
+            <a class="btn primary" href="#">Open Troubleshooter</a>
+          </div>
+        </article>
+      </div>
+    `,
+
+    clients: `
+      <div class="header">
+        <h1>Clients</h1><span class="muted">Organizations and room inventories</span>
+      </div>
+      <div class="card" style="margin-bottom:1rem">
+        <div class="body search">
+          <input placeholder="Search client (RICE, HQ…)" />
+          <select><option>Type: All</option><option>Enterprise</option><option>SMB</option></select>
+          <a class="btn primary" href="#">Add Client</a>
+        </div>
+      </div>
+      <table class="table">
+        <thead><tr><th>Client</th><th>Sites</th><th>Rooms</th><th>Active Tickets</th><th>Account Owner</th></tr></thead>
+        <tbody>
+          <tr><td>RICE</td><td>3</td><td>18</td><td>3</td><td>J. Carter</td></tr>
+          <tr><td>HQ Campus</td><td>1</td><td>6</td><td>0</td><td>M. Diaz</td></tr>
+          <tr><td>Innovation Lab</td><td>2</td><td>9</td><td>1</td><td>T. Lewis</td></tr>
+        </tbody>
+      </table>
+      <p class="muted" style="margin-top:.6rem">Open a client to view room assets, warranties, and knowledge packs.</p>
+    `,
+
+    careers: `
+      <div class="header">
+        <h1>Careers</h1><span class="muted">Recruit AV technicians &amp; specialists</span>
+      </div>
+      <div class="cards">
+        <article class="card span-8">
+          <div class="head">Open Roles</div>
+          <div class="body">
+            <table class="table">
+              <thead><tr><th>Role</th><th>Type</th><th>Rate</th><th>Location</th><th>Status</th></tr></thead>
+              <tbody>
+                <tr><td>AV Installation Technician</td><td>Contract</td><td>$35–$55/hr</td><td>Atlanta</td><td><span class="tag ok">Accepting</span></td></tr>
+                <tr><td>Field Engineer (DSP)</td><td>Full‑time</td><td>$85k–$105k</td><td>Atlanta</td><td><span class="tag neutral">Pipeline</span></td></tr>
+                <tr><td>Project Manager</td><td>Full‑time</td><td>$90k–$110k</td><td>Remote/ATL</td><td><span class="tag neutral">Pipeline</span></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </article>
+        <article class="card span-4">
+          <div class="head">Post a Role</div>
+          <div class="body">
+            <div class="search">
+              <input placeholder="Role title" />
+              <select><option>Type</option><option>Contract</option><option>Full‑time</option></select>
+              <input placeholder="Rate / Salary" />
+              <a class="btn primary" href="#">Publish</a>
+            </div>
+            <p class="muted" style="margin-top:.6rem">Auto‑route applicants to the INEX portal for screening.</p>
+          </div>
+        </article>
+      </div>
+    `,
+
+    settings: `
+      <div class="header">
+        <h1>Settings</h1><span class="muted">Branding &amp; preferences</span>
+      </div>
+      <div class="grid-2">
+        <div class="card">
+          <div class="head">Brand</div>
+          <div class="body">
+            <div class="search">
+              <input placeholder="Company Name" value="INEX Systems & Designs" />
+              <input placeholder="Primary Color" value="#A62E3F" />
+              <input placeholder="Accent Color" value="#FFB200" />
+              <a class="btn primary" href="#">Save</a>
+            </div>
+            <p class="muted" style="margin-top:.6rem">Logo appears in the header. Colors cascade to UI tokens.</p>
+          </div>
+        </div>
+        <div class="card">
+          <div class="head">Notifications</div>
+          <div class="body">
+            <ul class="list">
+              <li><label><input type="checkbox" checked> Ticket SLA risk alerts</label></li>
+              <li><label><input type="checkbox" checked> Inventory low‑stock alerts</label></li>
+              <li><label><input type="checkbox"> Daily project digest</label></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    `
+  };
+
+  // ---------- Simple router ----------
+  const view = document.getElementById('view');
+  const links = Array.from(document.querySelectorAll('.nav a'));
+
+  function setActive(route){
+    links.forEach(a => a.classList.toggle('active', a.dataset.route === route));
+  }
+  function render(){
+    const hash = location.hash.replace('#/','') || 'dashboard';
+    setActive(hash);
+    view.innerHTML = Views[hash] || Views.dashboard;
+  }
+  window.addEventListener('hashchange', render);
+  window.addEventListener('load', render);
+</script>
+</body>
+</html>
