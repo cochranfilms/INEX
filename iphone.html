@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>INEX Mobile Demo — iPhone Frame</title>
+  <meta name="description" content="Interactive mobile preview of the INEX Systems Portal inside an iPhone frame." />
+  <style>
+    :root{
+      --screen-w:390px; /* iPhone 14/15 CSS pixels */
+      --screen-h:844px;
+      --bezel:16px;
+      --radius:44px; /* outer frame radius */
+      --bg: #0b0c10;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      background: radial-gradient(1000px 600px at 20% 10%, #111 0%, #0b0c10 40%, #000 100%);
+      color:#ddd;
+      font:14px/1.5 system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,"Helvetica Neue",Arial,"Noto Sans";
+      display:grid;
+      place-items:center;
+      padding:24px;
+      gap:20px;
+    }
+    .intro{
+      text-align:center;
+      max-width:800px;
+      color:#bdbdbd;
+    }
+    .intro h1{margin:.2rem 0 .4rem 0;color:#fff;font-size:22px}
+    .intro p{margin:.2rem 0;}
+    .device{
+      position:relative;
+      width: calc(var(--screen-w) + var(--bezel) * 2);
+      height: calc(var(--screen-h) + var(--bezel) * 2);
+      background:#000;
+      border-radius: var(--radius);
+      box-shadow:
+        0 25px 50px rgba(0,0,0,.6),
+        inset 0 0 0 2px rgba(255,255,255,.06),
+        inset 0 0 0 1px rgba(255,255,255,.12);
+      padding: var(--bezel);
+      display:flex;
+      align-items:stretch;
+      justify-content:center;
+      isolation:isolate;
+    }
+    .screen{
+      position:relative;
+      width: var(--screen-w);
+      height: var(--screen-h);
+      background:#000;
+      border-radius: 36px;
+      overflow:hidden;
+    }
+    .screen iframe{
+      width:100%;
+      height:100%;
+      border:0;
+      display:block;
+      background:#000;
+      border-radius:inherit;
+      -webkit-overflow-scrolling: touch;
+    }
+    /* Dynamic island / notch */
+    .notch{
+      content:"";
+      position:absolute;
+      z-index:5;
+      top: var(--bezel);
+      left: 50%;
+      transform: translateX(-50%);
+      width: 200px;
+      height: 32px;
+      background:#000;
+      border-bottom-left-radius:18px;
+      border-bottom-right-radius:18px;
+      box-shadow: 0 2px 8px rgba(0,0,0,.6);
+    }
+    /* Subtle side buttons */
+    .btns-left, .btns-right{
+      position:absolute; top:120px; width:3px; height:48px; background:#1a1a1a;border-radius:3px;
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,.06);
+    }
+    .btns-left{ left:-2px }
+    .btns-right{ right:-2px; top:180px }
+
+    .toolbar{
+      display:flex; gap:.6rem; flex-wrap:wrap; align-items:center; justify-content:center;
+      color:#aaa; font-size:13px;
+    }
+    .toolbar a, .toolbar button{
+      appearance:none; border:1px solid #2a2a2a; background:#121212; color:#eee; padding:.55rem .8rem; border-radius:10px; cursor:pointer; text-decoration:none; font-weight:600;
+    }
+    .toolbar a:hover, .toolbar button:hover{ filter:brightness(1.05) }
+    .toolbar small{opacity:.8}
+
+    @media (max-width: 900px){
+      body{ padding:18px }
+      .intro{ display:none }
+    }
+  </style>
+</head>
+<body>
+  <div class="intro" aria-hidden="false">
+    <h1>INEX Systems Portal — iPhone Mobile Demo</h1>
+    <p>Live, scrollable mobile layout of the same app you see on the desktop. All navigation is clickable inside the device.</p>
+  </div>
+
+  <div class="device" role="application" aria-label="iPhone device frame">
+    <div class="screen">
+      <iframe id="appFrame" title="INEX Mobile App" src="index.html#/dashboard" allow="clipboard-read; clipboard-write"></iframe>
+    </div>
+    <div class="notch" aria-hidden="true"></div>
+    <div class="btns-left" aria-hidden="true"></div>
+    <div class="btns-right" aria-hidden="true"></div>
+  </div>
+
+  <div class="toolbar">
+    <button id="btnDashboard">Dashboard</button>
+    <button id="btnProjects">Projects</button>
+    <button id="btnJobs">Jobs</button>
+    <button id="btnInventory">Inventory</button>
+    <button id="btnRma">RMA</button>
+    <button id="btnSlas">SLAs</button>
+    <button id="btnKnowledge">Knowledge</button>
+    <button id="btnClients">Clients</button>
+    <button id="btnCareers">Careers</button>
+    <button id="btnSettings">Settings</button>
+    <small>Tip: Use your trackpad/scroll wheel to scroll the app. All links work inside.</small>
+  </div>
+
+  <script>
+    const frame = document.getElementById('appFrame');
+    const setRoute = (r) => { frame.src = `index.html#/${r}` };
+    const routes = {
+      btnDashboard:'dashboard', btnProjects:'projects', btnJobs:'jobs', btnInventory:'inventory', btnRma:'rma',
+      btnSlas:'slas', btnKnowledge:'knowledge', btnClients:'clients', btnCareers:'careers', btnSettings:'settings'
+    };
+    Object.entries(routes).forEach(([id, route]) => {
+      const el = document.getElementById(id);
+      if(el){ el.addEventListener('click', () => setRoute(route)); }
+    });
+  </script>
+</body>
+<!-- © Cochran Films — Systems Division -->
+</html>
+
+
