@@ -135,15 +135,123 @@
 
   <script>
     const frame = document.getElementById('appFrame');
-    const setRoute = (r) => { frame.src = `index.html#/${r}` };
+    const setRoute = (route) => { frame.src = `index.html#/${route}` };
     const routes = {
-      btnDashboard:'dashboard', btnProjects:'projects', btnJobs:'jobs', btnInventory:'inventory', btnRma:'rma',
-      btnSlas:'slas', btnKnowledge:'knowledge', btnClients:'clients', btnCareers:'careers', btnSettings:'settings'
+      btnDashboard: 'dashboard',
+      btnProjects: 'projects',
+      btnJobs: 'jobs',
+      btnInventory: 'inventory',
+      btnRma: 'rma',
+      btnSlas: 'slas',
+      btnKnowledge: 'knowledge',
+      btnClients: 'clients',
+      btnCareers: 'careers',
+      btnSettings: 'settings'
     };
-    Object.entries(routes).forEach(([id, route]) => {
-      const el = document.getElementById(id);
-      if(el){ el.addEventListener('click', () => setRoute(route)); }
+    Object.entries(routes).forEach(([buttonId, routeName]) => {
+      const button = document.getElementById(buttonId);
+      if (button) {
+        button.addEventListener('click', () => setRoute(routeName));
+      }
     });
+
+    function injectMobileStylesIntoApp(appDocument) {
+      if (appDocument.getElementById('mobile-overrides')) return;
+      const styleElement = appDocument.createElement('style');
+      styleElement.id = 'mobile-overrides';
+      styleElement.textContent = `
+        aside{ display:none !important }
+        .wrap{ grid-template-columns:1fr !important }
+        main{ padding:12px !important; max-width: 460px !important }
+        .topbar{ padding:.6rem .9rem !important; border-bottom-width:2px !important }
+        .brand img{ height:26px !important }
+        .header h1{ font-size:20px !important }
+        .muted{ color:#666 !important }
+        .cards{ grid-template-columns:1fr !important; gap:.8rem !important }
+        .card{ border-radius:14px !important }
+        .head{ padding:.7rem .9rem !important; font-size:13px !important }
+        .body{ padding:.85rem !important }
+        .pill{ padding:.32rem .6rem !important; font-size:12px !important }
+        .btn{ padding:.78rem 1rem !important; border-radius:12px !important }
+        .btn.primary,.btn.secondary,.btn.ghost{ min-height:44px }
+        .diagram{ grid-template-columns:1fr !important }
+        .grid-2,.grid-3,.grid-4{ grid-template-columns:1fr !important }
+        .table th,.table td{ padding:.6rem .7rem !important }
+        .collapsible.collapsed .body{ display:none }
+        .collapsible .head{ display:flex; align-items:center; justify-content:space-between }
+        .collapsible .head .toggle{ appearance:none; border:1px solid #e6e6e6; background:#fff; padding:.35rem .6rem; border-radius:10px; font-weight:700; cursor:pointer }
+      `;
+      appDocument.head.appendChild(styleElement);
+    }
+
+    function reorderDashboardCardsForMobile(appDocument) {
+      const cardsContainer = appDocument.querySelector('.cards');
+      if (!cardsContainer) return;
+
+      const getCardByTitleStart = (titleStart) => (
+        Array.from(cardsContainer.querySelectorAll('.card')).find(card => {
+          const head = card.querySelector('.head');
+          return head && head.textContent.trim().startsWith(titleStart);
+        })
+      );
+
+      const quickActionsCard = getCardByTitleStart('Quick Actions');
+      if (quickActionsCard) cardsContainer.insertBefore(quickActionsCard, cardsContainer.firstChild);
+
+      const todaysInstallsCard = getCardByTitleStart('Today’s Installs');
+      if (todaysInstallsCard && quickActionsCard) cardsContainer.insertBefore(todaysInstallsCard, quickActionsCard.nextSibling);
+
+      const openTicketsCard = getCardByTitleStart('Open Tickets');
+      if (openTicketsCard && todaysInstallsCard) cardsContainer.insertBefore(openTicketsCard, todaysInstallsCard.nextSibling);
+
+      const diagramCard = getCardByTitleStart('ClickShare Alone vs. ClickShare Integrated by INEX');
+      if (diagramCard) {
+        diagramCard.classList.add('collapsible', 'collapsed');
+        const head = diagramCard.querySelector('.head');
+        if (head && !head.querySelector('.toggle')) {
+          const toggleButton = appDocument.createElement('button');
+          toggleButton.className = 'toggle';
+          toggleButton.textContent = 'Show Diagram';
+          head.appendChild(toggleButton);
+          toggleButton.addEventListener('click', () => {
+            diagramCard.classList.toggle('collapsed');
+            toggleButton.textContent = diagramCard.classList.contains('collapsed') ? 'Show Diagram' : 'Hide Diagram';
+          });
+        }
+      }
+
+      if (quickActionsCard) {
+        const quickActionsInner = quickActionsCard.querySelector('.body > div');
+        if (quickActionsInner) {
+          quickActionsInner.style.display = 'grid';
+          quickActionsInner.style.gridTemplateColumns = '1fr 1fr';
+          quickActionsInner.style.gap = '.6rem';
+          quickActionsInner.querySelectorAll('.btn').forEach(btn => { btn.style.width = '100%'; });
+        }
+      }
+    }
+
+    function enhanceAppForMobile() {
+      const appDocument = frame.contentDocument;
+      if (!appDocument) return;
+      injectMobileStylesIntoApp(appDocument);
+      const appWindow = frame.contentWindow;
+      const applyIfDashboard = () => {
+        const hash = appWindow.location.hash.replace('#/', '') || 'dashboard';
+        if (hash === 'dashboard') reorderDashboardCardsForMobile(appDocument);
+      };
+      applyIfDashboard();
+      if (appWindow && appWindow.addEventListener) {
+        appWindow.addEventListener('hashchange', applyIfDashboard);
+      }
+      const viewRoot = appDocument.getElementById('view');
+      if (viewRoot && appWindow.MutationObserver) {
+        const observer = new appWindow.MutationObserver(() => applyIfDashboard());
+        observer.observe(viewRoot, { childList: true });
+      }
+    }
+
+    frame.addEventListener('load', enhanceAppForMobile);
   </script>
 </body>
 <!-- © Cochran Films — Systems Division -->
