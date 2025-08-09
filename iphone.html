@@ -12,6 +12,11 @@
       --bezel:16px;
       --radius:44px; /* outer frame radius */
       --bg: #0b0c10;
+      --frame-edge:#0a0a0a;
+      --frame-highlight: rgba(255,255,255,.12);
+      --frame-shadow: rgba(0,0,0,.75);
+      --device-color: #000; /* overridden by themes */
+      --accent:#FFB200;
     }
     *{box-sizing:border-box}
     html,body{height:100%}
@@ -36,18 +41,24 @@
       position:relative;
       width: calc(var(--screen-w) + var(--bezel) * 2);
       height: calc(var(--screen-h) + var(--bezel) * 2);
-      background:#000;
+      background: var(--device-color);
       border-radius: var(--radius);
       box-shadow:
-        0 25px 50px rgba(0,0,0,.6),
-        inset 0 0 0 2px rgba(255,255,255,.06),
-        inset 0 0 0 1px rgba(255,255,255,.12);
+        0 24px 70px var(--frame-shadow),
+        0 12px 28px rgba(0,0,0,.65),
+        inset 0 0 0 2px var(--frame-highlight),
+        inset 0 0 0 1px rgba(255,255,255,.1);
       padding: var(--bezel);
       display:flex;
       align-items:stretch;
       justify-content:center;
       isolation:isolate;
+      transition: transform .25s ease;
     }
+    .device[data-color="silver"]{ --device-color:#f6f6f8; --frame-highlight: rgba(255,255,255,.7) }
+    .device[data-color="titanium"]{ --device-color:#3f3f45 }
+    .device[data-color="midnight"]{ --device-color:#0a0a0a }
+    .device.rotated{ transform: rotate(90deg) }
     .screen{
       position:relative;
       width: var(--screen-w);
@@ -65,6 +76,13 @@
       border-radius:inherit;
       -webkit-overflow-scrolling: touch;
     }
+    .screen::after{
+      content:"";
+      position:absolute; inset:0; pointer-events:none;
+      background: linear-gradient(110deg, rgba(255,255,255,.06) 0%, rgba(255,255,255,0) 35%),
+                  radial-gradient(800px 400px at -10% -10%, rgba(255,255,255,.05) 0%, rgba(255,255,255,0) 60%);
+      mix-blend-mode: screen;
+    }
     /* Dynamic island / notch */
     .notch{
       content:"";
@@ -80,6 +98,23 @@
       border-bottom-right-radius:18px;
       box-shadow: 0 2px 8px rgba(0,0,0,.6);
     }
+    .notch::before, .notch::after{
+      content:""; position:absolute; top:9px; width:8px; height:8px; border-radius:50%; background:#101010; box-shadow: inset 0 0 0 1px rgba(255,255,255,.08)
+    }
+    .notch::before{ left:14px }
+    .notch::after{ right:14px }
+    /* faux status bar */
+    .statusbar{
+      position:absolute; z-index:6; top: calc(var(--bezel) + 2px); left:0; right:0; height:20px; display:flex; align-items:center; justify-content:space-between; padding:0 26px; color:#f5f5f5; font-size:12px; letter-spacing:.2px; pointer-events:none;
+      text-shadow: 0 1px 1px rgba(0,0,0,.6);
+    }
+    .sb-right{ display:flex; align-items:center; gap:6px }
+    .sig,.wifi{ width:14px; height:10px; border-radius:2px; background:linear-gradient(to top, #fff, #bdbdbd); opacity:.9 }
+    .bat{ position:relative; width:22px; height:10px; border:1.6px solid #fff; border-radius:2px }
+    .bat::after{ content:""; position:absolute; right:-3px; top:2px; width:2px; height:6px; background:#fff; border-radius:1px }
+    .bat .lvl{ position:absolute; inset:1px; width:70%; background:#fff; border-radius:1px }
+    /* home indicator */
+    .home-indicator{ position:absolute; z-index:6; left:50%; transform:translateX(-50%); bottom: calc(var(--bezel) + 6px); width:120px; height:4px; background:#fff; opacity:.6; border-radius:999px; pointer-events:none }
     /* Subtle side buttons */
     .btns-left, .btns-right{
       position:absolute; top:120px; width:3px; height:48px; background:#1a1a1a;border-radius:3px;
@@ -97,6 +132,7 @@
     }
     .toolbar a:hover, .toolbar button:hover{ filter:brightness(1.05) }
     .toolbar small{opacity:.8}
+    .toolbar select{ appearance:none; border:1px solid #2a2a2a; background:#121212; color:#eee; padding:.5rem .7rem; border-radius:10px; cursor:pointer }
 
     @media (max-width: 900px){
       body{ padding:18px }
@@ -115,8 +151,17 @@
       <iframe id="appFrame" title="INEX Mobile App" src="index.html#/dashboard" allow="clipboard-read; clipboard-write"></iframe>
     </div>
     <div class="notch" aria-hidden="true"></div>
+    <div class="statusbar" aria-hidden="true">
+      <div class="sb-left">9:41</div>
+      <div class="sb-right">
+        <div class="sig"></div>
+        <div class="wifi"></div>
+        <div class="bat"><div class="lvl"></div></div>
+      </div>
+    </div>
     <div class="btns-left" aria-hidden="true"></div>
     <div class="btns-right" aria-hidden="true"></div>
+    <div class="home-indicator" aria-hidden="true"></div>
   </div>
 
   <div class="toolbar">
@@ -130,7 +175,24 @@
     <button id="btnClients">Clients</button>
     <button id="btnCareers">Careers</button>
     <button id="btnSettings">Settings</button>
-    <small>Tip: Use your trackpad/scroll wheel to scroll the app. All links work inside.</small>
+    <button id="btnRotate">Rotate</button>
+    <label>
+      <span style="margin-right:.3rem">Device</span>
+      <select id="deviceSize">
+        <option value="390x844">iPhone 15/14</option>
+        <option value="430x932">iPhone 15 Pro Max</option>
+        <option value="375x667">iPhone SE</option>
+      </select>
+    </label>
+    <label>
+      <span style="margin-right:.3rem">Color</span>
+      <select id="deviceColor">
+        <option value="midnight">Midnight</option>
+        <option value="titanium">Titanium</option>
+        <option value="silver">Silver</option>
+      </select>
+    </label>
+    <small>Tip: Use your trackpad/scroll wheel to scroll the app.</small>
   </div>
 
   <script>
@@ -154,6 +216,47 @@
         button.addEventListener('click', () => setRoute(routeName));
       }
     });
+
+    // Device controls
+    const deviceEl = document.querySelector('.device');
+    const sizeSelect = document.getElementById('deviceSize');
+    const colorSelect = document.getElementById('deviceColor');
+    const rotateBtn = document.getElementById('btnRotate');
+
+    function setDeviceSize(value){
+      const [w,h] = value.split('x').map(Number);
+      document.documentElement.style.setProperty('--screen-w', w + 'px');
+      document.documentElement.style.setProperty('--screen-h', h + 'px');
+      requestAnimationFrame(scaleToFit);
+    }
+    function setDeviceColor(value){
+      deviceEl.setAttribute('data-color', value);
+    }
+    function toggleRotate(){
+      deviceEl.classList.toggle('rotated');
+      requestAnimationFrame(scaleToFit);
+    }
+    if(sizeSelect){ sizeSelect.addEventListener('change', e => setDeviceSize(e.target.value)); }
+    if(colorSelect){ colorSelect.addEventListener('change', e => setDeviceColor(e.target.value)); }
+    if(rotateBtn){ rotateBtn.addEventListener('click', toggleRotate); }
+
+    function scaleToFit(){
+      // Reset scale first
+      deviceEl.style.transform = deviceEl.classList.contains('rotated') ? 'rotate(90deg) scale(1)' : 'scale(1)';
+      const deviceRect = deviceEl.getBoundingClientRect();
+      const toolbarRect = document.querySelector('.toolbar').getBoundingClientRect();
+      const introEl = document.querySelector('.intro');
+      const introHeight = introEl && getComputedStyle(introEl).display !== 'none' ? introEl.getBoundingClientRect().height : 0;
+      const vw = window.innerWidth - 40; // body padding
+      const vh = window.innerHeight - toolbarRect.height - introHeight - 40;
+      const scaleX = vw / deviceRect.width;
+      const scaleY = vh / deviceRect.height;
+      const scale = Math.min(1, scaleX, scaleY);
+      const base = deviceEl.classList.contains('rotated') ? 'rotate(90deg)' : '';
+      deviceEl.style.transform = `${base} scale(${scale})`;
+    }
+    window.addEventListener('resize', scaleToFit);
+    window.requestAnimationFrame(scaleToFit);
 
     function injectMobileStylesIntoApp(appDocument) {
       if (appDocument.getElementById('mobile-overrides')) return;
@@ -182,6 +285,51 @@
         .collapsible .head .toggle{ appearance:none; border:1px solid #e6e6e6; background:#fff; padding:.35rem .6rem; border-radius:10px; font-weight:700; cursor:pointer }
       `;
       appDocument.head.appendChild(styleElement);
+    }
+
+    function ensureKpiStrip(appDocument){
+      const main = appDocument.querySelector('main');
+      const view = appDocument.getElementById('view');
+      if(!main || !view) return;
+      const existing = appDocument.getElementById('mobile-kpis');
+      if(existing) return;
+      const kpi = appDocument.createElement('section');
+      kpi.id = 'mobile-kpis';
+      kpi.className = 'cards';
+      kpi.innerHTML = `
+        <article class="card">
+          <div class="head">Today at a Glance</div>
+          <div class="body" style="padding:.6rem .85rem">
+            <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:.5rem; text-align:center">
+              <div><div style="font-weight:800; font-size:18px; color:#111">3</div><div class="muted" style="font-size:12px">Active Sites</div></div>
+              <div><div style="font-weight:800; font-size:18px; color:#111">3</div><div class="muted" style="font-size:12px">Open Tickets</div></div>
+              <div><div style="font-weight:800; font-size:18px; color:#111">1h</div><div class="muted" style="font-size:12px">Avg Response</div></div>
+            </div>
+          </div>
+        </article>`;
+      view.prepend(kpi);
+    }
+
+    function ensureFab(appDocument){
+      if(appDocument.getElementById('mobile-fab')) return;
+      const fab = appDocument.createElement('a');
+      fab.id = 'mobile-fab';
+      fab.href = '#/jobs';
+      fab.textContent = 'New Ticket';
+      fab.setAttribute('aria-label','Create new ticket');
+      fab.style.position = 'fixed';
+      fab.style.right = '16px';
+      fab.style.bottom = 'calc(16px + env(safe-area-inset-bottom))';
+      fab.style.zIndex = '50';
+      fab.style.background = '#A62E3F';
+      fab.style.border = '1px solid #8d2634';
+      fab.style.color = '#fff';
+      fab.style.padding = '.8rem 1rem';
+      fab.style.borderRadius = '999px';
+      fab.style.boxShadow = '0 6px 18px rgba(166,46,63,.35)';
+      fab.style.fontWeight = '800';
+      fab.style.textDecoration = 'none';
+      appDocument.body.appendChild(fab);
     }
 
     function reorderDashboardCardsForMobile(appDocument) {
@@ -238,7 +386,11 @@
       const appWindow = frame.contentWindow;
       const applyIfDashboard = () => {
         const hash = appWindow.location.hash.replace('#/', '') || 'dashboard';
-        if (hash === 'dashboard') reorderDashboardCardsForMobile(appDocument);
+        if (hash === 'dashboard') {
+          ensureKpiStrip(appDocument);
+          reorderDashboardCardsForMobile(appDocument);
+          ensureFab(appDocument);
+        }
       };
       applyIfDashboard();
       if (appWindow && appWindow.addEventListener) {
