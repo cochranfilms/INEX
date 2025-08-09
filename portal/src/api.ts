@@ -13,9 +13,9 @@ export const Api: {
   projects: () => Promise<Project[]>;
   tickets: () => Promise<Ticket[]>;
 } = {
-  dashboard: () => getJSON<DashboardData>(new URL('api/dashboard.json', BASE).pathname),
-  projects: () => getJSON<Project[]>(new URL('api/projects.json', BASE).pathname),
-  tickets: () => getJSON<Ticket[]>(new URL('api/tickets.json', BASE).pathname),
+  dashboard: () => getJSON<DashboardData>(`${BASE}api/dashboard.json`),
+  projects: () => getJSON<Project[]>(`${BASE}api/projects.json`),
+  tickets: () => getJSON<Ticket[]>(`${BASE}api/tickets.json`),
 };
 
 
