@@ -84,6 +84,7 @@ export default function INEXPortalPreview() {
           <span className="font-extrabold text-lg text-gray-900 dark:text-gray-100">{BRAND.name}</span>
         </div>
         <div className="flex items-center gap-2">
+          <a className="btn-ghost" href="/" rel="noreferrer">INEX Home</a>
           <a className="btn-secondary" href={CALENDAR_URL} target="_blank" rel="noreferrer">Schedule a Walkthrough</a>
           <button className="btn-ghost" onClick={() => setIsDark(v => !v)}>{isDark ? 'Light' : 'Dark'}</button>
         </div>
@@ -246,7 +247,7 @@ export default function INEXPortalPreview() {
 
         <div className="flex flex-col">
           <Toolbar />
-          <main ref={node => { mainRef.current = node }} className="flex-1">
+          <main ref={node => { mainRef.current = node }} className="flex-1 max-w-[1200px] w-full mx-auto px-4 py-4">
             <motion.div key={route} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.25 }}>
               {route === '#/dashboard' && <DashboardView />}
               {route === '#/projects' && <ProjectsView />}
