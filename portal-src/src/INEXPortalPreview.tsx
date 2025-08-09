@@ -94,54 +94,63 @@ export default function INEXPortalPreview() {
 
   function DashboardView() {
     return (
-      <section className="p-6 space-y-6">
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <StatCard title="Active Sites" value={dashboard?.sites ?? '—'} />
-          <StatCard title="Rooms This Week" value={dashboard?.roomsThisWeek ?? '—'} />
-          <StatCard title="Open Tickets" value={dashboard?.ticketsOpen ?? '—'} />
-        </div>
+      <section className="p-6">
+        <div className="grid grid-cols-12 gap-6">
+          <div className="col-span-12 lg:col-span-7 space-y-6">
+            <Card title="Why INEX + CF Systems">
+              <p className="text-gray-600 dark:text-gray-300 leading-relaxed">
+                Integrated AV done right. Standardized rooms, predictable installs, and proactive service. This portal preview shows how we report work and performance by site.
+              </p>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-4">
+                <StatCard title="Active Sites" value={dashboard?.sites ?? '—'} />
+                <StatCard title="Rooms This Week" value={dashboard?.roomsThisWeek ?? '—'} />
+                <StatCard title="Open Tickets" value={dashboard?.ticketsOpen ?? '—'} />
+              </div>
+            </Card>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <Card title="Rooms Completed">
-            <div className="h-64">
-              <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={chartData} margin={{ left: 12, right: 12 }}>
-                  <defs>
-                    <linearGradient id="colorRooms" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#A62E3F" stopOpacity={0.7}/>
-                      <stop offset="95%" stopColor="#A62E3F" stopOpacity={0}/>
-                    </linearGradient>
-                  </defs>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb"/>
-                  <XAxis dataKey="name" />
-                  <YAxis />
-                  <Tooltip />
-                  <Area type="monotone" dataKey="rooms" stroke="#A62E3F" fillOpacity={1} fill="url(#colorRooms)" />
-                </AreaChart>
-              </ResponsiveContainer>
+            <Card title="Rooms Completed">
+              <div className="h-56">
+                <ResponsiveContainer width="100%" height="100%">
+                  <AreaChart data={chartData} margin={{ left: 12, right: 12 }}>
+                    <defs>
+                      <linearGradient id="colorRooms" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="#A62E3F" stopOpacity={0.7}/>
+                        <stop offset="95%" stopColor="#A62E3F" stopOpacity={0}/>
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb"/>
+                    <XAxis dataKey="name" />
+                    <YAxis />
+                    <Tooltip />
+                    <Area type="monotone" dataKey="rooms" stroke="#A62E3F" fillOpacity={1} fill="url(#colorRooms)" />
+                  </AreaChart>
+                </ResponsiveContainer>
+              </div>
+            </Card>
+          </div>
+
+          <div className="col-span-12 lg:col-span-5 space-y-6">
+            <Card title="Tickets by Status">
+              <div className="h-56">
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie data={ticketPie} dataKey="value" nameKey="name" outerRadius={90}>
+                      {ticketPie.map((_, idx) => (
+                        <Cell key={idx} fill={COLORS[idx % COLORS.length]} />
+                      ))}
+                    </Pie>
+                    <Tooltip />
+                    <Legend />
+                  </PieChart>
+                </ResponsiveContainer>
+              </div>
+            </Card>
+
+            <div className="flex gap-2">
+              <button className="btn-ghost" onClick={() => exportNodeToPDF(mainRef.current as HTMLElement, 'INEX-Portal-Press-OnePager.pdf')}>Export One‑Pager</button>
+              <a className="btn-secondary" href="/" rel="noreferrer">Visit INEX Homepage</a>
             </div>
-          </Card>
-
-          <Card title="Tickets by Status">
-            <div className="h-64">
-              <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Pie data={ticketPie} dataKey="value" nameKey="name" outerRadius={80} label>
-                    {ticketPie.map((_, idx) => (
-                      <Cell key={idx} fill={COLORS[idx % COLORS.length]} />
-                    ))}
-                  </Pie>
-                  <Tooltip />
-                  <Legend />
-                </PieChart>
-              </ResponsiveContainer>
-            </div>
-          </Card>
-        </div>
-
-        <div className="flex gap-2">
-          <button className="btn-ghost" onClick={() => exportNodeToPDF(mainRef.current as HTMLElement, 'INEX-Dashboard.pdf')}>Export PDF</button>
-          <button className="btn-ghost" onClick={() => exportNodeToPDF(mainRef.current as HTMLElement, 'INEX-Portal-Press-OnePager.pdf')}>Export Press One-Pager</button>
+          </div>
         </div>
       </section>
     );
@@ -230,8 +239,8 @@ export default function INEXPortalPreview() {
   }
 
   return (
-    <div className="min-h-screen bg-white text-gray-900 dark:bg-gray-900 dark:text-gray-100">
-      <div className="grid grid-cols-1 lg:grid-cols-[260px_1fr] min-h-screen">
+    <div className="min-h-screen bg-white text-gray-900 dark:bg-gray-900 dark:text-gray-100 no-scroll">
+      <div className="grid grid-cols-1 lg:grid-cols-[260px_1fr] min-h-screen overflow-hidden">
         <aside className="p-4 border-b lg:border-b-0 lg:border-r border-gray-200 dark:border-gray-800">
           <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}>
             <div className="mb-4">
@@ -247,7 +256,7 @@ export default function INEXPortalPreview() {
 
         <div className="flex flex-col">
           <Toolbar />
-          <main ref={node => { mainRef.current = node }} className="flex-1 max-w-[1200px] w-full mx-auto px-4 py-4">
+          <main ref={node => { mainRef.current = node }} className="flex-1 max-w-[1200px] w-full mx-auto px-4 py-4 overflow-hidden">
             <motion.div key={route} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.25 }}>
               {route === '#/dashboard' && <DashboardView />}
               {route === '#/projects' && <ProjectsView />}
