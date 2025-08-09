@@ -1,0 +1,4 @@
+[
+  { "id": "auditorium", "site": "RICE", "name": "Auditorium — Modernization", "phase": "Cabling", "owner": "Team A", "due": "Aug 28" },
+  { "id": "room2c", "site": "RICE", "name": "Room 2C — Audio Tuning", "phase": "Commission", "owner": "Team B", "due": "Aug 13" }
+]
