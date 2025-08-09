@@ -5,21 +5,9 @@ import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
 import { Api } from './api';
 import { CALENDAR_URL, BRAND } from './config';
-import type { DashboardData, Project, Ticket } from './types';
+import type { DashboardData, Ticket } from './types';
 
-function useHashRoute(): [string, (hash: string) => void] {
-  const [route, setRoute] = useState<string>(() => (window.location.hash || '#/dashboard'));
-  useEffect(() => {
-    const onHash = () => setRoute(window.location.hash || '#/dashboard');
-    window.addEventListener('hashchange', onHash);
-    return () => window.removeEventListener('hashchange', onHash);
-  }, []);
-  const set = (hash: string) => {
-    if (!hash.startsWith('#')) hash = '#' + hash;
-    window.location.hash = hash;
-  };
-  return [route, set];
-}
+// Single-screen pitch: no routing
 
 export async function exportNodeToPDF(node: HTMLElement, fileName: string) {
   const rect = node.getBoundingClientRect();
@@ -31,10 +19,8 @@ export async function exportNodeToPDF(node: HTMLElement, fileName: string) {
 }
 
 export default function INEXPortalPreview() {
-  const [route] = useHashRoute(); // kept but we render a single-screen pitch
   const [isDark, setIsDark] = useState<boolean>(false);
   const [dashboard, setDashboard] = useState<DashboardData | null>(null);
-  const [projects, setProjects] = useState<Project[]>([]);
   const [tickets, setTickets] = useState<Ticket[]>([]);
   const mainRef = useRef<HTMLElement | null>(null);
 
@@ -45,7 +31,6 @@ export default function INEXPortalPreview() {
 
   useEffect(() => {
     Api.dashboard().then((d: DashboardData) => setDashboard(d)).catch(() => setDashboard({ sites: 0, roomsThisWeek: 0, ticketsOpen: 0 }));
-    Api.projects().then((p: Project[]) => setProjects(p)).catch(() => setProjects([]));
     Api.tickets().then((t: Ticket[]) => setTickets(t)).catch(() => setTickets([]));
   }, []);
 
@@ -85,69 +70,7 @@ export default function INEXPortalPreview() {
     );
   }
 
-  function DashboardView() {
-    return (
-      <section className="p-6">
-        <div className="grid grid-cols-12 gap-6">
-          <div className="col-span-12 lg:col-span-7 space-y-6">
-            <Card title="Why INEX + CF Systems">
-              <p className="text-gray-600 dark:text-gray-300 leading-relaxed">
-                Integrated AV done right. Standardized rooms, predictable installs, and proactive service. This portal preview shows how we report work and performance by site.
-              </p>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-4">
-                <StatCard title="Active Sites" value={dashboard?.sites ?? '—'} />
-                <StatCard title="Rooms This Week" value={dashboard?.roomsThisWeek ?? '—'} />
-                <StatCard title="Open Tickets" value={dashboard?.ticketsOpen ?? '—'} />
-              </div>
-            </Card>
-
-            <Card title="Rooms Completed">
-              <div className="h-56">
-                <ResponsiveContainer width="100%" height="100%">
-                  <AreaChart data={chartData} margin={{ left: 12, right: 12 }}>
-                    <defs>
-                      <linearGradient id="colorRooms" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="#A62E3F" stopOpacity={0.7}/>
-                        <stop offset="95%" stopColor="#A62E3F" stopOpacity={0}/>
-                      </linearGradient>
-                    </defs>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb"/>
-                    <XAxis dataKey="name" />
-                    <YAxis />
-                    <Tooltip />
-                    <Area type="monotone" dataKey="rooms" stroke="#A62E3F" fillOpacity={1} fill="url(#colorRooms)" />
-                  </AreaChart>
-                </ResponsiveContainer>
-              </div>
-            </Card>
-          </div>
-
-          <div className="col-span-12 lg:col-span-5 space-y-6">
-            <Card title="Tickets by Status">
-              <div className="h-56">
-                <ResponsiveContainer width="100%" height="100%">
-                  <PieChart>
-                    <Pie data={ticketPie} dataKey="value" nameKey="name" outerRadius={90}>
-                      {ticketPie.map((_, idx) => (
-                        <Cell key={idx} fill={COLORS[idx % COLORS.length]} />
-                      ))}
-                    </Pie>
-                    <Tooltip />
-                    <Legend />
-                  </PieChart>
-                </ResponsiveContainer>
-              </div>
-            </Card>
-
-            <div className="flex gap-2">
-              <button className="btn-ghost" onClick={() => exportNodeToPDF(mainRef.current as HTMLElement, 'INEX-Portal-Press-OnePager.pdf')}>Export One‑Pager</button>
-              <a className="btn-secondary" href="/" rel="noreferrer">Visit INEX Homepage</a>
-            </div>
-          </div>
-        </div>
-      </section>
-    );
-  }
+  // Pitch layout handled directly in main
 
   // No projects/tickets routes in pitch mode
 
