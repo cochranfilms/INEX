@@ -239,7 +239,7 @@
     document.getElementById('dateInex').textContent = todayStr;
     document.getElementById('dateCochran').textContent = todayStr;
 
-    // (Email is now sent server-side for key protection)
+    // EmailJS handles all contract notifications
 
 
 
@@ -441,7 +441,7 @@
         scopeSummary: 'INEX‑branded Operations Portal (Dashboard, Jobs, Inventory, RMA, SLAs, Clients, Careers) with documentation and deployment.',
         projectScopeSummary: 'INEX‑branded Operations Portal (Dashboard, Jobs, Inventory, RMA, SLAs, Clients, Careers) with documentation and deployment.',
         contactName: 'Zebadiah Henry',
-        contactEmail: INEX_NOTIFICATION_EMAIL || '{{to_email}}',
+        contactEmail: '{{to_email}}',
         clientSignature: (document.getElementById('clientSignatureInput')?.value || '').trim()
       };
     }
@@ -626,7 +626,7 @@
         // Send admin notification email
         if (typeof emailjs !== 'undefined') {
           const adminEmailParams = {
-            to_email: INEX_NOTIFICATION_EMAIL,
+            to_email: 'info@inexsystemsdesigns.com',
             contract_id: contractId,
             effective_date: effectiveDate,
             client_name: contractData.clientSignature,
@@ -745,15 +745,15 @@
         // Require client signature
         if (!isValidFullName(lastData.clientSignature)) {
           alert('Please type your full legal name to sign (first and last).');
-          finalizeBtn.disabled = false; finalizeBtn.innerHTML = '<i class="fa-solid fa-file-signature"></i> Finalize & Email';
+          finalizeBtn.disabled = false; finalizeBtn.innerHTML = '<i class="fa-solid fa-file-signature"></i> Sign & Send Contract';
           return;
         }
-        // Finalize on server (authoritative data + email)
+        // Finalize contract and send emails via EmailJS
         const serverRes = await finalizeOnServer({
           clientSignature: lastData.clientSignature,
           contactEmail: lastData.contactEmail
         });
-        // Apply server-authoritative values
+        // Apply generated contract values
         lastData.contractId = serverRes.contractId || lastData.contractId;
         lastData.effectiveDate = serverRes.effectiveDate || lastData.effectiveDate;
         lastData.amount = serverRes.amount || lastData.amount;
