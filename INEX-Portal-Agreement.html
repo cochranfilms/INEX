@@ -239,6 +239,15 @@
         console.log('Firebase client initialized');
       } catch (e) { console.warn('Firebase init failed', e); }
     }
+    function isValidFullName(name){
+      if (!name) return false;
+      const cleaned = String(name).trim().replace(/\s+/g,' ');
+      const parts = cleaned.split(' ');
+      if (parts.length < 2) return false;
+      if (cleaned.length < 6) return false;
+      const partOk = /^[A-Za-z][A-Za-z'\-]{1,}$/;
+      return parts.every(p => partOk.test(p));
+    }
     // Allowed emails (gate access)
     const ALLOWED_EMAILS = ['info@inexsystemsdesigns.com','info@cochranfilms.com'];
     function isAllowedEmail(email){
@@ -480,7 +489,7 @@
       const updatePreview = ()=>{
         const v = clientInput.value.trim();
         clientPreview.textContent = v || 'Zebadiah Henry';
-        const valid = v.length >= 3;
+        const valid = isValidFullName(v);
         if (sigReady) sigReady.style.display = valid ? 'inline-block' : 'none';
         const finalizeBtn = document.getElementById('finalizeBtn');
         if (finalizeBtn) finalizeBtn.disabled = !valid;
@@ -523,8 +532,8 @@
         }
         lastData = buildContractData();
         // Require client signature
-        if (!lastData.clientSignature || lastData.clientSignature.length < 3) {
-          alert('Please type your full legal name to sign.');
+        if (!isValidFullName(lastData.clientSignature)) {
+          alert('Please type your full legal name to sign (first and last).');
           finalizeBtn.disabled = false; finalizeBtn.innerHTML = '<i class="fa-solid fa-file-signature"></i> Finalize & Email';
           return;
         }
