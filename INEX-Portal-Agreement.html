@@ -1,0 +1,347 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>INEX Systems & Designs — Agreement</title>
+  
+  <!-- Fonts & Icons -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Cinzel:wght@600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+  <!-- EmailJS -->
+  <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+  <!-- jsPDF -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+  <style>
+    :root {
+      --ink: #0f0f10;
+      --muted: #6b7280;
+      --panel: #0b0b0c;
+      --panel-2: #121214;
+      --border: #26272b;
+      --accent: #FFB200;
+      --brand: #A62E3F; /* INEX maroon */
+      --radius: 14px;
+      --shadow: 0 12px 40px rgba(0,0,0,.35);
+      --white: #ffffff;
+    }
+    html, body { height: 100%; }
+    body {
+      margin: 0; color: var(--white); background: radial-gradient(1200px 600px at 15% -10%, rgba(166,46,63,.08), transparent 60%),
+                 radial-gradient(1200px 600px at 85% 110%, rgba(255,178,0,.08), transparent 60%),
+                 #000; font: 14px/1.65 Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial;
+      -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale;
+    }
+    .wrap { max-width: 1080px; margin: 36px auto; padding: 0 18px; }
+    .doc { background: linear-gradient(180deg, rgba(255,255,255,.02), rgba(255,255,255,.0)); border: 1px solid var(--border); border-radius: 18px; box-shadow: var(--shadow); overflow: hidden; }
+    .head {
+      display: grid; grid-template-columns: auto 1fr auto; gap: 16px; align-items: center;
+      background: linear-gradient(135deg, rgba(166,46,63,.25), rgba(10,10,10,1)); padding: 20px;
+      border-bottom: 1px solid var(--border);
+    }
+    .brand-logos { display: flex; align-items: center; gap: 14px; }
+    .brand-logos img { height: 36px; width: auto; filter: drop-shadow(0 6px 18px rgba(0,0,0,.6)); }
+    .title h1 { margin: 0; font: 800 18px/1.25 Inter, sans-serif; letter-spacing: .2px; }
+    .title .sub { margin-top: 4px; font-size: 12px; color: #d1d5db; }
+    .badge { background: rgba(255,178,0,.1); color: var(--accent); border: 1px solid rgba(255,178,0,.35); padding: 6px 10px; border-radius: 999px; font-weight: 700; font-size: 12px; }
+
+    .section { padding: 20px; background: var(--panel); border-bottom: 1px solid var(--border); }
+    .section + .section { background: var(--panel-2); }
+    h2 { margin: .2rem 0 .6rem 0; font: 700 16px/1.35 Inter; letter-spacing:.2px; color: #f9fafb }
+    h3 { margin: 1rem 0 .35rem 0; font: 700 14px/1.35 Inter; color: #e5e7eb }
+    p { margin: .35rem 0; color: #e5e7eb }
+    ul { margin: .4rem 0 .6rem 1.2rem; color: #e5e7eb }
+    .callout { background: rgba(255,178,0,.08); border: 1px solid rgba(255,178,0,.25); border-radius: 12px; padding: 12px 14px; }
+
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    @media (max-width: 780px) { .grid-2 { grid-template-columns: 1fr; } }
+
+    .sigbox { background: #0f0f11; border: 1px dashed #3a3b41; border-radius: 12px; padding: 14px; }
+    .sigline { height: 28px; border-bottom: 2px solid rgba(255,255,255,.2); margin: 8px 0 6px 0; }
+    .cursive { font-family: "Cinzel", serif; font-style: italic; font-weight: 600; letter-spacing: .3px; }
+
+    .actions { padding: 18px 20px; display: flex; flex-wrap: wrap; gap: 10px; align-items: center; background: #0a0a0a; border-top: 1px solid var(--border); }
+    .btn { appearance: none; display: inline-flex; align-items: center; gap:.6rem; border-radius: 10px; border: 1px solid #e6a300; padding: 10px 14px; font-weight: 800; cursor: pointer; text-decoration: none; }
+    .btn-primary { background: linear-gradient(135deg, #FFB200, #FFD86B); color: #111; }
+    .btn-secondary { background: rgba(255,255,255,.06); color: #fff; border-color: #3a3b41; }
+    .muted { color: var(--muted) }
+    .foot { padding: 14px 22px; text-align: center; color: #9ca3af; border-top: 1px solid var(--border); font-size: 12px; background: #0a0a0a }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="doc" id="agreementRoot">
+      <div class="head">
+        <div class="brand-logos">
+          <img src="inex-logo.png" alt="INEX Logo">
+          <img src="CochranFilms-logo.png" alt="Cochran Films Logo">
+        </div>
+        <div class="title">
+          <h1>INEX Systems & Designs — Agreement</h1>
+          <div class="sub">Cochran Films LLC — Systems Division · Date: <span id="today"></span> · <span id="contractId"></span></div>
+        </div>
+        <span class="badge"><i class="fa-solid fa-shield"></i>&nbsp; Digital Agreement</span>
+      </div>
+
+      <div class="section">
+        <p><strong>Parties.</strong> This Agreement is between <strong>Cochran Films LLC — Systems Division</strong> (“Provider”) and <strong>INEX Systems & Designs</strong> (“Client”).</p>
+        <p><strong>Project.</strong> Design and deployment of an INEX‑branded operations portal (“Portal”) extending ClickShare room simplicity into client experience and internal operations.</p>
+      </div>
+
+      <div class="section">
+        <h2>1) Scope & Deliverables</h2>
+        <ul>
+          <li><strong>Portal 2.0 (Dark) + 1.0 (Light):</strong> SPA‑style UI with Dashboard, Projects, Jobs/Dispatch, Inventory, RMA/Warranties, SLAs/Reports, Knowledge, Clients, Careers, Settings.</li>
+          <li><strong>Branding:</strong> INEX logo & color tokens; favicon & metadata; press‑ready screenshots.</li>
+          <li><strong>Inline Charts:</strong> SVG sparklines & bar charts (no third‑party libs) for KPIs + Operations Pulse.</li>
+          <li><strong>Mock Data Layer:</strong> JSON‑based mock API prepared for connectors (Sheets/CSV, QuickBooks, Stripe).</li>
+          <li><strong>Deployment:</strong> Static hosting to <em>inex.cochranfilms.com</em> (or Client domain).</li>
+          <li><strong>Documentation:</strong> README and pitch overlay (navigation map, roadmap, handoff).</li>
+        </ul>
+      </div>
+
+      <div class="section">
+        <h2>2) Security</h2>
+        <p><strong>Authentication:</strong> Option to add Firebase Auth (Phase 2) for login and role scoping.</p>
+        <p><strong>Data at Rest:</strong> If JSON or files will store Client data, Provider can apply <strong>AES‑256 encryption</strong> prior to storage; keys held in environment variables or a cloud KMS. <strong>Data in transit</strong> via HTTPS/TLS.</p>
+        <p><strong>Access Control:</strong> Least‑privilege service accounts; code review for production changes.</p>
+        <p><strong>Confidentiality:</strong> Both parties protect non‑public information and use it solely for this Project.</p>
+        <div class="callout"><strong>Note:</strong> If Client prefers, encrypted JSON can be replaced with a managed database (e.g., Firestore/Postgres) with field‑level encryption and audit trails.</div>
+      </div>
+
+      <div class="section">
+        <h2>3) Timeline</h2>
+        <p>Phase 1 (Prototype Polish): 1–2 weeks from approval.<br>
+           Phase 2 (Auth + Connectors): 2–4 weeks, depending on integrations.<br>
+           Phase 3 (Client Portal & Reports): 2–3 weeks.</p>
+      </div>
+
+      <div class="section">
+        <h2>4) Fees & Payment</h2>
+        <ul>
+          <li><strong>One‑Time Implementation:</strong> <strong>$4,500</strong> (50% at kickoff, 50% at Phase 1 delivery).</li>
+          <li><strong>Managed Care Plan:</strong> <strong>$150/month</strong> – uptime monitoring, small fixes, monthly content updates (≤2 hrs), priority support.</li>
+          <li><strong>Out‑of‑Scope:</strong> Custom features, third‑party SaaS fees (e.g., QuickBooks/Stripe), change requests @ $85/hr (pre‑approved).</li>
+        </ul>
+      </div>
+
+      <div class="section">
+        <h2>5) Support & SLAs</h2>
+        <p><strong>Targets:</strong> P1 – 30m response / 4h fix; P2 – 2h / 8h; P3 – 4h / 24h (business hours unless 24/7 plan selected).</p>
+        <p><strong>Channels:</strong> Email & phone; emergency line available for 24/7 clients.</p>
+        <p><strong>RMA/Warranty Tracking:</strong> Vendor terms govern physical replacements; Portal provides workflow and evidence trail.</p>
+      </div>
+
+      <div class="section">
+        <h2>6) IP Ownership</h2>
+        <p>Provider retains ownership of the core portal framework/components. Client receives a perpetual, non‑exclusive license to use within its business. Client owns Client Content and data.</p>
+      </div>
+
+      <div class="section">
+        <h2>7) Acceptance, Warranty, Termination</h2>
+        <p><strong>Acceptance:</strong> Deemed accepted once working on staging URL without material defects.</p>
+        <p><strong>Warranty:</strong> 30‑day conformance warranty to Scope; fixes included.</p>
+        <p><strong>Termination:</strong> Either party may terminate with 14 days’ notice after uncured material breach. Client pays for work to date and receives in‑progress deliverables.</p>
+      </div>
+
+      <div class="section">
+        <h2>8) Compliance & Data Processing</h2>
+        <p>Provider processes Client data solely to perform the Project. If required, parties will execute a Data Processing Addendum (DPA) covering encryption, retention, and deletion.</p>
+      </div>
+
+      <div class="section">
+        <h2>Signatures</h2>
+        <div class="grid-2">
+          <div class="sigbox">
+            <p><strong>Client: INEX Systems & Designs</strong></p>
+            <div class="sigline"></div>
+            <p class="cursive" id="sigInex">Zebadiah — Authorized Representative</p>
+            <p class="muted" style="margin-top:6px">Date: <span id="dateInex"></span></p>
+          </div>
+          <div class="sigbox">
+            <p><strong>Provider: Cochran Films LLC — Systems Division</strong></p>
+            <div class="sigline"></div>
+            <p class="cursive">Cody Cochran — Founder & CEO</p>
+            <p class="muted" style="margin-top:6px">Date: <span id="dateCochran"></span></p>
+          </div>
+        </div>
+      </div>
+
+      <div class="actions">
+        <button id="finalizeBtn" class="btn btn-primary"><i class="fa-solid fa-file-signature"></i> Finalize & Email</button>
+        <button id="downloadBtn" class="btn btn-secondary" style="display:none"><i class="fa-solid fa-download"></i> Download Agreement PDF</button>
+        <span class="muted">On finalize, we email the agreement and unlock the download button for your records.</span>
+      </div>
+
+      <div class="foot">© Cochran Films LLC — Systems Division</div>
+    </div>
+  </div>
+
+  <script>
+    // Initialize dates and contract ID
+    const now = new Date();
+    const todayStr = now.toLocaleDateString(undefined,{year:'numeric',month:'long',day:'2-digit'});
+    const contractId = 'INEX-' + now.getFullYear() + (now.getMonth()+1).toString().padStart(2,'0') + '-' + Math.random().toString(36).slice(2,8).toUpperCase();
+    document.getElementById('today').textContent = todayStr;
+    document.getElementById('contractId').textContent = contractId;
+    document.getElementById('dateInex').textContent = todayStr;
+    document.getElementById('dateCochran').textContent = todayStr;
+
+    // EmailJS configuration (update template IDs if you rename)
+    const EMAILJS_CONFIG = {
+      publicKey: 'p4pF3OWvh-DXtae4c',
+      serviceId: 'service_t11yvru',
+      templateId: 'template_inex_agreement'
+    };
+    if (typeof emailjs !== 'undefined') { emailjs.init(EMAILJS_CONFIG.publicKey); }
+
+    // helpers
+    async function loadImageAsDataURL(url){
+      const res = await fetch(url);
+      const blob = await res.blob();
+      return await new Promise((resolve)=>{ const r=new FileReader(); r.onload=()=>resolve(r.result); r.readAsDataURL(blob); });
+    }
+
+    function buildContractData(){
+      return {
+        contractId: contractId,
+        effectiveDate: todayStr,
+        clientName: 'INEX Systems & Designs',
+        providerName: 'Cochran Films LLC — Systems Division',
+        amount: '$4,500',
+        carePlan: '$150/month',
+        scopeSummary: 'INEX‑branded Operations Portal (Dashboard, Jobs, Inventory, RMA, SLAs, Clients, Careers) with documentation and deployment.',
+        contactName: 'Zebadiah',
+        contactEmail: '{{to_email}}',
+      };
+    }
+
+    async function generateINEXPDF(data){
+      const { jsPDF } = window.jspdf; const doc = new jsPDF();
+      // header banner
+      doc.setFillColor(255,178,0); doc.rect(0,0,210,24,'F');
+      doc.setFont('helvetica','bold'); doc.setTextColor(0,0,0); doc.setFontSize(18);
+      doc.text('INEX SYSTEMS & DESIGNS — AGREEMENT',105,12,{align:'center'});
+      doc.setFont('helvetica','normal'); doc.setFontSize(11);
+      doc.text('Cochran Films LLC — Systems Division',105,19,{align:'center'});
+
+      // logos
+      try{
+        const [inexLogo, cfLogo] = await Promise.all([
+          loadImageAsDataURL('inex-logo.png'),
+          loadImageAsDataURL('CochranFilms-logo.png')
+        ]);
+        doc.addImage(inexLogo,'PNG',14,6,18,12);
+        doc.addImage(cfLogo,'PNG',178,6,18,12);
+      }catch{ /* continue without images */ }
+
+      // meta
+      doc.setTextColor(80,80,80); doc.setFontSize(9);
+      doc.text(`Contract ID: ${data.contractId}`, 20, 32);
+      doc.text(`Effective Date: ${data.effectiveDate}`, 20, 36);
+
+      // sections
+      const line = (x1,y,x2)=>{ doc.setDrawColor(255,178,0); doc.setLineWidth(0.3); doc.line(x1,y,x2,y); };
+      let y=44;
+      function header(txt){ doc.setFillColor(255,178,0); doc.rect(20,y-6,170,7,'F'); doc.setTextColor(0,0,0); doc.setFont('helvetica','bold'); doc.setFontSize(10); doc.text(txt,105,y-1,{align:'center'}); }
+      function t(txt,dy=5){ doc.setFont('helvetica','normal'); doc.setFontSize(8); doc.setTextColor(0,0,0); doc.text(txt,22,y+=dy); }
+
+      header('PROJECT OVERVIEW');
+      y+=6; t('Parties: Cochran Films LLC — Systems Division (Provider) and INEX Systems & Designs (Client).');
+      t('Project: INEX‑branded operations portal with branded UI, modules, deployment, and documentation.');
+
+      y+=6; header('SCOPE & DELIVERABLES'); y+=6;
+      const scope = [
+        'Portal 2.0 (Dark) + 1.0 (Light): Dashboard, Projects, Jobs/Dispatch, Inventory, RMA/Warranties, SLAs/Reports, Knowledge, Clients, Careers, Settings.',
+        'Branding: INEX logo & color tokens; favicon & metadata; press‑ready screenshots.',
+        'Inline Charts: SVG sparklines & bar charts for KPIs and Operations Pulse.',
+        'Mock Data Layer: JSON‑based mock API prepared for connectors (Sheets/CSV, QuickBooks, Stripe).',
+        'Deployment: Static hosting to inex.cochranfilms.com (or client domain).',
+        'Documentation: README and pitch overlay (navigation map, roadmap, handoff).'
+      ];
+      scope.forEach((s)=>{ t('\u2022 ' + s, 5); });
+
+      y+=6; header('FEES & PAYMENT'); y+=6;
+      t(`One‑Time Implementation: ${data.amount} (50% at kickoff, 50% at Phase 1 delivery).`);
+      t(`Managed Care Plan: ${data.carePlan} for monitoring, small fixes, monthly updates (≤2 hrs), priority support.`);
+      t('Out‑of‑Scope: Custom features, third‑party SaaS fees; change requests @ $85/hr (pre‑approved).');
+
+      y+=6; header('SECURITY & COMPLIANCE'); y+=6;
+      t('Authentication (Phase 2): optional Firebase Auth with role scoping.');
+      t('Data at Rest: AES‑256 encryption available; keys in env/KMS. Data in Transit: HTTPS/TLS.');
+      t('Access Control: least‑privilege accounts; code review for production.');
+      t('Confidentiality: both parties protect non‑public information.');
+
+      // signatures
+      y+=8; header('SIGNATURES'); y+=8;
+      doc.setFontSize(8); doc.setTextColor(0,0,0);
+      // Provider block
+      doc.text('COCHRAN FILMS (COMPANY)', 22, y);
+      line(22, y+13, 95); doc.text('Authorized Signature:', 22, y+9);
+      doc.setFont('helvetica','italic'); doc.setFontSize(12); doc.text('Cody Cochran', 22, y+12);
+      doc.setFont('helvetica','normal'); doc.setFontSize(7); doc.text('Title: Founder & CEO', 22, y+18); doc.text('Date: '+data.effectiveDate, 22, y+22);
+
+      // Client block
+      doc.setFont('helvetica','bold'); doc.setFontSize(8); doc.text('INEX SYSTEMS & DESIGNS (CLIENT)', 115, y);
+      line(115, y+13, 188); doc.setFont('helvetica','normal'); doc.setFontSize(7); doc.text('Authorized Signature:', 115, y+9);
+      doc.setFont('helvetica','italic'); doc.setFontSize(12); doc.text('Zebadiah', 115, y+12);
+      doc.setFont('helvetica','normal'); doc.setFontSize(7); doc.text('Title: Authorized Representative', 115, y+18); doc.text('Date: '+data.effectiveDate, 115, y+22);
+
+      // footer
+      const footerY = 270 - 18; doc.setDrawColor(255,178,0); doc.rect(20, footerY-4, 170, 18, 'S');
+      doc.setTextColor(100,100,100); doc.setFontSize(7);
+      doc.text('Digitally generated by Cochran Films Contract System · Contract ID: '+data.contractId, 105, footerY+2, {align:'center'});
+      doc.text(new Date().toLocaleString(), 105, footerY+7, {align:'center'});
+      return doc;
+    }
+
+    async function sendEmail(data){
+      if (typeof emailjs === 'undefined') return { success:false, error:'EmailJS not loaded' };
+      // Template fields expected in EmailJS (see instructions below)
+      const params = {
+        to_email: data.contactEmail, // set in template/EmailJS dashboard
+        client_name: data.clientName,
+        company_name: data.providerName,
+        contract_id: data.contractId,
+        effective_date: data.effectiveDate,
+        amount: data.amount,
+        care_plan: data.carePlan,
+        project_scope_summary: data.scopeSummary,
+        portal_url: 'https://inex.cochranfilms.com',
+        signed_timestamp: new Date().toLocaleString()
+      };
+      try{ await emailjs.send(EMAILJS_CONFIG.serviceId, EMAILJS_CONFIG.templateId, params); return { success:true }; }
+      catch(err){ return { success:false, error: err?.message || 'Unknown error' } }
+    }
+
+    // UI Actions
+    const finalizeBtn = document.getElementById('finalizeBtn');
+    const downloadBtn = document.getElementById('downloadBtn');
+    let lastDoc = null; let lastData = null;
+
+    finalizeBtn.addEventListener('click', async ()=>{
+      finalizeBtn.disabled = true; finalizeBtn.innerHTML = '<i class="fa-solid fa-hourglass-half"></i> Finalizing...';
+      try{
+        lastData = buildContractData();
+        lastDoc = await generateINEXPDF(lastData);
+        const emailRes = await sendEmail(lastData);
+        if (!emailRes.success) { console.warn('Email failed:', emailRes.error); }
+        downloadBtn.style.display = 'inline-flex';
+        finalizeBtn.innerHTML = '<i class="fa-solid fa-check"></i> Finalized';
+      }catch(err){
+        console.error(err); finalizeBtn.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i> Try Again'; finalizeBtn.disabled = false;
+      }
+    });
+
+    downloadBtn.addEventListener('click', ()=>{
+      if (!lastDoc || !lastData) return;
+      const safe = 'INEX-Agreement-' + lastData.contractId + '.pdf';
+      lastDoc.save(safe);
+    });
+  </script>
+</body>
+</html>
