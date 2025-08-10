@@ -8,7 +8,7 @@
   <!-- Fonts & Icons -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Cinzel:wght@600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Cinzel:wght@600;700&family=Great+Vibes&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
   <!-- EmailJS -->
@@ -65,6 +65,9 @@
     .sigbox { background: #0f0f11; border: 1px dashed #3a3b41; border-radius: 12px; padding: 14px; }
     .sigline { height: 28px; border-bottom: 2px solid rgba(255,255,255,.2); margin: 8px 0 6px 0; }
     .cursive { font-family: "Cinzel", serif; font-style: italic; font-weight: 600; letter-spacing: .3px; }
+    .sig-input { width:100%; background:#0d0d0f; border:1px solid #2f3036; color:#fff; padding:10px 12px; border-radius:8px; font-size:14px; }
+    .sig-input::placeholder { color:#6b7280; }
+    .sig-preview { font-family: 'Great Vibes', cursive; font-size: 24px; letter-spacing:.2px; color:#e5e7eb; }
 
     .actions { padding: 18px 20px; display: flex; flex-wrap: wrap; gap: 10px; align-items: center; background: #0a0a0a; border-top: 1px solid var(--border); }
     .btn { appearance: none; display: inline-flex; align-items: center; gap:.6rem; border-radius: 10px; border: 1px solid #e6a300; padding: 10px 14px; font-weight: 800; cursor: pointer; text-decoration: none; }
@@ -160,8 +163,10 @@
         <div class="grid-2">
           <div class="sigbox">
             <p><strong>Client: INEX Systems & Designs</strong></p>
+            <label for="clientSignatureInput" class="muted" style="display:block;margin-top:6px;margin-bottom:6px">Type your full name to sign</label>
+            <input id="clientSignatureInput" class="sig-input" type="text" placeholder="Full legal name" autocomplete="off" spellcheck="false">
             <div class="sigline"></div>
-            <p class="cursive" id="sigInex">Zebadiah Henry — Authorized Representative</p>
+            <p class="sig-preview" id="clientSignaturePreview">Zebadiah Henry</p>
             <p class="muted" style="margin-top:6px">Date: <span id="dateInex"></span></p>
           </div>
           <div class="sigbox">
@@ -224,6 +229,7 @@
         scopeSummary: 'INEX‑branded Operations Portal (Dashboard, Jobs, Inventory, RMA, SLAs, Clients, Careers) with documentation and deployment.',
         contactName: 'Zebadiah Henry',
         contactEmail: INEX_NOTIFICATION_EMAIL || '{{to_email}}',
+        clientSignature: (document.getElementById('clientSignatureInput')?.value || '').trim()
       };
     }
 
@@ -240,7 +246,7 @@
       node.querySelector('[data-care-plan]').textContent = data.carePlan;
       node.querySelector('[data-provider-date]').textContent = data.effectiveDate;
       node.querySelector('[data-client-date]').textContent = data.effectiveDate;
-      node.querySelector('[data-client-sign]').textContent = 'Zebadiah Henry';
+      node.querySelector('[data-client-sign]').textContent = data.clientSignature || 'Zebadiah Henry';
       const stamp = node.querySelector('#pdf-print-stamp');
       if (stamp) stamp.textContent = new Date().toLocaleString();
       // Ensure fonts and layout are ready before rasterizing
@@ -270,7 +276,7 @@
       node.querySelector('[data-care-plan]').textContent = data.carePlan;
       node.querySelector('[data-provider-date]').textContent = data.effectiveDate;
       node.querySelector('[data-client-date]').textContent = data.effectiveDate;
-      node.querySelector('[data-client-sign]').textContent = 'Zebadiah Henry';
+      node.querySelector('[data-client-sign]').textContent = data.clientSignature || 'Zebadiah Henry';
       const stamp = node.querySelector('#pdf-print-stamp');
       if (stamp) stamp.textContent = new Date().toLocaleString();
       try { if (document.fonts && document.fonts.ready) { await document.fonts.ready; } } catch(_){}
@@ -373,7 +379,7 @@
       // Client block
       doc.setFont('helvetica','bold'); doc.setFontSize(8); doc.text('INEX SYSTEMS & DESIGNS (CLIENT)', 115, y);
       line(115, y+13, 188); doc.setFont('helvetica','normal'); doc.setFontSize(7); doc.text('Authorized Signature:', 115, y+9);
-      doc.setFont('helvetica','italic'); doc.setFontSize(12); doc.text('Zebadiah Henry', 115, y+12);
+      doc.setFont('helvetica','italic'); doc.setFontSize(12); doc.text(data.clientSignature || 'Zebadiah Henry', 115, y+12);
       doc.setFont('helvetica','normal'); doc.setFontSize(7); doc.text('Title: Authorized Representative', 115, y+18); doc.text('Date: '+data.effectiveDate, 115, y+22);
 
       // footer
@@ -408,10 +414,28 @@
     const downloadBtn = document.getElementById('downloadBtn');
     let lastDoc = null; let lastData = null;
 
+    // Live signature preview updates
+    const clientInput = document.getElementById('clientSignatureInput');
+    const clientPreview = document.getElementById('clientSignaturePreview');
+    if (clientInput && clientPreview) {
+      const updatePreview = ()=>{
+        const v = clientInput.value.trim();
+        clientPreview.textContent = v || 'Zebadiah Henry';
+      };
+      clientInput.addEventListener('input', updatePreview);
+      updatePreview();
+    }
+
     finalizeBtn.addEventListener('click', async ()=>{
       finalizeBtn.disabled = true; finalizeBtn.innerHTML = '<i class="fa-solid fa-hourglass-half"></i> Finalizing...';
       try{
         lastData = buildContractData();
+        // Require client signature
+        if (!lastData.clientSignature || lastData.clientSignature.length < 3) {
+          alert('Please type your full legal name to sign.');
+          finalizeBtn.disabled = false; finalizeBtn.innerHTML = '<i class="fa-solid fa-file-signature"></i> Finalize & Email';
+          return;
+        }
         lastDoc = await generateINEXPDF(lastData);
         // Safety check: if html() renderer returned an empty doc, draw a tiny pixel to avoid blank viewer
         try { if (lastDoc.internal.getNumberOfPages() === 0) { lastDoc.addPage(); } } catch(_){}
@@ -482,7 +506,7 @@
           <div style="border:1px solid #e5e7eb; padding:10pt;">
             <div style="font-weight:700">INEX SYSTEMS & DESIGNS (CLIENT)</div>
             <div style="height:22pt; border-bottom:2px solid #d1d5db; margin:8pt 0 6pt"></div>
-            <div style="font-style:italic; font-weight:600" data-client-sign></div>
+            <div style="font-family:'Great Vibes', cursive; font-size:22pt;" data-client-sign></div>
             <div style="font-size:9pt">Title: Authorized Representative</div>
             <div style="font-size:9pt">Date: <span data-client-date></span></div>
           </div>
