@@ -1,8 +1,8 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>INEX Systems & Designs — Agreement</title>
   
   <!-- Fonts & Icons -->
@@ -18,7 +18,7 @@
   <!-- html2canvas for high-fidelity HTML->PDF rendering -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
-  <style>
+<style>
     :root {
       --ink: #0f0f10;
       --muted: #6b7280;
@@ -72,14 +72,14 @@
     .btn-secondary { background: rgba(255,255,255,.06); color: #fff; border-color: #3a3b41; }
     .muted { color: var(--muted) }
     .foot { padding: 14px 22px; text-align: center; color: #9ca3af; border-top: 1px solid var(--border); font-size: 12px; background: #0a0a0a }
-  </style>
+</style>
 </head>
 <body>
   <div class="wrap">
     <div class="doc" id="agreementRoot">
       <div class="head">
         <div class="brand-logos">
-          <img src="inex-logo.png" alt="INEX Logo">
+        <img src="inex-logo.png" alt="INEX Logo">
           <img src="CochranFilms-logo.png" alt="Cochran Films Logo">
         </div>
         <div class="title">
@@ -183,7 +183,7 @@
     </div>
   </div>
 
-  <script>
+<script>
     // Initialize dates and contract ID
     const now = new Date();
     const todayStr = now.toLocaleDateString(undefined,{year:'numeric',month:'long',day:'2-digit'});
@@ -317,7 +317,7 @@
       // logos
       try{
         const [inexLogo, cfLogo] = await Promise.all([
-          loadImageAsDataURL('inex-logo.png'),
+          loadImageAsDataURL('logo-black.png'),
           loadImageAsDataURL('CochranFilms-logo.png')
         ]);
         doc.addImage(inexLogo,'PNG',14,6,18,12);
@@ -429,14 +429,14 @@
       const safe = 'INEX-Agreement-' + lastData.contractId + '.pdf';
       lastDoc.save(safe);
     });
-  </script>
+</script>
   
   <!-- Hidden, print-accurate HTML template rendered to PDF (US Letter) -->
   <div id="pdfTemplate" style="position: fixed; left: -99999px; top: 0; width: 612pt; background:#fff; color:#000; font-family: Inter, Arial;">
     <div style="border:1px solid #e5e7eb;">
       <div style="background:#FFB200; color:#000; padding:14pt 16pt; display:flex; align-items:center; justify-content:space-between;">
         <div style="display:flex; align-items:center; gap:10pt;">
-          <img src="inex-logo.png" style="height:18pt" alt="INEX">
+          <img src="logo-black.png" style="height:18pt" alt="INEX">
           <div style="font:800 15pt/1 Inter, Arial; text-transform:uppercase;">INEX SYSTEMS & DESIGNS — AGREEMENT</div>
         </div>
         <img src="CochranFilms-logo.png" style="height:18pt" alt="Cochran Films">
@@ -450,7 +450,7 @@
         <div>Project: INEX‑branded operations portal with branded UI, modules, deployment, and documentation.</div>
 
         <div style="background:#FFB200; color:#000; font-weight:800; text-align:center; padding:6pt; margin:12pt 0 8pt;">SCOPE & DELIVERABLES</div>
-        <ul style="margin:0 0 8pt 14pt;">
+        <ul style="margin:0 0 8pt 14pt; color:#000;">
           <li>Portal 2.0 (Dark) + 1.0 (Light): Dashboard, Projects, Jobs/Dispatch, Inventory, RMA/Warranties, SLAs/Reports, Knowledge, Clients, Careers, Settings.</li>
           <li>Branding: INEX logo & color tokens; favicon & metadata; press‑ready screenshots.</li>
           <li>Inline Charts: SVG sparklines & bar charts for KPIs and Operations Pulse.</li>
