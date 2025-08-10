@@ -228,11 +228,9 @@
     // API resolution: try same-origin first; if missing (e.g., static hosting), fall back to Vercel URLs
     const urlParams = new URLSearchParams(location.search);
     const apiOverride = (window.INEX_API_BASE || urlParams.get('api') || '').replace(/\/$/, '');
+    // Only try explicit override and same-origin to avoid noisy 404/CORS from non-existent projects
     const API_CANDIDATES = [
       apiOverride,
-      'https://inex.vercel.app',
-      'https://cochranfilms.vercel.app',
-      'https://inex.cochranfilms.com',
       '', // same-origin last (static hosting may not have api)
     ].filter(Boolean);
     async function apiFetch(path, init){
