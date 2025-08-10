@@ -14,7 +14,12 @@ function buildContractId(now = new Date()){
 
 export default async function handler(req, res) {
   // Basic CORS to support same-origin and optional cross-origin tests
-  res.setHeader('Access-Control-Allow-Origin', '*');
+  // Allow only our public origins
+  const origin = req.headers.origin || '';
+  const allowed = ['https://inex.cochranfilms.com','https://inex.vercel.app','http://localhost:4321'];
+  if (allowed.includes(origin)) {
+    res.setHeader('Access-Control-Allow-Origin', origin);
+  }
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
   if (req.method === 'OPTIONS') { res.status(204).end(); return; }

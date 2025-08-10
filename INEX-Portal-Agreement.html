@@ -225,11 +225,15 @@
 
     // helpers
     // API resolution: try same-origin first; if missing (e.g., static hosting), fall back to Vercel URLs
+    const urlParams = new URLSearchParams(location.search);
+    const apiOverride = (window.INEX_API_BASE || urlParams.get('api') || '').replace(/\/$/, '');
     const API_CANDIDATES = [
       '', // same-origin
+      apiOverride,
       'https://inex.cochranfilms.com',
       'https://inex.vercel.app',
-    ];
+      'https://cochranfilms.vercel.app'
+    ].filter(Boolean);
     async function apiFetch(path, init){
       let lastErr;
       for (const base of API_CANDIDATES){
@@ -238,6 +242,7 @@
           if (res.ok) return res;
           // If 404/405, try next base
           lastErr = new Error(`API ${path} @ ${base||'same-origin'} -> ${res.status}`);
+          console.warn('[INEX API]', String(lastErr.message));
         }catch(e){ lastErr = e; }
       }
       throw lastErr || new Error('API unreachable');
