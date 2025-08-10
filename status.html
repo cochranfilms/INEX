@@ -1,0 +1,229 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>INEX Project Status — Timeline & Progress</title>
+  <meta name="description" content="One‑page project timeline and live progress for the INEX Systems & Designs dashboard." />
+  <link rel="icon" type="image/svg+xml" href="vite.svg" />
+  <link rel="alternate icon" type="image/x-icon" href="vite.ico" />
+  <style>
+    :root{
+      --inex-charcoal:#191919;
+      --maroon:#A62E3F; --maroon-700:#7c2330;
+      --ink:#111; --muted:#666; --border:#e6e6e6;
+      --bg:#f5f6f8; --panel:#ffffff; --panel-ink:#222;
+      --accent:#FFB200; --accent-ink:#111;
+      --radius:16px; --radius-sm:12px;
+      --shadow:0 3px 16px rgba(0,0,0,.08);
+    }
+    html[data-theme="dark"]{
+      --ink:#e8ecf6; --muted:#9fa8bc; --border:rgba(255,255,255,.12);
+      --bg:#08090e; --panel:rgba(18,20,28,.65); --panel-ink:#e9edf7;
+      --shadow:0 24px 60px rgba(0,0,0,.55), inset 0 1px 0 rgba(255,255,255,.05);
+    }
+    *{box-sizing:border-box}
+    body{margin:0;background:var(--bg);color:var(--panel-ink);
+         font:14px/1.55 system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,"Helvetica Neue",Arial;
+         letter-spacing:.2px}
+
+    /* Topbar */
+    .topbar{position:sticky;top:0;z-index:50;display:flex;align-items:center;gap:.8rem;padding:.9rem 1.1rem;background:var(--inex-charcoal);color:#fff;border-bottom:3px solid #2a2a2a}
+    html[data-theme="dark"] .topbar{background:linear-gradient(180deg, rgba(8,9,14,.9), rgba(8,9,14,.6));border-bottom:1px solid var(--border);backdrop-filter: blur(10px)}
+    .brand{display:flex;align-items:center;gap:.7rem;font-weight:900}
+    .brand img{height:34px;width:auto;filter:drop-shadow(0 2px 8px rgba(0,0,0,.35))}
+    .spacer{flex:1}
+    .btn{display:inline-flex;align-items:center;gap:.5rem;padding:.55rem .8rem;border-radius:12px;border:1px solid transparent;text-decoration:none;font-weight:800;cursor:pointer}
+    .btn.primary{background:var(--maroon);color:#fff;border-color:var(--maroon-700)}
+    .btn.ghost{background:rgba(255,255,255,.06);color:#fff;border-color:rgba(255,255,255,.22)}
+    .toggle{display:inline-flex;align-items:center;gap:.5rem;padding:.45rem .7rem;border-radius:999px;border:1px solid rgba(255,255,255,.25);color:#fff;background:rgba(255,255,255,.06);cursor:pointer;font-weight:800;font-size:12px}
+    .toggle .dot{width:9px;height:9px;border-radius:50%;background:#FFB200;box-shadow:0 0 10px #ffb20088}
+
+    /* Layout */
+    main{padding:18px;max-width:1200px;margin-inline:auto}
+    .grid{display:grid;gap:16px}
+    @media(min-width:900px){.grid-cols-3{grid-template-columns:1.2fr 1fr 1fr}}
+    .card{background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden}
+    .head{padding:12px 14px;background:linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.02));border-bottom:1px solid var(--border);font-weight:900}
+    .body{padding:14px}
+    .muted{color:var(--muted)}
+    .pill{display:inline-block;background:rgba(255,255,255,.06);border:1px solid var(--border);border-radius:999px;padding:.35rem .65rem;font-size:12px;color:var(--panel-ink)}
+    .list{margin:0;padding-left:1.1rem}
+    .list li{margin:.3rem 0}
+
+    /* Progress Ring */
+    .progress-wrap{display:grid;grid-template-columns:150px 1fr;gap:14px;align-items:center}
+    .ring{width:140px;height:140px;border-radius:50%;background:
+      conic-gradient(var(--accent) calc(var(--p)*1%), rgba(255,255,255,.12) 0);
+      display:grid;place-items:center;border:1px solid var(--border)}
+    .ring-inner{width:108px;height:108px;border-radius:50%;display:grid;place-items:center;background:rgba(0,0,0,.15);border:1px solid var(--border)}
+    .ring strong{font-size:26px}
+
+    /* Timeline */
+    .timeline{position:relative}
+    .steps{display:grid;grid-template-columns:repeat(7,1fr);gap:10px}
+    .step{position:relative;padding:10px;border:1px solid var(--border);border-radius:12px;background:rgba(255,255,255,.04)}
+    .step .dot{position:absolute;top:-8px;left:12px;width:14px;height:14px;border-radius:50%;background:#444;border:2px solid var(--border)}
+    .step.active{outline:2px solid rgba(255,178,0,.35);background:linear-gradient(180deg, rgba(166,46,63,.20), rgba(166,46,63,.08))}
+    .step.active .dot{background:var(--accent);box-shadow:0 0 0 6px rgba(255,178,0,.12)}
+    .step small{display:block;color:var(--muted);margin-top:6px}
+    .bar{position:absolute;left:0;right:0;top:18px;height:3px;background:rgba(255,255,255,.08)}
+    .bar > span{display:block;height:100%;width:var(--bar,0%);background:linear-gradient(90deg,#A62E3F,#FFB200)}
+
+    /* Updates table */
+    table{width:100%;border-collapse:separate;border-spacing:0;border:1px solid var(--border);border-radius:12px;overflow:hidden}
+    th,td{padding:.65rem .8rem;border-bottom:1px solid var(--border);text-align:left}
+    thead th{background:#191919;color:#FFB200;font-weight:900}
+    tbody tr:nth-child(even) td{background:rgba(255,255,255,.03)}
+
+    /* Preview */
+    .preview{border-radius:14px;border:1px solid var(--border);overflow:hidden;background:rgba(255,255,255,.02)}
+    .preview iframe{width:100%;height:420px;border:0;background:#111}
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <img src="inex-logo.png" alt="INEX Systems & Designs" />
+      <span>INEX Project Status</span>
+      <small style="opacity:.85;font-weight:700">· Dashboard Build</small>
+    </div>
+    <div class="spacer"></div>
+    <a class="btn primary" href="index.html#\/dashboard">Open Dashboard</a>
+    <a id="themeToggle" class="toggle" href="#"><span class="dot"></span><span id="themeLabel">1.0 Light</span></a>
+  </header>
+
+  <main>
+    <section class="grid grid-cols-3">
+      <!-- Overview / Progress -->
+      <article class="card">
+        <div class="head">Overview</div>
+        <div class="body">
+          <div class="progress-wrap">
+            <div class="ring" style="--p:64"><div class="ring-inner"><strong id="pct">64%</strong></div></div>
+            <div>
+              <div style="font-weight:900;font-size:18px">Current Phase: <span id="phaseLabel">Feature Build</span></div>
+              <div class="muted" id="eta">ETA: Sep 2025 · Weekly updates posted below</div>
+              <div style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap">
+                <span class="pill" id="badgeScope">Scope v2.0</span>
+                <span class="pill" id="badgeOwner">Owner: Cochran Films</span>
+                <span class="pill" id="badgeClient">Client: INEX</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </article>
+
+      <!-- Milestones -->
+      <article class="card">
+        <div class="head">Milestones</div>
+        <div class="body">
+          <ul class="list">
+            <li>Branding + tokens — <strong>Complete</strong> ✅</li>
+            <li>Dark/Light shell + router — <strong>Complete</strong> ✅</li>
+            <li>Dashboard KPIs + pulse chart — <strong>In Progress</strong> ⏳</li>
+            <li>Projects/Jobs/Inventory mock data — <strong>In Progress</strong> ⏳</li>
+            <li>Contracts + secure upload preview — <strong>Planned</strong> 📅</li>
+            <li>Auth shell & data links — <strong>Planned</strong> 📅</li>
+          </ul>
+        </div>
+      </article>
+
+      <!-- Next actions -->
+      <article class="card">
+        <div class="head">Next Actions</div>
+        <div class="body">
+          <ul class="list" id="nextActions">
+            <li>Polish icon actions + KPI deltas</li>
+            <li>Wire mock API to dashboard tiles</li>
+            <li>Prepare press‑ready PDF export</li>
+          </ul>
+        </div>
+      </article>
+    </section>
+
+    <!-- Timeline -->
+    <section class="card" style="margin-top:16px">
+      <div class="head">Project Timeline</div>
+      <div class="body timeline">
+        <div class="bar"><span id="barFill" style="--bar:64%"></span></div>
+        <div class="steps" id="steps">
+          <div class="step" data-phase="Discovery"><span class="dot"></span><strong>Discovery</strong><small>Kickoff + scope</small></div>
+          <div class="step" data-phase="Design"><span class="dot"></span><strong>Design</strong><small>Tokens & layout</small></div>
+          <div class="step" data-phase="V2 Shell"><span class="dot"></span><strong>V2 Shell</strong><small>Dark/Light + router</small></div>
+          <div class="step" data-phase="Feature Build"><span class="dot"></span><strong>Feature Build</strong><small>KPIs + views</small></div>
+          <div class="step" data-phase="Integrations"><span class="dot"></span><strong>Integrations</strong><small>Data connectors</small></div>
+          <div class="step" data-phase="QA & Polish"><span class="dot"></span><strong>QA &amp; Polish</strong><small>Perf + a11y</small></div>
+          <div class="step" data-phase="Launch"><span class="dot"></span><strong>Launch</strong><small>Stakeholder review</small></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Updates + Preview -->
+    <section class="grid" style="margin-top:16px;grid-template-columns:1fr .9fr">
+      <article class="card">
+        <div class="head">Weekly Updates</div>
+        <div class="body">
+          <table>
+            <thead><tr><th>Date</th><th>Update</th><th>Status</th></tr></thead>
+            <tbody id="updates">
+              <tr><td>Aug 05</td><td>Dark/Light theme, nav, router laid in</td><td><span class="pill">Complete</span></td></tr>
+              <tr><td>Aug 08</td><td>KPIs + pulse chart (inline SVG)</td><td><span class="pill">In Progress</span></td></tr>
+              <tr><td>Aug 10</td><td>Icon‑first quick actions</td><td><span class="pill">In Progress</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </article>
+      <article class="card">
+        <div class="head">Live Dashboard Preview</div>
+        <div class="body preview">
+          <iframe src="index.html#\/dashboard" title="INEX Dashboard Preview" loading="lazy"></iframe>
+        </div>
+      </article>
+    </section>
+
+    <p class="muted" style="text-align:center;margin:20px 0">Shareable link • Add query params like <code>?progress=72&phase=Integrations</code> to reflect live status.</p>
+  </main>
+
+  <script>
+    // Theme persistence
+    const root = document.documentElement;
+    const btn = document.getElementById('themeToggle');
+    const label = document.getElementById('themeLabel');
+    const saved = localStorage.getItem('inex-status-theme');
+    if(saved){ root.setAttribute('data-theme', saved); label.textContent = saved === 'dark' ? '1.0 Light' : '2.0 Dark'; }
+    btn.addEventListener('click', (e)=>{
+      e.preventDefault();
+      const next = root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+      root.setAttribute('data-theme', next);
+      localStorage.setItem('inex-status-theme', next);
+      label.textContent = next === 'dark' ? '1.0 Light' : '2.0 Dark';
+    });
+
+    // Query params: progress (0-100), phase, eta, scope, owner, client
+    const params = new URLSearchParams(location.search);
+    const pct = Math.max(0, Math.min(100, parseInt(params.get('progress') || '64', 10)));
+    const phase = params.get('phase') || 'Feature Build';
+    const eta = params.get('eta') || 'ETA: Sep 2025 · Weekly updates posted below';
+    const scope = params.get('scope') || 'Scope v2.0';
+    const owner = params.get('owner') || 'Cochran Films';
+    const client = params.get('client') || 'INEX';
+
+    // Apply to UI
+    document.querySelector('.ring').style.setProperty('--p', pct);
+    document.getElementById('pct').textContent = pct + '%';
+    document.getElementById('phaseLabel').textContent = phase;
+    document.getElementById('eta').textContent = eta;
+    document.getElementById('badgeScope').textContent = scope;
+    document.getElementById('badgeOwner').textContent = 'Owner: ' + owner;
+    document.getElementById('badgeClient').textContent = 'Client: ' + client;
+    document.getElementById('barFill').style.setProperty('--bar', pct + '%');
+
+    // Mark active step
+    const steps = Array.from(document.querySelectorAll('.step'));
+    steps.forEach(s => s.classList.toggle('active', s.dataset.phase.toLowerCase() === phase.toLowerCase()));
+  </script>
+</body>
+</html>
+
+
