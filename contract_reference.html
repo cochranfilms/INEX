@@ -58,6 +58,8 @@
     <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <!-- Local Firebase configuration for development -->
+    <script src="firebase-config.js"></script>
     
     <!-- PDF Generation Libraries -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -769,15 +771,23 @@
         let signatureData = null; // Store signature information
         let signedContractData = null; // Store signed contract data for download
         
-        // Firebase Configuration
-        const firebaseConfig = {
-            apiKey: 'AIzaSyCkL31Phi7FxYCeB5zgHeYTb2iY2sTJJdw',
-            authDomain: 'cochran-films.firebaseapp.com',
-            projectId: 'cochran-films',
-            storageBucket: 'cochran-films.appspot.com',
-            messagingSenderId: '566448458094',
-            appId: '1:566448458094:web:default'
-        };
+        // Firebase Configuration - use local config or fallback to hardcoded values
+        let firebaseConfig;
+        if (window.FIREBASE_CONFIG && window.FIREBASE_CONFIG.apiKey) {
+            firebaseConfig = window.FIREBASE_CONFIG;
+            console.log('Using local Firebase config');
+        } else {
+            // Fallback to hardcoded values for backward compatibility
+            firebaseConfig = {
+                apiKey: 'AIzaSyCkL31Phi7FxYCeB5zgHeYTb2iY2sTJJdw',
+                authDomain: 'cochran-films.firebaseapp.com',
+                projectId: 'cochran-films',
+                storageBucket: 'cochran-films.appspot.com',
+                messagingSenderId: '566448458094',
+                appId: '1:566448458094:web:default'
+            };
+            console.log('Using fallback Firebase config');
+        }
         
         // Initialize Firebase
         firebase.initializeApp(firebaseConfig);

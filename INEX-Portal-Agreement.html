@@ -16,6 +16,8 @@
   <!-- Firebase Client SDK (public) for login-gated access -->
   <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+  <!-- Local Firebase configuration for development -->
+  <script src="firebase-config.js"></script>
   <!-- jsPDF -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <!-- html2canvas for high-fidelity HTML->PDF rendering -->
@@ -249,16 +251,38 @@
 
     async function initFirebasePublic() {
       try {
-        let cfgRes;
-        try { cfgRes = await apiFetch('/api/firebase/public-config'); }
-        catch (e) { console.warn('Firebase public config missing', e?.message); return; }
-        if (!cfgRes.ok) return console.warn('Firebase public config missing');
-        const cfg = await cfgRes.json();
-        if (!cfg?.apiKey) return;
+        // Use local config for development, fallback to API for production
+        let cfg;
+        if (window.FIREBASE_CONFIG && window.FIREBASE_CONFIG.apiKey) {
+          // Use local development config
+          cfg = window.FIREBASE_CONFIG;
+          console.log('Using local Firebase config');
+        } else {
+          // Try API endpoint for production
+          try {
+            const cfgRes = await apiFetch('/api/firebase/public-config');
+            if (!cfgRes.ok) {
+              console.warn('Firebase public config missing from API');
+              return;
+            }
+            cfg = await cfgRes.json();
+          } catch (e) {
+            console.warn('Firebase API unreachable, using local config fallback', e?.message);
+            return;
+          }
+        }
+        
+        if (!cfg?.apiKey) {
+          console.warn('Firebase configuration incomplete');
+          return;
+        }
+        
         firebase.initializeApp(cfg);
         window.firebaseAuth = firebase.auth();
         console.log('Firebase client initialized');
-      } catch (e) { console.warn('Firebase init failed', e); }
+      } catch (e) { 
+        console.warn('Firebase init failed', e); 
+      }
     }
     
     // Minimal inline email/password gate (for Cody + Zeb testing)
