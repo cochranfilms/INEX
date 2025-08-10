@@ -11,8 +11,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Cinzel:wght@600;700&family=Great+Vibes&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
-  <!-- EmailJS -->
-  <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+  <!-- Email is sent via serverless endpoint; no client EmailJS dependency -->
   <!-- Firebase Client SDK (public) for login-gated access -->
   <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
@@ -79,6 +78,18 @@
     .btn-secondary { background: rgba(255,255,255,.06); color: #fff; border-color: #3a3b41; }
     .muted { color: var(--muted) }
     .foot { padding: 14px 22px; text-align: center; color: #9ca3af; border-top: 1px solid var(--border); font-size: 12px; background: #0a0a0a }
+    .btn[disabled] { opacity: .6; cursor: not-allowed; filter: grayscale(.1); }
+    .ok-badge { background: rgba(16,185,129,.12); color:#10b981; border:1px solid rgba(16,185,129,.35); padding:4px 8px; border-radius:999px; font-size:12px; font-weight:800 }
+    .success-panel { background: rgba(16,185,129,.06); border: 1px solid rgba(16,185,129,.25); border-radius: 12px; padding: 14px; margin: 14px 20px; }
+    .success-panel h3 { color:#d1fae5 }
+
+    @media (max-width: 780px) {
+      .wrap { margin: 16px auto; padding: 0 10px; }
+      .section { padding: 14px; }
+      .actions { position: sticky; bottom: 0; z-index: 50; padding: 12px; gap: 8px; }
+      .head { grid-template-columns: 1fr; text-align: center; }
+      .brand-logos { justify-content: center; }
+    }
 </style>
 </head>
 <body>
@@ -86,8 +97,8 @@
     <div class="doc" id="agreementRoot">
       <div class="head">
         <div class="brand-logos">
-          <img src="inex-logo.png" alt="INEX Logo">
-          <img src="logo-black.png" alt="INEX Logo (Black)">
+          <a href="https://inexsystemsdesigns.com" target="_blank" rel="noopener noreferrer"><img src="inex-logo.png" alt="INEX Website"></a>
+          <a href="https://cochranfilms.com" target="_blank" rel="noopener noreferrer"><img src="logo-black.png" alt="Cochran Films Website"></a>
         </div>
         <div class="title">
           <h1>INEX Systems & Designs — Agreement</h1>
@@ -167,7 +178,7 @@
         <div class="grid-2">
           <div class="sigbox">
             <p><strong>Client: INEX Systems & Designs</strong></p>
-            <label for="clientSignatureInput" class="muted" style="display:block;margin-top:6px;margin-bottom:6px">Type your full name to sign</label>
+            <label for="clientSignatureInput" class="muted" style="display:block;margin-top:6px;margin-bottom:6px">Type your full name to sign <span id="signatureReady" class="ok-badge" style="display:none"><i class="fa-solid fa-check"></i> Signature Ready</span></label>
             <input id="clientSignatureInput" class="sig-input" type="text" placeholder="Full legal name" autocomplete="off" spellcheck="false">
             <div class="sigline"></div>
             <p class="sig-preview" id="clientSignaturePreview">Zebadiah Henry</p>
@@ -183,9 +194,14 @@
       </div>
 
       <div class="actions">
-        <button id="finalizeBtn" class="btn btn-primary"><i class="fa-solid fa-file-signature"></i> Finalize & Email</button>
-        <button id="downloadBtn" class="btn btn-secondary" style="display:none"><i class="fa-solid fa-download"></i> Download Agreement PDF</button>
-        <span class="muted">On finalize, we email the agreement and unlock the download button for your records.</span>
+        <span id="progressIndicator" class="muted">Step 1 of 2: Sign</span>
+        <button id="finalizeBtn" class="btn btn-primary" disabled><i class="fa-solid fa-file-signature"></i> Finalize & Email</button>
+      </div>
+
+      <div id="successPanel" class="success-panel" style="display:none">
+        <h3><i class="fa-solid fa-circle-check" style="color:#10b981"></i> Agreement finalized</h3>
+        <p class="muted" id="emailConfirm" style="margin:6px 0 10px">Email sent.</p>
+        <button id="downloadBtn" class="btn btn-secondary"><i class="fa-solid fa-download"></i> Download Agreement PDF</button>
       </div>
 
       <div class="foot">© Cochran Films LLC — Systems Division</div>
@@ -202,18 +218,10 @@
     document.getElementById('dateInex').textContent = todayStr;
     document.getElementById('dateCochran').textContent = todayStr;
 
-    // EmailJS configuration (update template IDs if you rename)
-    const EMAILJS_CONFIG = {
-      publicKey: 'p4pF3OWvh-DXtae4c',
-      serviceId: 'service_t11yvru',
-      templateId: 'template_inex_agreement'
-    };
-    if (typeof emailjs !== 'undefined') { emailjs.init(EMAILJS_CONFIG.publicKey); }
+    // (Email is now sent server-side for key protection)
 
-    // Set the destination email for automated notifications.
-    // If left blank, the EmailJS template's own "To" setting will be used.
-    // To hard-route to Zebadiah, set for example: 'zebadiah@your-domain.com'
-    const INEX_NOTIFICATION_EMAIL = '';
+    // Optional hard-route on client; server ultimately decides recipient
+    const INEX_NOTIFICATION_EMAIL = 'info@inexsystemsdesigns.com';
 
     // helpers
     async function initFirebasePublic() {
@@ -226,6 +234,32 @@
         window.firebaseAuth = firebase.auth();
         console.log('Firebase client initialized');
       } catch (e) { console.warn('Firebase init failed', e); }
+    }
+    // Allowed emails (gate access)
+    const ALLOWED_EMAILS = ['info@inexsystemsdesigns.com','info@cochranfilms.com'];
+    function isAllowedEmail(email){
+      if (!email) return false;
+      return ALLOWED_EMAILS.includes(String(email).trim().toLowerCase());
+    }
+    async function completeSignInIfNeeded(){
+      try{
+        if (!window.firebaseAuth) return; // Firebase not available (static mode)
+        const href = window.location.href;
+        if (window.firebaseAuth.isSignInWithEmailLink(href)){
+          let email = window.localStorage.getItem('emailForSignIn');
+          if (!email) email = prompt('Confirm your email to complete sign-in');
+          if (!email) return;
+          const cred = await window.firebaseAuth.signInWithEmailLink(email, href);
+          window.localStorage.removeItem('emailForSignIn');
+          const authedEmail = cred?.user?.email || email;
+          if (!isAllowedEmail(authedEmail)){
+            alert('Access restricted. This page is limited to authorized emails.');
+            try { await window.firebaseAuth.signOut(); } catch(_){ }
+          } else {
+            console.log('Signed in as', authedEmail);
+          }
+        }
+      }catch(e){ console.warn('Complete sign-in failed', e); }
     }
     async function loadImageAsDataURL(url){
       const res = await fetch(url);
@@ -415,23 +449,17 @@
       return doc;
     }
 
-    async function sendEmail(data){
-      if (typeof emailjs === 'undefined') return { success:false, error:'EmailJS not loaded' };
-      // Template fields expected in EmailJS (see instructions below)
-      const params = {
-        to_email: data.contactEmail, // If left blank, use EmailJS template's configured recipient
-        client_name: data.clientName,
-        company_name: data.providerName,
-        contract_id: data.contractId,
-        effective_date: data.effectiveDate,
-        amount: data.amount,
-        care_plan: data.carePlan,
-        project_scope_summary: data.scopeSummary,
-        portal_url: 'https://inex.cochranfilms.com',
-        signed_timestamp: new Date().toLocaleString()
-      };
-      try{ await emailjs.send(EMAILJS_CONFIG.serviceId, EMAILJS_CONFIG.templateId, params); return { success:true }; }
-      catch(err){ return { success:false, error: err?.message || 'Unknown error' } }
+    async function finalizeOnServer(payload){
+      const res = await fetch('/api/contracts/finalize', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          clientSignature: payload.clientSignature,
+          contactEmail: payload.contactEmail || ''
+        })
+      });
+      if (!res.ok) throw new Error('Finalize request failed');
+      return await res.json();
     }
 
     // UI Actions
@@ -442,20 +470,28 @@
     // Live signature preview updates
     const clientInput = document.getElementById('clientSignatureInput');
     const clientPreview = document.getElementById('clientSignaturePreview');
+    const sigReady = document.getElementById('signatureReady');
+    const progressIndicator = document.getElementById('progressIndicator');
     if (clientInput && clientPreview) {
       const updatePreview = ()=>{
         const v = clientInput.value.trim();
         clientPreview.textContent = v || 'Zebadiah Henry';
+        const valid = v.length >= 3;
+        if (sigReady) sigReady.style.display = valid ? 'inline-block' : 'none';
+        const finalizeBtn = document.getElementById('finalizeBtn');
+        if (finalizeBtn) finalizeBtn.disabled = !valid;
+        if (progressIndicator) progressIndicator.textContent = valid ? 'Step 2 of 2: Finalize' : 'Step 1 of 2: Sign';
       };
       clientInput.addEventListener('input', updatePreview);
       updatePreview();
+      setTimeout(()=>{ try { clientInput.focus(); } catch(_){} }, 0);
     }
 
     finalizeBtn.addEventListener('click', async ()=>{
       finalizeBtn.disabled = true; finalizeBtn.innerHTML = '<i class="fa-solid fa-hourglass-half"></i> Finalizing...';
       try{
         // Ensure logged-in access before showing contract
-        try { await initFirebasePublic(); } catch(_){}
+        try { await initFirebasePublic(); } catch(_){ }
         if (window.firebaseAuth) {
           // Show lightweight login if not signed in
           const user = window.firebaseAuth.currentUser;
@@ -463,16 +499,23 @@
             const email = (document.getElementById('freelancerEmail')?.value || '').trim();
             let promptEmail = email || prompt('Enter your email to verify access');
             if (!promptEmail) throw new Error('Email required for verification');
+            if (!isAllowedEmail(promptEmail)) { alert('Access restricted to authorized emails.'); throw new Error('Unauthorized email'); }
             try {
               await window.firebaseAuth.sendSignInLinkToEmail(promptEmail, {
                 url: window.location.href,
                 handleCodeInApp: true,
               });
+              try { window.localStorage.setItem('emailForSignIn', promptEmail); } catch(_){ }
               alert('A secure sign-in link was sent to your email. Open it on this device to continue.');
               finalizeBtn.disabled = false; finalizeBtn.innerHTML = '<i class="fa-solid fa-file-signature"></i> Finalize & Email';
               return;
             } catch (e) { console.warn('Link sign-in failed', e); }
           }
+          // If signed in, enforce allowlist
+          try {
+            const authedEmail = window.firebaseAuth.currentUser?.email;
+            if (!isAllowedEmail(authedEmail)) { alert('Access restricted to authorized emails.'); throw new Error('Unauthorized email'); }
+          } catch(_){ /* handled by catch below */ }
         }
         lastData = buildContractData();
         // Require client signature
@@ -481,12 +524,27 @@
           finalizeBtn.disabled = false; finalizeBtn.innerHTML = '<i class="fa-solid fa-file-signature"></i> Finalize & Email';
           return;
         }
+        // Finalize on server (authoritative data + email)
+        const serverRes = await finalizeOnServer({
+          clientSignature: lastData.clientSignature,
+          contactEmail: lastData.contactEmail
+        });
+        // Apply server-authoritative values
+        lastData.contractId = serverRes.contractId || lastData.contractId;
+        lastData.effectiveDate = serverRes.effectiveDate || lastData.effectiveDate;
+        lastData.amount = serverRes.amount || lastData.amount;
+        lastData.carePlan = serverRes.carePlan || lastData.carePlan;
+        // Generate PDF with the authoritative values
         lastDoc = await generateINEXPDF(lastData);
-        // Safety check: if html() renderer returned an empty doc, draw a tiny pixel to avoid blank viewer
-        try { if (lastDoc.internal.getNumberOfPages() === 0) { lastDoc.addPage(); } } catch(_){}
-        const emailRes = await sendEmail(lastData);
-        if (!emailRes.success) { console.warn('Email failed:', emailRes.error); }
-        downloadBtn.style.display = 'inline-flex';
+        try { if (lastDoc.internal.getNumberOfPages() === 0) { lastDoc.addPage(); } } catch(_){ }
+        // Success UI
+        const successPanel = document.getElementById('successPanel');
+        const emailConfirm = document.getElementById('emailConfirm');
+        const sentTo = serverRes.toEmail || lastData.contactEmail || '';
+        if (emailConfirm) emailConfirm.textContent = sentTo ? `Email sent to ${sentTo}` : 'Email sent.';
+        if (successPanel) successPanel.style.display = 'block';
+        const downloadBtn = document.getElementById('downloadBtn');
+        if (downloadBtn) downloadBtn.style.display = 'inline-flex';
         finalizeBtn.innerHTML = '<i class="fa-solid fa-check"></i> Finalized';
       }catch(err){
         console.error(err); finalizeBtn.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i> Try Again'; finalizeBtn.disabled = false;
@@ -499,7 +557,7 @@
       lastDoc.save(safe);
     });
     // Initialize public Firebase early (best effort)
-    initFirebasePublic();
+    initFirebasePublic().then(completeSignInIfNeeded).catch(()=>{});
 </script>
   
   <!-- Hidden, print-accurate HTML template rendered to PDF (US Letter) -->

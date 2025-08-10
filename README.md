@@ -48,3 +48,24 @@ flowchart LR
   B --> L[Settings]
   C --> M[Inline SVG Charts]
   A --> N[Local Storage theme]
+
+---
+
+## 🔧 Setup
+1. Install dependencies: `npm install`
+2. Run dev server: `./serve.sh`
+3. Configure environment variables as needed (if using APIs).
+
+### Environment Variables
+- FIREBASE_API_KEY
+- FIREBASE_AUTH_DOMAIN
+- FIREBASE_PROJECT_ID
+- FIREBASE_APP_ID
+- FIREBASE_MESSAGING_SENDER_ID
+- EMAILJS_SERVICE_ID
+- EMAILJS_TEMPLATE_ID
+- EMAILJS_PUBLIC_KEY
+- EMAILJS_TO_EMAIL (optional; must be one of: info@inexsystemsdesigns.com, info@cochranfilms.com)
+- ENCRYPTION_KEY (base64, 32 bytes)
+
+Local dev: create a `.env` file in the project root with the values above. The `api/firebase/public-config` endpoint will 404 when Firebase envs are missing; deploy with envs set to enable email‑link login gating.

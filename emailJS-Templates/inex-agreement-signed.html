@@ -1,0 +1,107 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>INEX Agreement Finalized</title>
+    <style>
+      /* Email-safe inline CSS; avoid external fonts */
+      .wrapper { width:100%; background:#0a0a0a; margin:0; padding:24px 0; }
+      .container { width:100%; max-width:640px; margin:0 auto; background:#111; color:#f5f5f5; border:1px solid #26272b; }
+      .header { background:#FFB200; color:#111; padding:16px 20px; display:flex; align-items:center; justify-content:space-between; }
+      .brand { display:flex; align-items:center; gap:12px; }
+      .brand-title { font-weight:800; letter-spacing:.2px; font-size:16px; text-transform:uppercase; }
+      .meta { padding:10px 20px; color:#111; background:#fafafa; border-bottom:1px solid #eee; font-weight:600; font-size:13px; }
+      .body { padding:20px; font-size:14px; line-height:1.6; color:#e5e7eb; }
+      .callout { background: rgba(255,178,0,.08); border:1px solid rgba(255,178,0,.4); color:#ffe08a; padding:12px; border-radius:8px; }
+      .table { width:100%; border-collapse:collapse; margin:14px 0; }
+      .table th { text-align:left; font-size:12px; color:#a3a3a3; font-weight:600; padding:6px 8px; border-bottom:1px solid #222; }
+      .table td { padding:8px; border-bottom:1px solid #1a1a1a; font-size:14px; color:#f0f0f0; }
+      .cta-wrap { text-align:center; padding:14px 0 4px; }
+      .btn { display:inline-block; background:#FFB200; color:#111 !important; font-weight:800; text-decoration:none; padding:12px 18px; border-radius:10px; border:1px solid #e6a300; }
+      .footer { padding:16px 20px; font-size:12px; color:#9ca3af; border-top:1px solid #1f1f1f; text-align:center; }
+      .tiny { font-size:12px; color:#cbd5e1; }
+      @media (prefers-color-scheme: light) {
+        .wrapper { background:#f3f4f6; }
+        .container { background:#fff; color:#111; border-color:#e5e7eb; }
+        .body { color:#1f2937; }
+        .table td { color:#111; border-bottom-color:#eee; }
+        .table th { color:#6b7280; border-bottom-color:#e5e7eb; }
+        .footer { color:#6b7280; border-top-color:#e5e7eb; }
+      }
+    </style>
+  </head>
+  <body style="margin:0; padding:0;">
+    <div class="wrapper">
+      <div class="container">
+        <div class="header">
+          <div class="brand">
+            <img src="https://inex.cochranfilms.com/inex-logo.png" alt="INEX" width="28" height="28" style="display:block;">
+            <div class="brand-title">INEX Systems & Designs — Agreement</div>
+          </div>
+          <img src="https://inex.cochranfilms.com/logo-black.png" alt="Cochran Films" width="28" height="28" style="display:block;">
+        </div>
+
+        <div class="meta">
+          Contract ID: {{contract_id}} · Effective Date: {{effective_date}}
+        </div>
+
+        <div class="body">
+          <p>Hi,</p>
+          <p>
+            This is a confirmation that <strong>{{client_name}}</strong> has digitally signed the agreement with
+            <strong>{{company_name}}</strong>.
+          </p>
+
+          <div class="callout" style="margin:12px 0;">
+            <strong>Signature:</strong> <span style="font-family: 'Georgia', 'Times New Roman', serif; font-style: italic;">{{client_signature}}</span><br>
+            <span class="tiny">Signed at {{signed_timestamp}}</span>
+          </div>
+
+          <table class="table" role="presentation" cellspacing="0" cellpadding="0" border="0">
+            <thead>
+              <tr>
+                <th>Field</th>
+                <th>Value</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Contract ID</td>
+                <td>{{contract_id}}</td>
+              </tr>
+              <tr>
+                <td>Effective Date</td>
+                <td>{{effective_date}}</td>
+              </tr>
+              <tr>
+                <td>One‑Time Implementation</td>
+                <td>{{amount}}</td>
+              </tr>
+              <tr>
+                <td>Managed Care Plan</td>
+                <td>{{care_plan}}</td>
+              </tr>
+              <tr>
+                <td>Scope Summary</td>
+                <td>{{project_scope_summary}}</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <div class="cta-wrap">
+            <a class="btn" href="{{portal_url}}" target="_blank" rel="noopener">Open INEX Portal</a>
+          </div>
+
+          <p class="tiny" style="margin-top:14px;">This notification was sent to {{to_email}}.</p>
+        </div>
+
+        <div class="footer">
+          © {{company_name}} · Contract ID: {{contract_id}} · {{signed_timestamp}}
+        </div>
+      </div>
+    </div>
+  </body>
+  </html>
+
+
