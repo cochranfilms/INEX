@@ -241,8 +241,7 @@
 
     // (Email is now sent server-side for key protection)
 
-    // Optional hard-route on client; server ultimately decides recipient
-    const INEX_NOTIFICATION_EMAIL = 'info@inexsystemsdesigns.com';
+
 
     // EmailJS Configuration for contract notifications
     const EMAILJS_CONFIG = {
@@ -634,9 +633,9 @@
             company_name: 'INEX Systems & Designs',
             client_signature: contractData.clientSignature,
             signed_timestamp: now.toLocaleString(),
-            amount: contractData.amount || '$2,500',
-            care_plan: contractData.carePlan || 'Monthly Managed Care Plan',
-            project_scope_summary: contractData.projectScopeSummary || 'Systems Integration & Design Services',
+            amount: contractData.amount || '$4,500',
+            care_plan: contractData.carePlan || '$150/month',
+            project_scope_summary: contractData.projectScopeSummary || 'INEX‑branded Operations Portal (Dashboard, Jobs, Inventory, RMA, SLAs, Clients, Careers) with documentation and deployment.',
             portal_url: window.location.href
           };
           
@@ -654,9 +653,9 @@
             company_name: 'INEX Systems & Designs',
             client_signature: contractData.clientSignature,
             signed_timestamp: now.toLocaleString(),
-            amount: contractData.amount || '$2,500',
-            care_plan: contractData.carePlan || 'Monthly Managed Care Plan',
-            project_scope_summary: contractData.projectScopeSummary || 'Systems Integration & Design Services',
+            amount: contractData.amount || '$4,500',
+            care_plan: contractData.carePlan || '$150/month',
+            project_scope_summary: contractData.projectScopeSummary || 'INEX‑branded Operations Portal (Dashboard, Jobs, Inventory, RMA, SLAs, Clients, Careers) with documentation and deployment.',
             portal_url: window.location.href
           };
           
@@ -668,8 +667,8 @@
         return {
           contractId: contractId,
           effectiveDate: effectiveDate,
-          amount: contractData.amount || '$2,500',
-          carePlan: contractData.carePlan || 'Monthly Managed Care Plan',
+          amount: contractData.amount || '$4,500',
+          carePlan: contractData.carePlan || '$150/month',
           toEmail: payload.contactEmail || ''
         };
       } catch (error) {
