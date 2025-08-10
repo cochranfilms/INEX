@@ -1,0 +1,13 @@
+{
+  "name": "inex-portal",
+  "version": "1.0.0",
+  "private": true,
+  "description": "INEX Systems & Designs portal and proposal",
+  "license": "MIT",
+  "engines": { "node": "18.x" },
+  "dependencies": {
+    "firebase-admin": "^12.5.0"
+  }
+}
+
+
