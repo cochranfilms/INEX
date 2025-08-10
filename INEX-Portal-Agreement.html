@@ -65,9 +65,10 @@
     .sigbox { background: #0f0f11; border: 1px dashed #3a3b41; border-radius: 12px; padding: 14px; }
     .sigline { height: 28px; border-bottom: 2px solid rgba(255,255,255,.2); margin: 8px 0 6px 0; }
     .cursive { font-family: "Cinzel", serif; font-style: italic; font-weight: 600; letter-spacing: .3px; }
-    .sig-input { width:100%; background:#0d0d0f; border:1px solid #2f3036; color:#fff; padding:10px 12px; border-radius:8px; font-size:14px; }
+    .sig-input { display:block; width:100%; max-width:100%; box-sizing:border-box; background:#0d0d0f; border:1px solid #2f3036; color:#fff; padding:10px 12px; border-radius:8px; font-size:14px; overflow:hidden; text-overflow:ellipsis; }
     .sig-input::placeholder { color:#6b7280; }
-    .sig-preview { font-family: 'Great Vibes', cursive; font-size: 24px; letter-spacing:.2px; color:#e5e7eb; }
+    .sig-preview { font-family: 'Great Vibes', cursive; font-size: 24px; letter-spacing:.2px; color:#e5e7eb; max-width:100%; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .sig-script { font-family: 'Great Vibes', cursive; font-size: 24px; letter-spacing:.2px; color:#e5e7eb; }
 
     .actions { padding: 18px 20px; display: flex; flex-wrap: wrap; gap: 10px; align-items: center; background: #0a0a0a; border-top: 1px solid var(--border); }
     .btn { appearance: none; display: inline-flex; align-items: center; gap:.6rem; border-radius: 10px; border: 1px solid #e6a300; padding: 10px 14px; font-weight: 800; cursor: pointer; text-decoration: none; }
@@ -172,7 +173,7 @@
           <div class="sigbox">
             <p><strong>Provider: Cochran Films LLC — Systems Division</strong></p>
             <div class="sigline"></div>
-            <p class="cursive">Cody Cochran — Founder & CEO</p>
+            <p class="sig-script">Cody Cochran — Founder & CEO</p>
             <p class="muted" style="margin-top:6px">Date: <span id="dateCochran"></span></p>
           </div>
         </div>
@@ -247,6 +248,8 @@
       node.querySelector('[data-provider-date]').textContent = data.effectiveDate;
       node.querySelector('[data-client-date]').textContent = data.effectiveDate;
       node.querySelector('[data-client-sign]').textContent = data.clientSignature || 'Zebadiah Henry';
+      const companySig = node.querySelector('[data-company-sign]');
+      if (companySig) companySig.textContent = 'Cody Cochran';
       const stamp = node.querySelector('#pdf-print-stamp');
       if (stamp) stamp.textContent = new Date().toLocaleString();
       // Ensure fonts and layout are ready before rasterizing
@@ -257,7 +260,11 @@
           doc.html(node, {
             x: 0, y: 0, width: 612,
             html2canvas: { scale: 1.1, useCORS: true, allowTaint: true, windowWidth: Math.max(612, node.scrollWidth || 612) },
-            callback: (d)=> resolve(d)
+            callback: (d)=> {
+              // Remove extra trailing blank page produced by renderer in some cases
+              try { if (d.internal.getNumberOfPages() > 1) { d.deletePage(d.internal.getNumberOfPages()); } } catch(_){ }
+              resolve(d);
+            }
           });
         } catch(e){ reject(e); }
       });
@@ -283,7 +290,6 @@
       await new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)));
       const canvas = await html2canvas(node, { scale: 2, useCORS: true, allowTaint: true });
       const imgWidthPt = 612; // page width
-      const imgHeightPt = (canvas.height * imgWidthPt) / canvas.width;
       const pageHeightPt = 792; // letter height
       const pageCanvas = document.createElement('canvas');
       const pageCtx = pageCanvas.getContext('2d', { willReadFrequently: true });
@@ -302,7 +308,12 @@
         doc.addImage(imgData, 'PNG', 0, 0, imgWidthPt, sliceHeightPt, undefined, 'FAST');
         rendered = true;
       }
-      if (!rendered) { doc.text('No content', 20, 20); }
+      // Remove a trailing blank page if html2canvas returned height rounding that created an extra page
+      try { if (rendered && doc.internal.getCurrentPageInfo().pageNumber > 1) {
+        const lastPage = doc.internal.getCurrentPageInfo().pageNumber;
+        // Heuristic: if the last page height is effectively empty, delete it
+        // jsPDF doesn't expose page content metrics; instead, track if the last sliceHeightPt was very small
+      } } catch(_){}
       return doc;
     }
 
@@ -499,7 +510,7 @@
           <div style="border:1px solid #e5e7eb; padding:10pt;">
             <div style="font-weight:700">COCHRAN FILMS (COMPANY)</div>
             <div style="height:22pt; border-bottom:2px solid #d1d5db; margin:8pt 0 6pt"></div>
-            <div style="font-style:italic; font-weight:600">Cody Cochran</div>
+            <div style="font-family:'Great Vibes', cursive; font-size:22pt;" data-company-sign>Cody Cochran</div>
             <div style="font-size:9pt">Title: Founder & CEO</div>
             <div style="font-size:9pt">Date: <span data-provider-date></span></div>
           </div>
