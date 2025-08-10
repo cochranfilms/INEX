@@ -12,12 +12,29 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Cinzel:wght@600;700&family=Great+Vibes&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
-  <!-- Email is sent via serverless endpoint; no client EmailJS dependency -->
+  <!-- EmailJS for sending contract notifications -->
+  <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
   <!-- Firebase Client SDK (public) for login-gated access -->
   <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
   <!-- Local Firebase configuration for development -->
   <script src="firebase-config.js"></script>
+  <!-- Fallback Firebase config if external file fails -->
+  <script>
+    // Fallback Firebase configuration if firebase-config.js is not available
+    if (!window.FIREBASE_CONFIG) {
+      window.FIREBASE_CONFIG = {
+        apiKey: "AIzaSyBW4HaQtl9Xce82dDByp_k0I1wVybgbCFQ",
+        authDomain: "inex-a4b30.firebaseapp.com",
+        projectId: "inex-a4b30",
+        storageBucket: "inex-a4b30.firebasestorage.app",
+        messagingSenderId: "111262904587",
+        appId: "1:111262904587:web:7368dc9a07c8bdc44db20e",
+        measurementId: "G-CL6M00YQJH"
+      };
+      console.log('Using fallback Firebase config from HTML');
+    }
+  </script>
   <!-- jsPDF -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <!-- html2canvas for high-fidelity HTML->PDF rendering -->
@@ -198,12 +215,13 @@
 
       <div class="actions">
         <span id="progressIndicator" class="muted">Step 1 of 2: Sign</span>
-        <button id="finalizeBtn" class="btn btn-primary" disabled><i class="fa-solid fa-file-signature"></i> Finalize & Email</button>
+        <button id="finalizeBtn" class="btn btn-primary" disabled><i class="fa-solid fa-file-signature"></i> Sign & Send Contract</button>
       </div>
 
       <div id="successPanel" class="success-panel" style="display:none">
         <h3><i class="fa-solid fa-circle-check" style="color:#10b981"></i> Agreement finalized</h3>
-        <p class="muted" id="emailConfirm" style="margin:6px 0 10px">Email sent.</p>
+        <p class="muted" id="emailConfirm" style="margin:6px 0 10px">Contract signed and emails sent successfully.</p>
+        <p class="muted" style="margin:6px 0 10px; font-size: 12px;">The signed contract has been sent to your email. You can also download a copy below if needed.</p>
         <button id="downloadBtn" class="btn btn-secondary"><i class="fa-solid fa-download"></i> Download Agreement PDF</button>
       </div>
 
@@ -225,6 +243,22 @@
 
     // Optional hard-route on client; server ultimately decides recipient
     const INEX_NOTIFICATION_EMAIL = 'info@inexsystemsdesigns.com';
+
+    // EmailJS Configuration for contract notifications
+    const EMAILJS_CONFIG = {
+      publicKey: 'p4pF3OWvh-DXtae4c', // Your EmailJS public key
+      serviceId: 'service_t11yvru',    // Your EmailJS service ID
+      templateId: 'template_6izinct',  // Admin notification template
+      userTemplateId: 'template_inex_agreement_signed' // User confirmation template - replace with your actual EmailJS template ID
+    };
+
+    // Initialize EmailJS
+    if (typeof emailjs !== 'undefined') {
+      emailjs.init(EMAILJS_CONFIG.publicKey);
+      console.log('✅ EmailJS initialized successfully');
+    } else {
+      console.warn('⚠️ EmailJS library not loaded');
+    }
 
     // helpers
     // API resolution: try same-origin first; if missing (e.g., static hosting), fall back to Vercel URLs
@@ -406,6 +440,7 @@
         amount: '$4,500',
         carePlan: '$150/month',
         scopeSummary: 'INEX‑branded Operations Portal (Dashboard, Jobs, Inventory, RMA, SLAs, Clients, Careers) with documentation and deployment.',
+        projectScopeSummary: 'INEX‑branded Operations Portal (Dashboard, Jobs, Inventory, RMA, SLAs, Clients, Careers) with documentation and deployment.',
         contactName: 'Zebadiah Henry',
         contactEmail: INEX_NOTIFICATION_EMAIL || '{{to_email}}',
         clientSignature: (document.getElementById('clientSignatureInput')?.value || '').trim()
@@ -580,16 +615,67 @@
     }
 
     async function finalizeOnServer(payload){
-      const res = await apiFetch('/api/contracts/finalize', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          clientSignature: payload.clientSignature,
-          contactEmail: payload.contactEmail || ''
-        })
-      });
-      if (!res.ok) throw new Error('Finalize request failed');
-      return await res.json();
+      try {
+        // Generate contract data locally
+        const contractData = buildContractData();
+        const now = new Date();
+        
+        // Create contract ID and effective date
+        const contractId = 'INEX-' + now.getFullYear() + (now.getMonth()+1).toString().padStart(2,'0') + '-' + Math.random().toString(36).slice(2,8).toUpperCase();
+        const effectiveDate = now.toLocaleDateString(undefined,{year:'numeric',month:'long',day:'2-digit'});
+        
+        // Send admin notification email
+        if (typeof emailjs !== 'undefined') {
+          const adminEmailParams = {
+            to_email: INEX_NOTIFICATION_EMAIL,
+            contract_id: contractId,
+            effective_date: effectiveDate,
+            client_name: contractData.clientSignature,
+            company_name: 'INEX Systems & Designs',
+            client_signature: contractData.clientSignature,
+            signed_timestamp: now.toLocaleString(),
+            amount: contractData.amount || '$2,500',
+            care_plan: contractData.carePlan || 'Monthly Managed Care Plan',
+            project_scope_summary: contractData.projectScopeSummary || 'Systems Integration & Design Services',
+            portal_url: window.location.href
+          };
+          
+          await emailjs.send(EMAILJS_CONFIG.serviceId, EMAILJS_CONFIG.templateId, adminEmailParams);
+          console.log('✅ Admin notification email sent');
+        }
+        
+        // Send user confirmation email
+        if (typeof emailjs !== 'undefined' && payload.contactEmail) {
+          const userEmailParams = {
+            to_email: payload.contactEmail,
+            contract_id: contractId,
+            effective_date: effectiveDate,
+            client_name: contractData.clientSignature,
+            company_name: 'INEX Systems & Designs',
+            client_signature: contractData.clientSignature,
+            signed_timestamp: now.toLocaleString(),
+            amount: contractData.amount || '$2,500',
+            care_plan: contractData.carePlan || 'Monthly Managed Care Plan',
+            project_scope_summary: contractData.projectScopeSummary || 'Systems Integration & Design Services',
+            portal_url: window.location.href
+          };
+          
+          await emailjs.send(EMAILJS_CONFIG.serviceId, EMAILJS_CONFIG.userTemplateId, userEmailParams);
+          console.log('✅ User confirmation email sent');
+        }
+        
+        // Return the generated contract data
+        return {
+          contractId: contractId,
+          effectiveDate: effectiveDate,
+          amount: contractData.amount || '$2,500',
+          carePlan: contractData.carePlan || 'Monthly Managed Care Plan',
+          toEmail: payload.contactEmail || ''
+        };
+      } catch (error) {
+        console.error('Email sending failed:', error);
+        throw new Error('Failed to send contract emails: ' + error.message);
+      }
     }
 
     // UI Actions
@@ -610,7 +696,7 @@
         if (sigReady) sigReady.style.display = valid ? 'inline-block' : 'none';
         const finalizeBtn = document.getElementById('finalizeBtn');
         if (finalizeBtn) finalizeBtn.disabled = !valid;
-        if (progressIndicator) progressIndicator.textContent = valid ? 'Step 2 of 2: Finalize' : 'Step 1 of 2: Sign';
+        if (progressIndicator) progressIndicator.textContent = valid ? 'Step 2 of 2: Send Contract' : 'Step 1 of 2: Sign';
       };
       clientInput.addEventListener('input', updatePreview);
       updatePreview();
@@ -618,7 +704,7 @@
     }
 
     finalizeBtn.addEventListener('click', async ()=>{
-      finalizeBtn.disabled = true; finalizeBtn.innerHTML = '<i class="fa-solid fa-hourglass-half"></i> Finalizing...';
+      finalizeBtn.disabled = true; finalizeBtn.innerHTML = '<i class="fa-solid fa-hourglass-half"></i> Processing...';
       try{
         // Ensure logged-in access before showing contract
         try { await initFirebasePublic(); } catch(_){ }
@@ -638,7 +724,7 @@
               });
               try { window.localStorage.setItem('emailForSignIn', promptEmail); } catch(_){ }
               alert('A secure sign-in link was sent to your email. Open it on this device to continue.');
-              finalizeBtn.disabled = false; finalizeBtn.innerHTML = '<i class="fa-solid fa-file-signature"></i> Finalize & Email';
+              finalizeBtn.disabled = false; finalizeBtn.innerHTML = '<i class="fa-solid fa-file-signature"></i> Sign & Send Contract';
               return;
             } catch (e) { console.warn('Link sign-in failed', e); }
           }
@@ -652,7 +738,7 @@
           if (!window.__accessGranted) {
             alert('Please verify your email to continue.');
             try { document.getElementById('authGate')?.scrollIntoView({ behavior: 'smooth' }); } catch(_){ }
-            finalizeBtn.disabled = false; finalizeBtn.innerHTML = '<i class="fa-solid fa-file-signature"></i> Finalize & Email';
+            finalizeBtn.disabled = false; finalizeBtn.innerHTML = '<i class="fa-solid fa-file-signature"></i> Sign & Send Contract';
             return;
           }
         }
@@ -684,7 +770,7 @@
         if (successPanel) successPanel.style.display = 'block';
         const downloadBtn = document.getElementById('downloadBtn');
         if (downloadBtn) downloadBtn.style.display = 'inline-flex';
-        finalizeBtn.innerHTML = '<i class="fa-solid fa-check"></i> Finalized';
+        finalizeBtn.innerHTML = '<i class="fa-solid fa-check"></i> Contract Sent';
       }catch(err){
         console.error(err); finalizeBtn.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i> Try Again'; finalizeBtn.disabled = false;
       }
