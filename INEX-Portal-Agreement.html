@@ -224,13 +224,30 @@
     const INEX_NOTIFICATION_EMAIL = 'info@inexsystemsdesigns.com';
 
     // helpers
-    // API base: when running from a static file or localhost, call the deployed API on Vercel
-    const API_ORIGIN = (location.protocol === 'file:' || location.hostname === 'localhost') ? 'https://inex.cochranfilms.com' : '';
-    const apiUrl = (path)=> `${API_ORIGIN}${path}`;
+    // API resolution: try same-origin first; if missing (e.g., static hosting), fall back to Vercel URLs
+    const API_CANDIDATES = [
+      '', // same-origin
+      'https://inex.cochranfilms.com',
+      'https://inex.vercel.app',
+    ];
+    async function apiFetch(path, init){
+      let lastErr;
+      for (const base of API_CANDIDATES){
+        try{
+          const res = await fetch(`${base}${path}`, init);
+          if (res.ok) return res;
+          // If 404/405, try next base
+          lastErr = new Error(`API ${path} @ ${base||'same-origin'} -> ${res.status}`);
+        }catch(e){ lastErr = e; }
+      }
+      throw lastErr || new Error('API unreachable');
+    }
 
     async function initFirebasePublic() {
       try {
-        const cfgRes = await fetch(apiUrl('/api/firebase/public-config'));
+        let cfgRes;
+        try { cfgRes = await apiFetch('/api/firebase/public-config'); }
+        catch (e) { console.warn('Firebase public config missing', e?.message); return; }
         if (!cfgRes.ok) return console.warn('Firebase public config missing');
         const cfg = await cfgRes.json();
         if (!cfg?.apiKey) return;
@@ -463,7 +480,7 @@
     }
 
     async function finalizeOnServer(payload){
-      const res = await fetch(apiUrl('/api/contracts/finalize'), {
+      const res = await apiFetch('/api/contracts/finalize', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

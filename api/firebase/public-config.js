@@ -1,4 +1,9 @@
 export default async function handler(req, res) {
+  // Basic CORS for cross-origin reads during static/local previews
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  if (req.method === 'OPTIONS') { res.status(204).end(); return; }
   // Expose only client-safe Firebase config values
   const cfg = {
     apiKey: process.env.FIREBASE_API_KEY || '',
