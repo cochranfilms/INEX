@@ -30,7 +30,7 @@
        letter-spacing:.2px;transition:background-color .2s ease,color .2s ease;}
 
   /* ---------- Topbar ---------- */
-  .topbar{position:sticky;top:0;z-index:30;display:flex;align-items:center;gap:.75rem;padding:.9rem 1.25rem;background:var(--inex-charcoal);color:#fff;border-bottom:3px solid #2a2a2a}
+  .topbar{position:sticky;top:0;z-index:40;display:flex;align-items:center;gap:.75rem;padding:.9rem 1.25rem;background:var(--inex-charcoal);color:#fff;border-bottom:3px solid #2a2a2a}
   html[data-theme="dark"] .topbar{background:linear-gradient(180deg, rgba(10,10,14,.85), rgba(10,10,14,.55));border-bottom:1px solid var(--border);backdrop-filter: blur(10px)}
   .brand{display:flex;align-items:center;gap:.75rem;font-weight:700}
   .brand img{height:36px;width:auto;display:block;filter:drop-shadow(0 1px 6px rgba(0,0,0,.35))}
@@ -38,6 +38,8 @@
   .spacer{flex:1}
   .toggle{display:inline-flex;align-items:center;gap:.5rem;padding:.45rem .65rem;border-radius:999px;border:1px solid rgba(255,255,255,.25);color:#fff;background:rgba(255,255,255,.06);cursor:pointer;font-weight:700;font-size:12px;text-decoration:none}
   .toggle .dot{width:9px;height:9px;border-radius:50%;background:#FFB200;box-shadow:0 0 10px #ffb20088}
+  .pitch-btn{display:inline-flex;align-items:center;gap:.5rem;margin-right:.5rem;padding:.45rem .65rem;border-radius:10px;border:1px solid rgba(255,255,255,.25);background:rgba(255,255,255,.06);color:#fff;text-decoration:none;font-weight:800;cursor:pointer}
+  .pitch-btn:hover{filter:brightness(1.05)}
 
   /* ---------- Layout ---------- */
   .wrap{display:grid;grid-template-columns:260px minmax(0,1fr);min-height:calc(100vh - 64px)}
@@ -106,9 +108,32 @@
   .footer{color:#999;font-size:12px;text-align:center;padding:1.2rem}
   html[data-theme="dark"] .footer{color:var(--muted)}
 
+  /* ---------- Pitch Overlay ---------- */
+  .overlay{position:fixed;inset:0;z-index:50;display:none;background:rgba(0,0,0,.6)}
+  .overlay.show{display:block}
+  .pitch{position:relative;max-width:1100px;margin:5vh auto;background:var(--panel);color:var(--panel-ink);
+         border:1px solid var(--border);border-radius:18px;box-shadow:0 30px 80px rgba(0,0,0,.45);overflow:hidden}
+  .pitch-head{display:flex;align-items:center;gap:.9rem;padding:16px 18px;background:linear-gradient(135deg,#A62E3F,#5b1520);color:#fff}
+  .pitch-head img{height:32px;width:auto;filter:drop-shadow(0 1px 6px rgba(0,0,0,.35))}
+  .pitch-body{padding:18px}
+  .pitch-grid{display:grid;grid-template-columns:1.2fr .8fr;gap:16px}
+  .p-card{background:var(--panel);border:1px solid var(--border);border-radius:14px;overflow:hidden}
+  .p-card .p-head{padding:10px 14px;background:#191919;color:#FFB200;font-weight:800}
+  html[data-theme="dark"] .p-card .p-head{background:#11131a}
+  .p-card .p-body{padding:14px}
+  .pitch-close{position:absolute;top:8px;right:8px;background:#fff;border:1px solid #eee;border-radius:10px;padding:8px 10px;font-weight:800;cursor:pointer}
+  html[data-theme="dark"] .pitch-close{background:rgba(255,255,255,.08);color:#fff;border-color:var(--border)}
+  .svg-wrap{padding:10px;background:rgba(255,255,255,.04)}
+  .pitch-cta{display:flex;gap:10px;flex-wrap:wrap}
+  .pitch-cta a{display:inline-flex;align-items:center;gap:.5rem;padding:.7rem 1rem;border-radius:10px;text-decoration:none;font-weight:800;border:1px solid transparent}
+  .pitch-cta .primary{background:#FFB200;color:#111;border-color:#e6a300}
+  .pitch-cta .ghost{background:#fff;color:#A62E3F;border-color:#e9c6cc}
+  html[data-theme="dark"] .pitch-cta .ghost{background:rgba(255,255,255,.06);color:#fff;border-color:var(--border)}
+
   @media (max-width:1000px){
     .wrap{grid-template-columns:1fr}
     .span-4,.span-6,.span-8{grid-column:1/-1}
+    .pitch-grid{grid-template-columns:1fr}
   }
 </style>
 </head>
@@ -120,6 +145,7 @@
     <small>· Concept by Cochran Films — Systems Division</small>
   </div>
   <div class="spacer"></div>
+  <button class="pitch-btn" id="openPitch">🎤 Pitch Mode</button>
   <a class="toggle" id="themeToggle" href="#"><span class="dot"></span><span id="themeLabel">2.0 Dark</span></a>
 </header>
 
@@ -144,6 +170,146 @@
   <!-- Main -->
   <main id="view"></main>
 </div>
+
+<!-- ========= PITCH OVERLAY (hidden until opened) ========= -->
+<div class="overlay" id="pitchOverlay" aria-hidden="true">
+  <div class="pitch" role="dialog" aria-modal="true" aria-labelledby="pitchTitle">
+    <button class="pitch-close" id="closePitch">✕ Close</button>
+    <div class="pitch-head">
+      <img src="inex-logo.png" alt="INEX Logo">
+      <h2 id="pitchTitle" style="margin:0;font-size:18px;">INEX Systems Portal — Pitch Mode</h2>
+      <span style="opacity:.85;font-weight:700;margin-left:.5rem">by Cochran Films · Systems Division</span>
+    </div>
+    <div class="pitch-body">
+      <div class="pitch-grid">
+        <!-- Left: Navigation Map (pure SVG) -->
+        <div class="p-card">
+          <div class="p-head">Navigation Map</div>
+          <div class="p-body svg-wrap">
+
+            <!-- Inline SVG Flowchart -->
+            <svg viewBox="0 0 1100 520" width="100%" height="auto" aria-label="Navigation Map">
+              <defs>
+                <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+                  <path d="M 0 0 L 10 5 L 0 10 z" fill="#A62E3F"></path>
+                </marker>
+                <linearGradient id="nodeGrad" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stop-color="white" stop-opacity=".95"/>
+                  <stop offset="100%" stop-color="#f6f6f6" stop-opacity=".95"/>
+                </linearGradient>
+              </defs>
+
+              <style>
+                .n{fill:url(#nodeGrad);stroke:#d9d9d9;stroke-width:1.2}
+                .t{font: 600 12px system-ui, -apple-system, Segoe UI, Roboto; fill:#111}
+                .g{fill:#FFB200;stroke:#e6a300;stroke-width:1}
+                .title{font: 700 16px system-ui; fill:#A62E3F}
+                .sub{font: 500 12px system-ui; fill:#666}
+                @media (prefers-color-scheme: dark){}
+              </style>
+
+              <!-- Title -->
+              <text x="20" y="28" class="title">INEX Portal — App Flow</text>
+              <text x="20" y="46" class="sub">Topbar toggle → Router → Feature views; charts are inline SVG; theme stored in local storage</text>
+
+              <!-- Nodes -->
+              <!-- Row 1 -->
+              <rect class="n" x="60" y="80"  rx="10" ry="10" width="220" height="48"></rect>
+              <text class="t" x="170" y="110" text-anchor="middle">Topbar + Theme Toggle</text>
+
+              <rect class="n" x="360" y="80" rx="10" ry="10" width="200" height="48"></rect>
+              <text class="t" x="460" y="110" text-anchor="middle">Router (hashchange)</text>
+
+              <rect class="n" x="640" y="80" rx="10" ry="10" width="220" height="48"></rect>
+              <text class="t" x="750" y="110" text-anchor="middle">Local Storage (theme)</text>
+
+              <!-- Row 2 (features) -->
+              <rect class="n" x="40"  y="200" rx="10" ry="10" width="200" height="44"></rect>
+              <text class="t" x="140" y="228" text-anchor="middle">Dashboard</text>
+
+              <rect class="n" x="260" y="200" rx="10" ry="10" width="200" height="44"></rect>
+              <text class="t" x="360" y="228" text-anchor="middle">Projects</text>
+
+              <rect class="n" x="480" y="200" rx="10" ry="10" width="200" height="44"></rect>
+              <text class="t" x="580" y="228" text-anchor="middle">Jobs & Scheduling</text>
+
+              <rect class="n" x="700" y="200" rx="10" ry="10" width="200" height="44"></rect>
+              <text class="t" x="800" y="228" text-anchor="middle">Inventory</text>
+
+              <!-- Row 3 (more features) -->
+              <rect class="n" x="40"  y="290" rx="10" ry="10" width="200" height="44"></rect>
+              <text class="t" x="140" y="318" text-anchor="middle">RMA & Warranties</text>
+
+              <rect class="n" x="260" y="290" rx="10" ry="10" width="200" height="44"></rect>
+              <text class="t" x="360" y="318" text-anchor="middle">SLAs & Performance</text>
+
+              <rect class="n" x="480" y="290" rx="10" ry="10" width="200" height="44"></rect>
+              <text class="t" x="580" y="318" text-anchor="middle">Knowledge Base</text>
+
+              <rect class="n" x="700" y="290" rx="10" ry="10" width="200" height="44"></rect>
+              <text class="t" x="800" y="318" text-anchor="middle">Clients</text>
+
+              <rect class="n" x="920" y="290" rx="10" ry="10" width="140" height="44"></rect>
+              <text class="t" x="990" y="318" text-anchor="middle">Careers</text>
+
+              <rect class="n" x="920" y="200" rx="10" ry="10" width="140" height="44"></rect>
+              <text class="t" x="990" y="228" text-anchor="middle">Settings</text>
+
+              <!-- Arrows -->
+              <line x1="280" y1="104" x2="360" y2="104" stroke="#A62E3F" stroke-width="2.2" marker-end="url(#arrow)"></line>
+              <line x1="560" y1="104" x2="640" y2="104" stroke="#A62E3F" stroke-width="2.2" marker-end="url(#arrow)"></line>
+
+              <line x1="460" y1="128" x2="140" y2="200" stroke="#A62E3F" stroke-width="2.2" marker-end="url(#arrow)"></line>
+              <line x1="460" y1="128" x2="360" y2="200" stroke="#A62E3F" stroke-width="2.2" marker-end="url(#arrow)"></line>
+              <line x1="460" y1="128" x2="580" y2="200" stroke="#A62E3F" stroke-width="2.2" marker-end="url(#arrow)"></line>
+              <line x1="460" y1="128" x2="800" y2="200" stroke="#A62E3F" stroke-width="2.2" marker-end="url(#arrow)"></line>
+              <line x1="460" y1="128" x2="990" y2="200" stroke="#A62E3F" stroke-width="2.2" marker-end="url(#arrow)"></line>
+
+              <line x1="140" y1="244" x2="140" y2="290" stroke="#A62E3F" stroke-width="2.2" marker-end="url(#arrow)"></line>
+              <line x1="360" y1="244" x2="360" y2="290" stroke="#A62E3F" stroke-width="2.2" marker-end="url(#arrow)"></line>
+              <line x1="580" y1="244" x2="580" y2="290" stroke="#A62E3F" stroke-width="2.2" marker-end="url(#arrow)"></line>
+              <line x1="800" y1="244" x2="800" y2="290" stroke="#A62E3F" stroke-width="2.2" marker-end="url(#arrow)"></line>
+            </svg>
+
+          </div>
+        </div>
+
+        <!-- Right: Pitch bullets / value story -->
+        <div class="p-card">
+          <div class="p-head">What We’ve Done · What You Get · What 2.0 Enables</div>
+          <div class="p-body">
+            <h4 style="margin:.2rem 0 .5rem 0">✅ Delivered Now</h4>
+            <ul class="list">
+              <li>INEX‑branded single‑file portal with **Light 1.0 / Dark 2.0** toggle (persists).</li>
+              <li>**In‑view routing**: Projects, Jobs, Inventory, RMA, SLAs, Knowledge, Clients, Careers, Settings.</li>
+              <li>**Inline SVG charts** for a productized dashboard feel (no dependencies).</li>
+            </ul>
+
+            <h4 style="margin:1rem 0 .5rem 0">💡 Immediate Wins</h4>
+            <ul class="list">
+              <li>Standardized client experience (one portal), faster training & reduced app sprawl.</li>
+              <li>**ClickShare → INEX** narrative framed for execs: room simplicity extends into ops.</li>
+              <li>Ready to white‑label per enterprise (colors/tokens + logo swap in minutes).</li>
+            </ul>
+
+            <h4 style="margin:1rem 0 .5rem 0">🛣️ 2.0 Roadmap</h4>
+            <ul class="list">
+              <li>Mock <code>/api</code> layer → live connectors (Sheets/CSV/QuickBooks/Stripe) as needed.</li>
+              <li>“Schedule a Walkthrough” wired to calendar; dashboard → **press‑ready PDF export**.</li>
+              <li>Auth shell (Firebase/Clerk) for roles; SLA & RMA reporting; client‑facing portal.</li>
+            </ul>
+
+            <div class="pitch-cta" style="margin-top:10px">
+              <a class="primary" href="https://inex.cochranfilms.com/?utm_source=pitch&utm_medium=overlay&utm_campaign=inex_demo" target="_blank">🌐 Open Live Demo</a>
+              <a class="ghost" href="#/dashboard">Back to Dashboard</a>
+            </div>
+          </div>
+        </div>
+      </div><!-- /pitch-grid -->
+    </div>
+  </div>
+</div>
+<!-- ======== /PITCH OVERLAY ======== -->
 
 <script>
   /* ---------- Tiny SVG chart helpers (no libs) ---------- */
@@ -553,6 +719,24 @@
     label.textContent = next === 'dark' ? '1.0 Light' : '2.0 Dark';
     render(); // recolor charts after theme change
   });
+
+  /* ---------- Pitch overlay controls ---------- */
+  const overlay = document.getElementById('pitchOverlay');
+  const openPitch = document.getElementById('openPitch');
+  const closePitch = document.getElementById('closePitch');
+
+  function openOverlay(){
+    overlay.classList.add('show');
+    overlay.setAttribute('aria-hidden','false');
+  }
+  function closeOverlay(){
+    overlay.classList.remove('show');
+    overlay.setAttribute('aria-hidden','true');
+  }
+  openPitch.addEventListener('click', openOverlay);
+  closePitch.addEventListener('click', closeOverlay);
+  overlay.addEventListener('click', (e)=>{ if(e.target === overlay) closeOverlay(); });
+  window.addEventListener('keydown', (e)=>{ if(e.key === 'Escape' && overlay.classList.contains('show')) closeOverlay(); });
 </script>
 </body>
 </html>
