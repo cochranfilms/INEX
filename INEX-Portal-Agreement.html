@@ -441,7 +441,7 @@
         scopeSummary: 'INEX‑branded Operations Portal (Dashboard, Jobs, Inventory, RMA, SLAs, Clients, Careers) with documentation and deployment.',
         projectScopeSummary: 'INEX‑branded Operations Portal (Dashboard, Jobs, Inventory, RMA, SLAs, Clients, Careers) with documentation and deployment.',
         contactName: 'Zebadiah Henry',
-        contactEmail: '{{to_email}}',
+        contactEmail: window.firebaseAuth?.currentUser?.email || '',
         clientSignature: (document.getElementById('clientSignatureInput')?.value || '').trim()
       };
     }
