@@ -227,7 +227,7 @@
       };
     }
 
-    // High-fidelity HTML-to-PDF (Letter) generation using a hidden template
+    // High-fidelity HTML-to-PDF (Letter) generation using jsPDF.html
     async function generateHTMLPDF(data){
       const { jsPDF } = window.jspdf;
       const doc = new jsPDF({ unit: 'pt', format: 'letter' }); // 612x792 pt
@@ -257,9 +257,55 @@
       });
     }
 
+    // Alternative, ultra-reliable method: render node via html2canvas and tile into pages
+    async function generateCanvasPDF(data){
+      const { jsPDF } = window.jspdf;
+      const node = document.getElementById('pdfTemplate');
+      if (!node) throw new Error('Missing #pdfTemplate');
+      const doc = new jsPDF({ unit: 'pt', format: 'letter' });
+      // Ensure node values are current
+      node.querySelector('[data-contract-id]').textContent = data.contractId;
+      node.querySelector('[data-effective-date]').textContent = data.effectiveDate;
+      node.querySelector('[data-amount]').textContent = data.amount;
+      node.querySelector('[data-care-plan]').textContent = data.carePlan;
+      node.querySelector('[data-provider-date]').textContent = data.effectiveDate;
+      node.querySelector('[data-client-date]').textContent = data.effectiveDate;
+      node.querySelector('[data-client-sign]').textContent = 'Zebadiah Henry';
+      const stamp = node.querySelector('#pdf-print-stamp');
+      if (stamp) stamp.textContent = new Date().toLocaleString();
+      try { if (document.fonts && document.fonts.ready) { await document.fonts.ready; } } catch(_){}
+      await new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)));
+      const canvas = await html2canvas(node, { scale: 2, useCORS: true, allowTaint: true });
+      const imgWidthPt = 612; // page width
+      const imgHeightPt = (canvas.height * imgWidthPt) / canvas.width;
+      const pageHeightPt = 792; // letter height
+      const pageCanvas = document.createElement('canvas');
+      const pageCtx = pageCanvas.getContext('2d', { willReadFrequently: true });
+      const ratio = canvas.width / imgWidthPt; // px per pt
+      const pageHeightPx = Math.floor(pageHeightPt * ratio);
+      let rendered = false;
+      for (let topPx = 0, page = 0; topPx < canvas.height; topPx += pageHeightPx, page++) {
+        const sliceHeight = Math.min(pageHeightPx, canvas.height - topPx);
+        pageCanvas.width = canvas.width;
+        pageCanvas.height = sliceHeight;
+        pageCtx.clearRect(0,0,pageCanvas.width,pageCanvas.height);
+        pageCtx.drawImage(canvas, 0, topPx, canvas.width, sliceHeight, 0, 0, canvas.width, sliceHeight);
+        const imgData = pageCanvas.toDataURL('image/png');
+        if (page > 0) doc.addPage();
+        const sliceHeightPt = sliceHeight / ratio;
+        doc.addImage(imgData, 'PNG', 0, 0, imgWidthPt, sliceHeightPt, undefined, 'FAST');
+        rendered = true;
+      }
+      if (!rendered) { doc.text('No content', 20, 20); }
+      return doc;
+    }
+
     async function generateINEXPDF(data){
       // Prefer HTML-based rendering for perfect layout
-      try { return await generateHTMLPDF(data); } catch (e) { console.warn('HTML PDF failed:', e); }
+      // Try Canvas tiling renderer first (most reliable across browsers)
+      try { return await generateCanvasPDF(data); } catch (e) { console.warn('Canvas PDF failed:', e); }
+      // Try jsPDF.html as a secondary approach
+      try { return await generateHTMLPDF(data); } catch (e2) { console.warn('HTML PDF failed:', e2); }
       const { jsPDF } = window.jspdf; const doc = new jsPDF();
       // header banner
       doc.setFillColor(255,178,0); doc.rect(0,0,210,24,'F');
