@@ -15,6 +15,8 @@
   <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
   <!-- jsPDF -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <!-- html2canvas for high-fidelity HTML->PDF rendering -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
   <style>
     :root {
@@ -159,7 +161,7 @@
           <div class="sigbox">
             <p><strong>Client: INEX Systems & Designs</strong></p>
             <div class="sigline"></div>
-            <p class="cursive" id="sigInex">Zebadiah — Authorized Representative</p>
+            <p class="cursive" id="sigInex">Zebadiah Henry — Authorized Representative</p>
             <p class="muted" style="margin-top:6px">Date: <span id="dateInex"></span></p>
           </div>
           <div class="sigbox">
@@ -199,6 +201,11 @@
     };
     if (typeof emailjs !== 'undefined') { emailjs.init(EMAILJS_CONFIG.publicKey); }
 
+    // Set the destination email for automated notifications.
+    // If left blank, the EmailJS template's own "To" setting will be used.
+    // To hard-route to Zebadiah, set for example: 'zebadiah@your-domain.com'
+    const INEX_NOTIFICATION_EMAIL = '';
+
     // helpers
     async function loadImageAsDataURL(url){
       const res = await fetch(url);
@@ -215,12 +222,41 @@
         amount: '$4,500',
         carePlan: '$150/month',
         scopeSummary: 'INEX‑branded Operations Portal (Dashboard, Jobs, Inventory, RMA, SLAs, Clients, Careers) with documentation and deployment.',
-        contactName: 'Zebadiah',
-        contactEmail: '{{to_email}}',
+        contactName: 'Zebadiah Henry',
+        contactEmail: INEX_NOTIFICATION_EMAIL || '{{to_email}}',
       };
     }
 
+    // High-fidelity HTML-to-PDF (Letter) generation using a hidden template
+    async function generateHTMLPDF(data){
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF({ unit: 'pt', format: 'letter' }); // 612x792 pt
+      const node = document.getElementById('pdfTemplate');
+      if (!node) throw new Error('Missing #pdfTemplate');
+      // Inject dynamic values
+      node.querySelector('[data-contract-id]').textContent = data.contractId;
+      node.querySelector('[data-effective-date]').textContent = data.effectiveDate;
+      node.querySelector('[data-amount]').textContent = data.amount;
+      node.querySelector('[data-care-plan]').textContent = data.carePlan;
+      node.querySelector('[data-provider-date]').textContent = data.effectiveDate;
+      node.querySelector('[data-client-date]').textContent = data.effectiveDate;
+      node.querySelector('[data-client-sign]').textContent = 'Zebadiah Henry';
+      const stamp = node.querySelector('#pdf-print-stamp');
+      if (stamp) stamp.textContent = new Date().toLocaleString();
+      return await new Promise((resolve, reject)=>{
+        try {
+          doc.html(node, {
+            x: 0, y: 0, width: 612,
+            html2canvas: { scale: 0.95, useCORS: true, allowTaint: true },
+            callback: (d)=> resolve(d)
+          });
+        } catch(e){ reject(e); }
+      });
+    }
+
     async function generateINEXPDF(data){
+      // Prefer HTML-based rendering for perfect layout
+      try { return await generateHTMLPDF(data); } catch (e) { console.warn('HTML PDF failed:', e); }
       const { jsPDF } = window.jspdf; const doc = new jsPDF();
       // header banner
       doc.setFillColor(255,178,0); doc.rect(0,0,210,24,'F');
@@ -288,7 +324,7 @@
       // Client block
       doc.setFont('helvetica','bold'); doc.setFontSize(8); doc.text('INEX SYSTEMS & DESIGNS (CLIENT)', 115, y);
       line(115, y+13, 188); doc.setFont('helvetica','normal'); doc.setFontSize(7); doc.text('Authorized Signature:', 115, y+9);
-      doc.setFont('helvetica','italic'); doc.setFontSize(12); doc.text('Zebadiah', 115, y+12);
+      doc.setFont('helvetica','italic'); doc.setFontSize(12); doc.text('Zebadiah Henry', 115, y+12);
       doc.setFont('helvetica','normal'); doc.setFontSize(7); doc.text('Title: Authorized Representative', 115, y+18); doc.text('Date: '+data.effectiveDate, 115, y+22);
 
       // footer
@@ -303,7 +339,7 @@
       if (typeof emailjs === 'undefined') return { success:false, error:'EmailJS not loaded' };
       // Template fields expected in EmailJS (see instructions below)
       const params = {
-        to_email: data.contactEmail, // set in template/EmailJS dashboard
+        to_email: data.contactEmail, // If left blank, use EmailJS template's configured recipient
         client_name: data.clientName,
         company_name: data.providerName,
         contract_id: data.contractId,
@@ -343,5 +379,70 @@
       lastDoc.save(safe);
     });
   </script>
+  
+  <!-- Hidden, print-accurate HTML template rendered to PDF (US Letter) -->
+  <div id="pdfTemplate" style="position: fixed; left: -99999px; top: 0; width: 612pt; background:#fff; color:#000; font-family: Inter, Arial;">
+    <div style="border:1px solid #e5e7eb;">
+      <div style="background:#FFB200; color:#000; padding:14pt 16pt; display:flex; align-items:center; justify-content:space-between;">
+        <div style="display:flex; align-items:center; gap:10pt;">
+          <img src="inex-logo.png" style="height:18pt" alt="INEX">
+          <div style="font:800 15pt/1 Inter, Arial; text-transform:uppercase;">INEX SYSTEMS & DESIGNS — AGREEMENT</div>
+        </div>
+        <img src="CochranFilms-logo.png" style="height:18pt" alt="Cochran Films">
+      </div>
+      <div style="padding:10pt 16pt; font:600 10pt/1.3 Inter, Arial; color:#111; border-bottom:1px solid #f0f0f0;">
+        Cochran Films LLC — Systems Division · Contract ID: <span data-contract-id></span> · Effective Date: <span data-effective-date></span>
+      </div>
+      <div style="padding:16pt; font:10pt/1.5 Inter, Arial;">
+        <div style="background:#FFB200; color:#000; font-weight:800; text-align:center; padding:6pt; margin-bottom:8pt;">PROJECT OVERVIEW</div>
+        <div>Parties: Cochran Films LLC — Systems Division (Provider) and INEX Systems & Designs (Client).</div>
+        <div>Project: INEX‑branded operations portal with branded UI, modules, deployment, and documentation.</div>
+
+        <div style="background:#FFB200; color:#000; font-weight:800; text-align:center; padding:6pt; margin:12pt 0 8pt;">SCOPE & DELIVERABLES</div>
+        <ul style="margin:0 0 8pt 14pt;">
+          <li>Portal 2.0 (Dark) + 1.0 (Light): Dashboard, Projects, Jobs/Dispatch, Inventory, RMA/Warranties, SLAs/Reports, Knowledge, Clients, Careers, Settings.</li>
+          <li>Branding: INEX logo & color tokens; favicon & metadata; press‑ready screenshots.</li>
+          <li>Inline Charts: SVG sparklines & bar charts for KPIs and Operations Pulse.</li>
+          <li>Mock Data Layer: JSON‑based mock API prepared for connectors (Sheets/CSV, QuickBooks, Stripe).</li>
+          <li>Deployment: Static hosting to inex.cochranfilms.com (or client domain).</li>
+          <li>Documentation: README and pitch overlay (navigation map, roadmap, handoff).</li>
+        </ul>
+
+        <div style="background:#FFB200; color:#000; font-weight:800; text-align:center; padding:6pt; margin:12pt 0 8pt;">FEES & PAYMENT</div>
+        <div>One‑Time Implementation: <span data-amount></span> (50% at kickoff, 50% at Phase 1 delivery).</div>
+        <div>Managed Care Plan: <span data-care-plan></span> – monitoring, small fixes, monthly updates (≤2 hrs), priority support.</div>
+        <div>Out‑of‑Scope: Custom features, third‑party SaaS fees; change requests @ $85/hr (pre‑approved).</div>
+
+        <div style="background:#FFB200; color:#000; font-weight:800; text-align:center; padding:6pt; margin:12pt 0 8pt;">SECURITY & COMPLIANCE</div>
+        <div>Authentication (Phase 2): optional Firebase Auth with role scoping.</div>
+        <div>Data at Rest: AES‑256 encryption available; keys in env/KMS. Data in Transit: HTTPS/TLS.</div>
+        <div>Access Control: least‑privilege accounts; code review for production.</div>
+        <div>Confidentiality: both parties protect non‑public information.</div>
+
+        <div style="background:#FFB200; color:#000; font-weight:800; text-align:center; padding:6pt; margin:12pt 0 8pt;">SIGNATURES</div>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:18pt;">
+          <div style="border:1px solid #e5e7eb; padding:10pt;">
+            <div style="font-weight:700">COCHRAN FILMS (COMPANY)</div>
+            <div style="height:22pt; border-bottom:2px solid #d1d5db; margin:8pt 0 6pt"></div>
+            <div style="font-style:italic; font-weight:600">Cody Cochran</div>
+            <div style="font-size:9pt">Title: Founder & CEO</div>
+            <div style="font-size:9pt">Date: <span data-provider-date></span></div>
+          </div>
+          <div style="border:1px solid #e5e7eb; padding:10pt;">
+            <div style="font-weight:700">INEX SYSTEMS & DESIGNS (CLIENT)</div>
+            <div style="height:22pt; border-bottom:2px solid #d1d5db; margin:8pt 0 6pt"></div>
+            <div style="font-style:italic; font-weight:600" data-client-sign></div>
+            <div style="font-size:9pt">Title: Authorized Representative</div>
+            <div style="font-size:9pt">Date: <span data-client-date></span></div>
+          </div>
+        </div>
+      </div>
+
+      <div style="margin:16pt; border:1px solid #FFB200; padding:8pt 10pt; text-align:center; color:#6b7280; font-size:9pt;">
+        Digitally generated by Cochran Films Contract System • Contract ID: <span data-contract-id></span>
+        <div style="margin-top:4pt;">Printed: <span id="pdf-print-stamp">now</span></div>
+      </div>
+    </div>
+  </div>
 </body>
 </html>
