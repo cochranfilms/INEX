@@ -243,11 +243,14 @@
       node.querySelector('[data-client-sign]').textContent = 'Zebadiah Henry';
       const stamp = node.querySelector('#pdf-print-stamp');
       if (stamp) stamp.textContent = new Date().toLocaleString();
+      // Ensure fonts and layout are ready before rasterizing
+      try { if (document.fonts && document.fonts.ready) { await document.fonts.ready; } } catch(_){}
+      await new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)));
       return await new Promise((resolve, reject)=>{
         try {
           doc.html(node, {
             x: 0, y: 0, width: 612,
-            html2canvas: { scale: 0.95, useCORS: true, allowTaint: true },
+            html2canvas: { scale: 1.1, useCORS: true, allowTaint: true, windowWidth: Math.max(612, node.scrollWidth || 612) },
             callback: (d)=> resolve(d)
           });
         } catch(e){ reject(e); }
@@ -364,6 +367,8 @@
       try{
         lastData = buildContractData();
         lastDoc = await generateINEXPDF(lastData);
+        // Safety check: if html() renderer returned an empty doc, draw a tiny pixel to avoid blank viewer
+        try { if (lastDoc.internal.getNumberOfPages() === 0) { lastDoc.addPage(); } } catch(_){}
         const emailRes = await sendEmail(lastData);
         if (!emailRes.success) { console.warn('Email failed:', emailRes.error); }
         downloadBtn.style.display = 'inline-flex';
