@@ -232,12 +232,12 @@
 <script>
     // Initialize dates and contract ID
     const now = new Date();
-    const todayStr = now.toLocaleDateString(undefined,{year:'numeric',month:'long',day:'2-digit'});
-    const contractId = 'INEX-' + now.getFullYear() + (now.getMonth()+1).toString().padStart(2,'0') + '-' + Math.random().toString(36).slice(2,8).toUpperCase();
-    document.getElementById('today').textContent = todayStr;
-    document.getElementById('contractId').textContent = contractId;
-    document.getElementById('dateInex').textContent = todayStr;
-    document.getElementById('dateCochran').textContent = todayStr;
+    window.todayStr = now.toLocaleDateString(undefined,{year:'numeric',month:'long',day:'2-digit'});
+    window.contractId = 'INEX-' + now.getFullYear() + (now.getMonth()+1).toString().padStart(2,'0') + '-' + Math.random().toString(36).slice(2,8).toUpperCase();
+    document.getElementById('today').textContent = window.todayStr;
+    document.getElementById('contractId').textContent = window.contractId;
+    document.getElementById('dateInex').textContent = window.todayStr;
+    document.getElementById('dateCochran').textContent = window.todayStr;
 
     // EmailJS handles all contract notifications
 
@@ -429,11 +429,26 @@
       const blob = await res.blob();
       return await new Promise((resolve)=>{ const r=new FileReader(); r.onload=()=>resolve(r.result); r.readAsDataURL(blob); });
     }
+    
+    // Convert blob to base64 for secure upload
+    async function blobToBase64(blob) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => {
+          const dataUrl = reader.result;
+          // Extract base64 data from data URL (remove "data:application/pdf;base64," prefix)
+          const base64 = dataUrl.split(',')[1];
+          resolve(base64);
+        };
+        reader.onerror = reject;
+        reader.readAsDataURL(blob);
+      });
+    }
 
-    function buildContractData(){
+    function buildContractData(contractId = null, effectiveDate = null){
       return {
-        contractId: contractId,
-        effectiveDate: todayStr,
+        contractId: contractId || window.contractId || 'INEX-TEMP',
+        effectiveDate: effectiveDate || window.todayStr || new Date().toLocaleDateString(),
         clientName: 'INEX Systems & Designs',
         providerName: 'Cochran Films LLC — Systems Division',
         amount: '$4,500',
@@ -612,16 +627,28 @@
       doc.text(new Date().toLocaleString(), 105, footerY+7, {align:'center'});
       return doc;
     }
+    
+    // Generate signed PDF as blob for secure upload
+    async function generateSignedPDF(contractData) {
+      try {
+        const doc = await generateINEXPDF(contractData);
+        return doc.output('blob');
+      } catch (error) {
+        console.error('Failed to generate signed PDF:', error);
+        throw new Error('PDF generation failed: ' + error.message);
+      }
+    }
 
     async function finalizeOnServer(payload){
       try {
-        // Generate contract data locally
-        const contractData = buildContractData();
         const now = new Date();
         
         // Create contract ID and effective date
         const contractId = 'INEX-' + now.getFullYear() + (now.getMonth()+1).toString().padStart(2,'0') + '-' + Math.random().toString(36).slice(2,8).toUpperCase();
         const effectiveDate = now.toLocaleDateString(undefined,{year:'numeric',month:'long',day:'2-digit'});
+        
+        // Generate contract data with the new ID and date
+        const contractData = buildContractData(contractId, effectiveDate);
         
         // Send admin notification email
         if (typeof emailjs !== 'undefined') {
@@ -661,6 +688,30 @@
           
           await emailjs.send(EMAILJS_CONFIG.serviceId, EMAILJS_CONFIG.userTemplateId, userEmailParams);
           console.log('✅ User confirmation email sent');
+        }
+        
+        // Upload signed contract to secure storage
+        try {
+          const pdfBlob = await generateSignedPDF(contractData);
+          const pdfBase64 = await blobToBase64(pdfBlob);
+          
+          const uploadResponse = await fetch('/api/contracts/secure-upload', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              contractId: contractId,
+              pdfBase64: pdfBase64,
+              userEmail: payload.contactEmail || ''
+            })
+          });
+          
+          if (uploadResponse.ok) {
+            console.log('✅ Contract uploaded to secure storage');
+          } else {
+            console.warn('⚠️ Contract upload failed:', await uploadResponse.text());
+          }
+        } catch (uploadError) {
+          console.warn('⚠️ Contract upload error:', uploadError.message);
         }
         
         // Return the generated contract data
