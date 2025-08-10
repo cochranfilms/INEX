@@ -13,11 +13,13 @@ function buildContractId(now = new Date()){
 }
 
 export default async function handler(req, res) {
+  // Basic CORS to support same-origin and optional cross-origin tests
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  if (req.method === 'OPTIONS') { res.status(204).end(); return; }
   res.setHeader('Content-Type', 'application/json');
-  if (req.method !== 'POST') {
-    res.status(405).send(JSON.stringify({ error: 'Method not allowed' }));
-    return;
-  }
+  if (req.method !== 'POST') { res.status(405).send(JSON.stringify({ error: 'Method not allowed' })); return; }
   try {
     const { clientSignature, contactEmail } = req.body || {};
     if (!clientSignature || String(clientSignature).trim().length < 3) {
