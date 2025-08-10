@@ -267,9 +267,9 @@
     // If you have created accounts in Firebase Auth, this will allow immediate sign-in.
     async function ensureTestAuthGate(){
       try{
-        if (!window.firebaseAuth) return; // public config missing; skip gate
-        const user = window.firebaseAuth.currentUser;
-        if (user) return; // already signed in
+        const hasFirebase = !!window.firebaseAuth;
+        const user = hasFirebase ? window.firebaseAuth.currentUser : null;
+        if (hasFirebase && user && isAllowedEmail(user.email)) return; // already signed in & allowed
         // Create a lightweight banner with email+password inputs
         const root = document.querySelector('.head');
         if (!root || document.getElementById('authGate')) return;
@@ -279,7 +279,7 @@
         gate.innerHTML = `
           <span class="muted" style="font-weight:800">Restricted Access</span>
           <input id="authEmail" class="sig-input" placeholder="Email" style="max-width:240px">
-          <input id="authPass" class="sig-input" placeholder="Password" type="password" style="max-width:180px">
+          ${hasFirebase ? '<input id="authPass" class="sig-input" placeholder="Password" type="password" style="max-width:180px">' : ''}
           <button id="authLoginBtn" class="btn btn-secondary"><i class="fa-solid fa-right-to-bracket"></i> Sign In</button>
           <span id="authStatus" class="muted" style="margin-left:6px"></span>
         `;
@@ -287,17 +287,26 @@
         const status = gate.querySelector('#authStatus');
         gate.querySelector('#authLoginBtn').addEventListener('click', async ()=>{
           const e = gate.querySelector('#authEmail').value.trim();
-          const p = gate.querySelector('#authPass').value;
-          if (!e || !p) { status.textContent = 'Enter email and password'; return; }
-          try{
-            status.textContent = 'Signing in…';
-            await window.firebaseAuth.signInWithEmailAndPassword(e,p);
-            if (!isAllowedEmail(e)) { await window.firebaseAuth.signOut(); status.textContent = 'Email not permitted'; return; }
-            status.textContent = 'Signed in';
+          if (!e) { status.textContent = 'Enter your email'; return; }
+          if (hasFirebase) {
+            const p = gate.querySelector('#authPass').value;
+            if (!p) { status.textContent = 'Enter password'; return; }
+            try{
+              status.textContent = 'Signing in…';
+              await window.firebaseAuth.signInWithEmailAndPassword(e,p);
+              if (!isAllowedEmail(e)) { await window.firebaseAuth.signOut(); status.textContent = 'Email not permitted'; return; }
+              status.textContent = 'Signed in';
+              gate.style.display = 'none';
+            }catch(err){
+              status.textContent = 'Sign-in failed';
+              console.warn('auth error', err?.message);
+            }
+          } else {
+            // Fallback: simple allowlist check without Firebase
+            if (!isAllowedEmail(e)) { status.textContent = 'Email not permitted'; return; }
+            window.__accessGranted = true;
+            status.textContent = 'Access granted';
             gate.style.display = 'none';
-          }catch(err){
-            status.textContent = 'Sign-in failed';
-            console.warn('auth error', err?.message);
           }
         });
       }catch(_){ }
@@ -616,6 +625,14 @@
             const authedEmail = window.firebaseAuth.currentUser?.email;
             if (!isAllowedEmail(authedEmail)) { alert('Access restricted to authorized emails.'); throw new Error('Unauthorized email'); }
           } catch(_){ /* handled by catch below */ }
+        } else {
+          // No Firebase available: require allowlist verification via gate
+          if (!window.__accessGranted) {
+            alert('Please verify your email to continue.');
+            try { document.getElementById('authGate')?.scrollIntoView({ behavior: 'smooth' }); } catch(_){ }
+            finalizeBtn.disabled = false; finalizeBtn.innerHTML = '<i class="fa-solid fa-file-signature"></i> Finalize & Email';
+            return;
+          }
         }
         lastData = buildContractData();
         // Require client signature
