@@ -327,6 +327,18 @@
       if (!email) return false;
       return getAllowedEmails().includes(String(email).trim().toLowerCase());
     }
+    async function hydrateAllowedFromJson(){
+      try{
+        const res = await fetch('allowed-users.json', { cache: 'no-store' });
+        if (!res.ok) return;
+        const data = await res.json();
+        if (Array.isArray(data?.allowedEmails)) {
+          window.ALLOWED_EMAILS = (window.ALLOWED_EMAILS || []).concat(
+            data.allowedEmails.map(e=>String(e||'').trim().toLowerCase()).filter(Boolean)
+          );
+        }
+      }catch(_){ }
+    }
     async function completeSignInIfNeeded(){
       try{
         if (!window.firebaseAuth) return; // Firebase not available (static mode)
@@ -644,7 +656,9 @@
       lastDoc.save(safe);
     });
     // Initialize public Firebase early (best effort) and show auth gate immediately
-    initFirebasePublic()
+    // Hydrate allowlist first, then init Firebase, then show auth gate
+    hydrateAllowedFromJson()
+      .then(()=> initFirebasePublic())
       .then(()=>{ try{ completeSignInIfNeeded(); }catch(_){} return ensureTestAuthGate(); })
       .catch(()=>{});
 </script>

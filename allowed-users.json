@@ -1,0 +1,9 @@
+{
+  "allowedEmails": [
+    "info@inexsystemsdesigns.com",
+    "info@cochranfilms.com"
+  ],
+  "notes": "Add additional emails to allowedEmails. This file is loaded by INEX-Portal-Agreement.html on page load."
+}
+
+
