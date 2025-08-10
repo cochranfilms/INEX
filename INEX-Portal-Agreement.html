@@ -224,9 +224,13 @@
     const INEX_NOTIFICATION_EMAIL = 'info@inexsystemsdesigns.com';
 
     // helpers
+    // API base: when running from a static file or localhost, call the deployed API on Vercel
+    const API_ORIGIN = (location.protocol === 'file:' || location.hostname === 'localhost') ? 'https://inex.cochranfilms.com' : '';
+    const apiUrl = (path)=> `${API_ORIGIN}${path}`;
+
     async function initFirebasePublic() {
       try {
-        const cfgRes = await fetch('/api/firebase/public-config');
+        const cfgRes = await fetch(apiUrl('/api/firebase/public-config'));
         if (!cfgRes.ok) return console.warn('Firebase public config missing');
         const cfg = await cfgRes.json();
         if (!cfg?.apiKey) return;
@@ -450,7 +454,7 @@
     }
 
     async function finalizeOnServer(payload){
-      const res = await fetch('/api/contracts/finalize', {
+      const res = await fetch(apiUrl('/api/contracts/finalize'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
