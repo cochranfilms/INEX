@@ -643,8 +643,10 @@
       const safe = 'INEX-Agreement-' + lastData.contractId + '.pdf';
       lastDoc.save(safe);
     });
-    // Initialize public Firebase early (best effort)
-    initFirebasePublic().then(completeSignInIfNeeded).catch(()=>{});
+    // Initialize public Firebase early (best effort) and show auth gate immediately
+    initFirebasePublic()
+      .then(()=>{ try{ completeSignInIfNeeded(); }catch(_){} return ensureTestAuthGate(); })
+      .catch(()=>{});
 </script>
   
   <!-- Hidden, print-accurate HTML template rendered to PDF (US Letter) -->
