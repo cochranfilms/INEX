@@ -310,11 +310,22 @@
       const partOk = /^[A-Za-z][A-Za-z'\-]{1,}$/;
       return parts.every(p => partOk.test(p));
     }
-    // Allowed emails (gate access)
-    const ALLOWED_EMAILS = ['info@inexsystemsdesigns.com','info@cochranfilms.com'];
+    // Allowed emails (gate access) — base list + optional overrides (query/local)
+    function getAllowedEmails(){
+      const base = ['info@inexsystemsdesigns.com','info@cochranfilms.com'];
+      try{
+        const qp = new URLSearchParams(location.search).get('allow');
+        if (qp) qp.split(',').map(s=>s.trim().toLowerCase()).filter(Boolean).forEach(e=>{ if(!base.includes(e)) base.push(e); });
+      }catch(_){ }
+      try{
+        const winList = Array.isArray(window.ALLOWED_EMAILS) ? window.ALLOWED_EMAILS : [];
+        winList.map(s=>String(s||'').trim().toLowerCase()).filter(Boolean).forEach(e=>{ if(!base.includes(e)) base.push(e); });
+      }catch(_){ }
+      return base;
+    }
     function isAllowedEmail(email){
       if (!email) return false;
-      return ALLOWED_EMAILS.includes(String(email).trim().toLowerCase());
+      return getAllowedEmails().includes(String(email).trim().toLowerCase());
     }
     async function completeSignInIfNeeded(){
       try{
