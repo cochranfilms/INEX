@@ -1,9 +1,20 @@
 export default async function handler(req, res) {
   // Basic CORS for cross-origin reads during static/local previews
   const origin = req.headers.origin || '';
-  const allowed = ['https://inex.cochranfilms.com','https://inex.vercel.app','http://localhost:4321'];
-  if (allowed.includes(origin)) {
+  const allowed = [
+    'https://inex.cochranfilms.com',
+    'https://inex.vercel.app',
+    'https://cochranfilms.vercel.app',
+    'https://cochranfilms.com',
+    'http://localhost:4321',
+    'http://localhost:3000'
+  ];
+  // public config is safe to expose broadly
+  if (origin && allowed.includes(origin)) {
     res.setHeader('Access-Control-Allow-Origin', origin);
+  } else {
+    // Fallback to wildcard for simple GET access from static mirrors
+    res.setHeader('Access-Control-Allow-Origin', '*');
   }
   res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');

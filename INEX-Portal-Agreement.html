@@ -228,11 +228,11 @@
     const urlParams = new URLSearchParams(location.search);
     const apiOverride = (window.INEX_API_BASE || urlParams.get('api') || '').replace(/\/$/, '');
     const API_CANDIDATES = [
-      '', // same-origin
       apiOverride,
-      'https://inex.cochranfilms.com',
       'https://inex.vercel.app',
-      'https://cochranfilms.vercel.app'
+      'https://cochranfilms.vercel.app',
+      'https://inex.cochranfilms.com',
+      '', // same-origin last (static hosting may not have api)
     ].filter(Boolean);
     async function apiFetch(path, init){
       let lastErr;
@@ -260,6 +260,46 @@
         window.firebaseAuth = firebase.auth();
         console.log('Firebase client initialized');
       } catch (e) { console.warn('Firebase init failed', e); }
+    }
+    
+    // Minimal inline email/password gate (for Cody + Zeb testing)
+    // If you have created accounts in Firebase Auth, this will allow immediate sign-in.
+    async function ensureTestAuthGate(){
+      try{
+        if (!window.firebaseAuth) return; // public config missing; skip gate
+        const user = window.firebaseAuth.currentUser;
+        if (user) return; // already signed in
+        // Create a lightweight banner with email+password inputs
+        const root = document.querySelector('.head');
+        if (!root || document.getElementById('authGate')) return;
+        const gate = document.createElement('div');
+        gate.id = 'authGate';
+        gate.style.cssText = 'grid-column:1/-1;background:rgba(255,255,255,.04);border:1px solid #3a3b41;border-radius:12px;padding:10px 12px;display:flex;gap:8px;align-items:center;flex-wrap:wrap';
+        gate.innerHTML = `
+          <span class="muted" style="font-weight:800">Restricted Access</span>
+          <input id="authEmail" class="sig-input" placeholder="Email" style="max-width:240px">
+          <input id="authPass" class="sig-input" placeholder="Password" type="password" style="max-width:180px">
+          <button id="authLoginBtn" class="btn btn-secondary"><i class="fa-solid fa-right-to-bracket"></i> Sign In</button>
+          <span id="authStatus" class="muted" style="margin-left:6px"></span>
+        `;
+        root.parentNode.insertBefore(gate, root.nextSibling);
+        const status = gate.querySelector('#authStatus');
+        gate.querySelector('#authLoginBtn').addEventListener('click', async ()=>{
+          const e = gate.querySelector('#authEmail').value.trim();
+          const p = gate.querySelector('#authPass').value;
+          if (!e || !p) { status.textContent = 'Enter email and password'; return; }
+          try{
+            status.textContent = 'Signing in…';
+            await window.firebaseAuth.signInWithEmailAndPassword(e,p);
+            if (!isAllowedEmail(e)) { await window.firebaseAuth.signOut(); status.textContent = 'Email not permitted'; return; }
+            status.textContent = 'Signed in';
+            gate.style.display = 'none';
+          }catch(err){
+            status.textContent = 'Sign-in failed';
+            console.warn('auth error', err?.message);
+          }
+        });
+      }catch(_){ }
     }
     function isValidFullName(name){
       if (!name) return false;
@@ -527,6 +567,7 @@
       try{
         // Ensure logged-in access before showing contract
         try { await initFirebasePublic(); } catch(_){ }
+        try { await ensureTestAuthGate(); } catch(_){ }
         if (window.firebaseAuth) {
           // Show lightweight login if not signed in
           const user = window.firebaseAuth.currentUser;

@@ -16,12 +16,20 @@ export default async function handler(req, res) {
   // Basic CORS to support same-origin and optional cross-origin tests
   // Allow only our public origins
   const origin = req.headers.origin || '';
-  const allowed = ['https://inex.cochranfilms.com','https://inex.vercel.app','http://localhost:4321'];
-  if (allowed.includes(origin)) {
+  const allowed = [
+    'https://inex.cochranfilms.com',
+    'https://inex.vercel.app',
+    'https://cochranfilms.vercel.app',
+    'https://cochranfilms.com',
+    'http://localhost:4321',
+    'http://localhost:3000'
+  ];
+  if (origin && allowed.includes(origin)) {
     res.setHeader('Access-Control-Allow-Origin', origin);
   }
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  res.setHeader('Vary', 'Origin');
   if (req.method === 'OPTIONS') { res.status(204).end(); return; }
   res.setHeader('Content-Type', 'application/json');
   if (req.method !== 'POST') { res.status(405).send(JSON.stringify({ error: 'Method not allowed' })); return; }
