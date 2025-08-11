@@ -1,206 +1,114 @@
-# INEX Development Workflow Guide
+# INEX Development Workflow
 
-## 🎯 Overview
-This guide explains how to use the integrated development tracking system that automatically monitors your progress as you work on the INEX project.
+## Two-Page System Overview
 
-## 🚀 Getting Started
+The INEX portal now uses a **two-page architecture** to separate management and client interfaces:
 
-### 1. Open Both Files
-- **`index.html`** - Your main development file
-- **`status.html`** - The project status dashboard (keep this open in another tab)
+### 🔒 Management Dashboard (`index.html`)
+- **Your private workspace** for managing the project
+- Contains all development tools and planning documents
+- **NOT shared with clients**
+- Use this to update project status and progress
 
-### 2. Development Mode Detection
-The system automatically detects when you're in development mode (localhost) and enables tracking features.
+### 🌐 Public Status Page (`status.html`)
+- **What clients see** (like Zebediah)
+- Clean, professional interface showing project progress
+- **Automatically updates** when you make changes in the management dashboard
+- Safe to share with clients
 
-## 🛠️ Development Commands
+## Daily Workflow
 
-### Console Commands (Available in index.html)
-Open the browser console (F12) and use these commands:
+### 1. Start Your Day
+1. Open `index.html` in your browser
+2. Navigate to "📊 Manage Status" section
+3. Review current project status
 
-```javascript
-// Mark tasks as complete
-inexDev.completeTask('brand-guidelines')
-inexDev.completeTask('design-system')
-inexDev.completeTask('navigation-shell')
+### 2. Update Progress
+1. Click "Update Status" button
+2. Enter new progress percentage (0-100)
+3. Update status description
+4. Click "View Public Status" to verify changes
 
-// Start working on tasks
-inexDev.startTask('routing')
-inexDev.startTask('themes')
+### 3. Add Weekly Updates
+1. Click "Add Update" button
+2. Enter date (e.g., "Dec 18")
+3. Enter update description
+4. Set status (e.g., "In Progress", "Complete", "Planned")
 
-// Move between phases
-inexDev.updatePhase('Shell')
-inexDev.updatePhase('Features')
+### 4. Quick Actions
+- **+10% Progress**: Quick progress increment
+- **Next Phase**: Advance to next development phase
+- **View Public Status**: Open client status page in new tab
 
-// Add progress updates
-inexDev.addUpdate('Implemented new navigation component')
-inexDev.addUpdate('Fixed responsive layout issues')
+## Real-Time Synchronization
 
-// Check current status
-inexDev.showStatus()
-```
+### How It Works
+- Changes made in management dashboard → saved to localStorage
+- Public status page → reads from localStorage
+- Updates appear instantly on both pages
+- No manual refresh needed
 
-### Quick Phase Transitions
-```javascript
-// Move to Design phase
-inexDev.moveToDesign()
+### What Gets Synced
+- ✅ Progress percentage
+- ✅ Current phase
+- ✅ Status descriptions
+- ✅ Weekly updates
+- ❌ Internal planning documents
+- ❌ Development notes
+- ❌ Project management tools
 
-// Move to Shell phase  
-inexDev.moveToShell()
+## Client Communication
 
-// Move to Features phase
-inexDev.moveToFeatures()
-```
+### What Zebediah Sees
+- Professional progress tracking
+- Clear timeline visualization
+- Weekly status updates
+- Clean, branded interface
 
-## 📊 Task Tracking
+### What Zebediah Doesn't See
+- Your internal planning documents
+- Development tools and controls
+- Project management interface
+- Technical implementation details
 
-### Current Tasks by Phase
+## Best Practices
 
-#### 🎨 Design Phase
-- `brand-guidelines` - Brand Guidelines & Color Palette
-- `design-system` - Design System & Components
+### ✅ Do
+- Update progress regularly (at least weekly)
+- Use clear, client-friendly language in status updates
+- Keep the public page professional and clean
+- Test changes by opening both pages
 
-#### 🏗️ Shell Phase  
-- `navigation-shell` - Navigation Shell
-- `routing` - Routing System
-- `themes` - Theme System
+### ❌ Don't
+- Share the management dashboard with clients
+- Put technical jargon in public status updates
+- Forget to update progress after milestones
+- Leave outdated information on the public page
 
-#### ⚡ Features Phase
-- `dashboard-kpis` - Dashboard & KPI Widgets
-- `core-views` - Core Feature Views
-- `data-mock` - Mock Data
-- `responsive` - Responsive Design
+## Troubleshooting
 
-#### 🧪 Testing Phase
-- `performance` - Performance Optimization
-- `accessibility` - Accessibility Improvements
-
-#### 🚀 Launch Phase
-- `deployment` - Deployment & Handoff
-
-## 🔄 Automatic Tracking
-
-The system automatically tracks:
-- **View Changes** - When you navigate between dashboard sections
-- **Theme Changes** - When you switch between light/dark modes
-- **Page Loads** - Development session tracking
-- **Task Completion** - Progress updates
-
-## 📈 Progress Updates
-
-### Real-time Sync
-- Status page updates every 5 seconds
-- Progress automatically calculated based on completed tasks
-- Phase transitions happen automatically when all tasks in a phase are complete
-
-### Manual Updates
-Add custom progress notes:
-```javascript
-inexDev.addUpdate('Completed responsive navigation', 'Complete')
-inexDev.addUpdate('Working on KPI widgets', 'In Progress')
-```
-
-## 🎯 Development Workflow
-
-### 1. Start a Task
-```javascript
-inexDev.startTask('navigation-shell')
-```
-
-### 2. Work on the Task
-- Make changes to `index.html`
-- Test functionality
-- The system tracks your activity
-
-### 3. Complete the Task
-```javascript
-inexDev.completeTask('navigation-shell')
-```
-
-### 4. Check Progress
-```javascript
-inexDev.showStatus()
-```
-
-### 5. Move to Next Phase (if ready)
-```javascript
-inexDev.updatePhase('Features')
-```
-
-## 📱 Status Dashboard Features
-
-### Live Updates
-- **Progress Ring** - Overall project completion
-- **Timeline** - Current phase and completed phases
-- **Development Tracker** - Interactive task checkboxes
-- **Weekly Updates** - Automatic progress logging
-
-### Shareable Links
-Add query parameters to share specific status:
-```
-status.html?progress=45&phase=Shell
-status.html?progress=75&phase=Features
-```
-
-## 🔧 Troubleshooting
-
-### Console Errors
-If you see errors about `inexDev` not being defined:
-1. Make sure `dev-tracker.js` is loaded
-2. Check that you're in development mode (localhost)
-3. Refresh the page
-
-### Progress Not Updating
+### Status Not Updating?
 1. Check browser console for errors
 2. Verify localStorage is working
-3. Ensure both files are open and syncing
+3. Ensure both pages are from the same domain
+4. Try refreshing the public status page
 
-### Task Status Issues
-1. Use `inexDev.showStatus()` to check current state
-2. Manually reset with `inexDev.updatePhase('Design')`
-3. Clear localStorage if needed: `localStorage.clear()`
+### localStorage Issues?
+1. Check browser privacy settings
+2. Ensure both pages are served from same origin
+3. Clear browser cache if needed
+4. Test in incognito/private mode
 
-## 📋 Daily Workflow Example
+## Security Notes
 
-### Morning
-```javascript
-// Check current status
-inexDev.showStatus()
+- **Management dashboard**: Keep private, don't share URLs
+- **Public status page**: Safe to share with clients
+- **localStorage**: Client-side only, no server exposure
+- **Future**: Consider authentication for management dashboard
 
-// Start working on a task
-inexDev.startTask('design-system')
-```
+## Next Steps
 
-### During Development
-```javascript
-// Add progress notes
-inexDev.addUpdate('Created color palette system')
-inexDev.addUpdate('Built component library foundation')
-```
-
-### End of Day
-```javascript
-// Complete finished tasks
-inexDev.completeTask('design-system')
-
-// Check overall progress
-inexDev.showStatus()
-```
-
-## 🎉 Success Indicators
-
-- **Phase Complete** - All tasks in a phase are done
-- **Auto-advance** - System moves to next phase automatically
-- **Progress Updates** - Real-time status changes
-- **Zebadiah Updates** - Status page always shows current progress
-
-## 🔗 Integration Points
-
-- **index.html** - Main development file with integrated tracking
-- **status.html** - Live status dashboard for stakeholders
-- **dev-tracker.js** - Core tracking functionality
-- **localStorage** - Persistent progress storage
-- **Console API** - Development commands and status
-
----
-
-**Remember**: The more you use the tracking system, the better Zebadiah can see your progress. Every task completion, phase change, and progress note helps keep everyone informed!
+1. **Immediate**: Start using the management dashboard daily
+2. **Short-term**: Add more status update types
+3. **Medium-term**: Database integration for persistent storage
+4. **Long-term**: User authentication and role-based access

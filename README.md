@@ -1,71 +1,83 @@
-# 🖥️ INEX Systems Portal – 2.0 Demo by Cochran Films
+# INEX Systems Portal
 
-<div align="center">
+## Overview
+Professional operations portal for INEX Systems & Designs, currently in Phase 1: Discovery phase.
 
-![INEX Systems](https://img.shields.io/badge/INEX%20Systems%20&%20Designs-Innovation%20Driven-red?style=for-the-badge&logo=appveyor)
-![Status](https://img.shields.io/badge/Status-Live%20Demo-brightgreen?style=for-the-badge&logo=vercel)
-![Theme](https://img.shields.io/badge/Theme-Dark%20%26%20Light-blueviolet?style=for-the-badge&logo=tailwindcss)
-![Version](https://img.shields.io/badge/Version-2.0-orange?style=for-the-badge&logo=github)
+## Two-Page Architecture
 
-</div>
+### 1. Management Dashboard (`index.html`)
+- **Purpose**: Internal management interface for development team
+- **Access**: Private - only for development team use
+- **Features**:
+  - Project planning and documentation
+  - Status management and updates
+  - Progress tracking controls
+  - Quick actions for project management
 
----
+### 2. Public Status Page (`status.html`)
+- **Purpose**: Public-facing status page for clients
+- **Access**: Public - shareable with clients
+- **Features**:
+  - Live progress tracking
+  - Project timeline visualization
+  - Weekly updates
+  - Client-friendly interface
 
-## 🚀 Overview
-This repository contains the **2.0 version** of the INEX Systems & Designs portal concept, built to demonstrate how **Cochran Films – Systems Division** can deliver a fully branded, centralized operations dashboard.
+## How It Works
 
-Unlike 1.0, this upgraded demo:
-- Runs a **dark/light theme toggle**
-- Includes **inline SVG charts** for a more “productized” feel
-- Keeps all views in a **single HTML file** (no reloads)
-- Is fully **INEX branded** with their logo in both versions
+1. **Management Dashboard** (`index.html`):
+   - Use the "Manage Status" section to update project progress
+   - Changes are saved to localStorage
+   - Real-time updates are sent to the public status page
 
----
+2. **Public Status Page** (`status.html`):
+   - Automatically reads updates from localStorage
+   - Updates in real-time when changes are made from management dashboard
+   - Clean, professional interface for client viewing
 
-## 🌟 Key Features in 2.0
-- **Theme Toggle** – Seamless switch between light and dark modes
-- **Single Page View** – All navigation loads instantly without page reloads
-- **Branded UI** – INEX logo embedded into headers
-- **Animated Cards** – Smooth hover and load animations
-- **Sparkline Dashboard Chart** – Built with pure SVG (no external libs)
-- **Scalable Structure** – Ready for API integration and real client data
+## Quick Start
 
----
+1. Open `index.html` in your browser for the management dashboard
+2. Navigate to "Manage Status" to update project progress
+3. Open `status.html` in another tab to see the public status page
+4. Changes made in the management dashboard will automatically appear on the public page
 
-## 🗺️ Navigation Map
-```mermaid
-flowchart LR
-  A[Topbar + Theme Toggle] --> B[Router hashchange]
-  B --> C[Dashboard]
-  B --> D[Projects]
-  B --> E[Jobs and Scheduling]
-  B --> F[Inventory]
-  B --> G[RMA and Warranties]
-  B --> H[SLAs and Performance]
-  B --> I[Knowledge Base]
-  B --> J[Clients]
-  B --> K[Careers]
-  B --> L[Settings]
-  C --> M[Inline SVG Charts]
-  A --> N[Local Storage theme]
+## Status Management
 
----
+### Updating Progress
+- Use the "Update Status" button to change progress percentage
+- Use "+10% Progress" for quick increments
+- Use "Next Phase" to advance to the next development phase
+- Use "Add Update" to add new weekly updates
 
-## 🔧 Setup
-1. Install dependencies: `npm install`
-2. Run dev server: `./serve.sh`
-3. Configure environment variables as needed (if using APIs).
+### Real-time Updates
+- All changes are automatically synchronized between pages
+- No need to refresh - updates appear instantly
+- localStorage ensures data persistence across sessions
 
-### Environment Variables
-- FIREBASE_API_KEY
-- FIREBASE_AUTH_DOMAIN
-- FIREBASE_PROJECT_ID
-- FIREBASE_APP_ID
-- FIREBASE_MESSAGING_SENDER_ID
-- EMAILJS_SERVICE_ID
-- EMAILJS_TEMPLATE_ID
-- EMAILJS_PUBLIC_KEY
-- EMAILJS_TO_EMAIL (optional; must be one of: info@inexsystemsdesigns.com, info@cochranfilms.com)
-- ENCRYPTION_KEY (base64, 32 bytes)
+## File Structure
 
-Local dev: create a `.env` file in the project root with the values above. The `api/firebase/public-config` endpoint will 404 when Firebase envs are missing; deploy with envs set to enable email‑link login gating.
+```
+INEX/
+├── index.html          # Management Dashboard (Private)
+├── status.html         # Public Status Page (Public)
+├── inex-logo.png       # INEX branding
+├── package.json        # Dependencies
+└── README.md          # This file
+```
+
+## Development Notes
+
+- **index.html**: Your private workspace for managing the project
+- **status.html**: What Zebediah and other clients will see
+- All status updates flow from management dashboard to public page
+- No sensitive development information is exposed to clients
+- Clean separation of concerns between management and client interfaces
+
+## Future Enhancements
+
+- Database integration for persistent storage
+- User authentication for management dashboard
+- API endpoints for automated updates
+- Email notifications for status changes
+- Client feedback integration

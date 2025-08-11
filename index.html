@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>INEX Systems Portal — Phase 1: Discovery</title>
-        <meta name="description" content="INEX Systems & Designs — Professional operations portal in Phase 1: Discovery phase. Basic shell with project kickoff focus." />
+<title>INEX Systems Portal — Management Dashboard</title>
+        <meta name="description" content="INEX Systems & Designs — Internal management dashboard for Phase 1: Discovery phase. Project management and status updates." />
 <link rel="icon" type="image/svg+xml" href="vite.svg" />
 <link rel="alternate icon" type="image/x-icon" href="vite.ico" />
 <style>
@@ -110,7 +110,7 @@
   <div class="brand">
     <img src="inex-logo.png" alt="INEX Systems & Designs Logo" />
     <span>INEX Systems Portal</span>
-            <small>· Phase 1: Discovery</small>
+            <small>· Management Dashboard</small>
   </div>
   <div class="spacer"></div>
   <button class="pitch-btn" id="openPitch">📋 Project Overview</button>
@@ -124,7 +124,7 @@
       <a href="#/dashboard" data-route="dashboard" class="active">🏠 Dashboard</a>
       <a href="#/projects"  data-route="projects">📁 Projects</a>
       <a href="#/planning"  data-route="planning">📋 Planning</a>
-      <a href="#/status"    data-route="status">📊 Status</a>
+      <a href="#/status"    data-route="status">📊 Manage Status</a>
     </nav>
   </aside>
 
@@ -203,6 +203,9 @@
             <div style="background:#f8f8f8;border-radius:8px;padding:.8rem;border:1px solid var(--border)">
               <strong>Focus:</strong> Understanding INEX's operational needs, defining project scope, and creating implementation timeline.
             </div>
+            <div style="margin-top:1rem;padding:.8rem;background:rgba(166,46,63,.1);border:1px solid rgba(166,46,63,.2);border-radius:8px">
+              <strong>💡 Management Note:</strong> This is your internal dashboard. Use the Status Management section to update progress that Zebediah will see on the public status page.
+            </div>
           </div>
         </article>
         <article class="card span-6">
@@ -211,8 +214,8 @@
             <div style="display:grid;gap:.6rem">
               <a class="btn primary" href="#/projects">View Project Plan</a>
               <a class="btn secondary" href="#/planning">Planning Documents</a>
-              <a class="btn primary" href="#/status">Project Status</a>
-              <a class="btn secondary" href="status.html" target="_blank">External Status</a>
+              <a class="btn primary" href="#/status">Manage Status</a>
+              <a class="btn secondary" href="status.html" target="_blank">Client Status Page</a>
             </div>
           </div>
         </article>
@@ -322,31 +325,45 @@
       </div>
     `,
     status: `
-      <div class="header"><h1>Project Status</h1><span class="muted">Current progress and milestone tracking</span></div>
+      <div class="header"><h1>Status Management</h1><span class="muted">Update project status and progress for client visibility</span></div>
       <div class="cards">
-        <article class="card span-12">
-          <div class="head">Phase 1 Progress</div>
+        <article class="card span-8">
+          <div class="head">Current Status Overview</div>
           <div class="body">
             <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin-bottom:1rem">
               <div style="text-align:center;padding:1rem;border:1px solid var(--border);border-radius:12px">
-                <div style="font-size:24px;font-weight:900;color:var(--maroon)">5%</div>
+                <div style="font-size:24px;font-weight:900;color:var(--maroon)" id="progressDisplay">5%</div>
                 <div style="font-size:12px;color:var(--muted)">Overall Progress</div>
               </div>
               <div style="text-align:center;padding:1rem;border:1px solid var(--border);border-radius:12px">
-                <div style="font-size:24px;font-weight:900;color:var(--accent)">1/5</div>
+                <div style="font-size:24px;font-weight:900;color:var(--accent)" id="tasksDisplay">1/5</div>
                 <div style="font-size:12px;color:var(--muted)">Tasks Complete</div>
               </div>
               <div style="text-align:center;padding:1rem;border:1px solid var(--border);border-radius:12px">
-                <div style="font-size:24px;font-weight:900;color:var(--muted)">Dec 15</div>
-                <div style="font-size:12px;color:var(--muted)">Phase Start</div>
+                <div style="font-size:24px;font-weight:900;color:var(--muted)" id="phaseDisplay">Discovery</div>
+                <div style="font-size:12px;color:var(--muted)">Current Phase</div>
               </div>
               <div style="text-align:center;padding:1rem;border:1px solid var(--border);border-radius:12px">
-                <div style="font-size:24px;font-weight:900;color:var(--muted)">Jan 5</div>
+                <div style="font-size:24px;font-weight:900;color:var(--muted)" id="etaDisplay">Jan 2025</div>
                 <div style="font-size:12px;color:var(--muted)">Phase End</div>
               </div>
             </div>
-            <div style="background:#f8f8f8;border-radius:8px;padding:1rem;border:1px solid var(--border)">
-              <strong>Current Status:</strong> Project kickoff initiated. Team is conducting initial requirements gathering and stakeholder interviews. Next milestone is completion of requirements documentation by Dec 25.
+            <div style="background:#f8f8f8;border-radius:8px;padding:1rem;border:1px solid var(--border);margin-bottom:1rem">
+              <strong>Current Status:</strong> <span id="statusText">Project kickoff initiated. Team is conducting initial requirements gathering and stakeholder interviews. Next milestone is completion of requirements documentation by Dec 25.</span>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">
+              <button class="btn primary" onclick="updateStatus()">Update Status</button>
+              <a class="btn secondary" href="status.html" target="_blank">View Public Status</a>
+            </div>
+          </div>
+        </article>
+        <article class="card span-4">
+          <div class="head">Quick Actions</div>
+          <div class="body">
+            <div style="display:grid;gap:.6rem">
+              <button class="btn secondary" onclick="incrementProgress()">+10% Progress</button>
+              <button class="btn secondary" onclick="nextPhase()">Next Phase</button>
+              <button class="btn secondary" onclick="addUpdate()">Add Update</button>
             </div>
           </div>
         </article>
@@ -365,6 +382,23 @@
   }
   window.addEventListener('hashchange', render);
   window.addEventListener('load', render);
+  
+  // Load saved status data when dashboard loads
+  window.addEventListener('load', function() {
+    const savedProgress = localStorage.getItem('inex-project-progress');
+    const savedPhase = localStorage.getItem('inex-project-phase');
+    const savedStatus = localStorage.getItem('inex-project-status');
+    
+    if (savedProgress) {
+      document.getElementById('progressDisplay').textContent = savedProgress + '%';
+    }
+    if (savedPhase) {
+      document.getElementById('phaseDisplay').textContent = savedPhase;
+    }
+    if (savedStatus) {
+      document.getElementById('statusText').textContent = savedStatus;
+    }
+  });
 
   /* Theme toggle + persistence */
   const root = document.documentElement;
@@ -390,6 +424,85 @@
   closePitch.addEventListener('click', closeOverlay);
   overlay.addEventListener('click', (e)=>{ if(e.target === overlay) closeOverlay(); });
   window.addEventListener('keydown', (e)=>{ if(e.key === 'Escape' && overlay.classList.contains('show')) closeOverlay(); });
+
+  // Status Management Functions
+  function updateStatus() {
+    const newProgress = prompt('Enter new progress percentage (0-100):', '5');
+    if (newProgress !== null && !isNaN(newProgress)) {
+      const progress = Math.max(0, Math.min(100, parseInt(newProgress)));
+      document.getElementById('progressDisplay').textContent = progress + '%';
+      
+      // Save to localStorage for status.html to read
+      localStorage.setItem('inex-project-progress', progress);
+      
+      // Update status text
+      const newStatus = prompt('Enter new status description:', document.getElementById('statusText').textContent);
+      if (newStatus !== null) {
+        document.getElementById('statusText').textContent = newStatus;
+        localStorage.setItem('inex-project-status', newStatus);
+      }
+      
+      // Trigger storage event for real-time updates
+      window.dispatchEvent(new StorageEvent('storage', {
+        key: 'inex-project-progress',
+        newValue: progress.toString()
+      }));
+    }
+  }
+
+  function incrementProgress() {
+    const current = parseInt(document.getElementById('progressDisplay').textContent);
+    const newProgress = Math.min(100, current + 10);
+    document.getElementById('progressDisplay').textContent = newProgress + '%';
+    localStorage.setItem('inex-project-progress', newProgress);
+    
+    // Trigger storage event for real-time updates
+    window.dispatchEvent(new StorageEvent('storage', {
+      key: 'inex-project-progress',
+      newValue: newProgress.toString()
+    }));
+  }
+
+  function nextPhase() {
+    const phases = ['Discovery', 'Design', 'Shell', 'Features', 'Integration', 'Testing', 'Launch'];
+    const currentPhase = document.getElementById('phaseDisplay').textContent;
+    const currentIndex = phases.indexOf(currentPhase);
+    if (currentIndex < phases.length - 1) {
+      const nextPhase = phases[currentIndex + 1];
+      document.getElementById('phaseDisplay').textContent = nextPhase;
+      localStorage.setItem('inex-project-phase', nextPhase);
+      
+      // Trigger storage event for real-time updates
+      window.dispatchEvent(new StorageEvent('storage', {
+        key: 'inex-project-phase',
+        newValue: nextPhase
+      }));
+    }
+  }
+
+  function addUpdate() {
+    const date = prompt('Enter date (e.g., Dec 18):', 'Dec 18');
+    if (date !== null) {
+      const update = prompt('Enter update description:', '');
+      if (update !== null) {
+        const status = prompt('Enter status (e.g., In Progress, Complete, Planned):', 'In Progress');
+        if (status !== null) {
+          // Save update to localStorage for status.html to read
+          const updates = JSON.parse(localStorage.getItem('inex-project-updates') || '[]');
+          updates.push({ date, update, status });
+          localStorage.setItem('inex-project-updates', JSON.stringify(updates));
+          
+          // Trigger storage event for real-time updates
+          window.dispatchEvent(new StorageEvent('storage', {
+            key: 'inex-project-updates',
+            newValue: JSON.stringify(updates)
+          }));
+          
+          alert('Update added successfully!');
+        }
+      }
+    }
+  }
 
 </script>
 </body>
