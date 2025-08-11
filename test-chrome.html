@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chrome Test - INEX Message System</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .test-section { margin: 20px 0; padding: 15px; border: 1px solid #ccc; border-radius: 8px; }
+        .test-button { padding: 10px 20px; margin: 5px; background: #007cba; color: white; border: none; border-radius: 5px; cursor: pointer; }
+        .test-button:hover { background: #005a87; }
+        .status { margin: 10px 0; padding: 10px; background: #f0f0f0; border-radius: 5px; }
+    </style>
+</head>
+<body>
+    <h1>🔍 INEX Message System Test</h1>
+    
+    <div class="test-section">
+        <h2>Test Instructions:</h2>
+        <ol>
+            <li>Click "Open INEX Dashboard" to open the main dashboard in a new tab</li>
+            <li>Navigate to "Manage Status" tab (where the message system is located)</li>
+            <li>Check the message form styling and functionality</li>
+            <li>Report back what you see</li>
+        </ol>
+    </div>
+
+    <div class="test-section">
+        <h2>Test Actions:</h2>
+        <button class="test-button" onclick="openDashboard()">🚀 Open INEX Dashboard</button>
+        <button class="test-button" onclick="openStatusPage()">📊 Open Status Page</button>
+        <button class="test-button" onclick="checkCurrentState()">🔍 Check Current State</button>
+    </div>
+
+    <div class="test-section">
+        <h2>Current Test Status:</h2>
+        <div id="testStatus" class="status">Ready to test...</div>
+    </div>
+
+    <div class="test-section">
+        <h2>What to Look For:</h2>
+        <ul>
+            <li><strong>Message Form:</strong> Is it properly styled with labels, inputs, and button?</li>
+            <li><strong>Button Styling:</strong> Does the "Send Message" button have proper padding, shadows, and hover effects?</li>
+            <li><strong>Input Fields:</strong> Are the name and message inputs properly sized and styled?</li>
+            <li><strong>Overall Layout:</strong> Does the message section look professional and well-designed?</li>
+        </ul>
+    </div>
+
+    <script>
+        function openDashboard() {
+            const url = window.location.origin + '/index.html';
+            window.open(url, '_blank');
+            updateStatus('Opening INEX Dashboard in new tab...');
+        }
+
+        function openStatusPage() {
+            const url = window.location.origin + '/status.html';
+            window.open(url, '_blank');
+            updateStatus('Opening Status Page in new tab...');
+        }
+
+        function checkCurrentState() {
+            updateStatus('Checking current file state...');
+            
+            // Check if we can access the main files
+            fetch('/index.html')
+                .then(response => {
+                    if (response.ok) {
+                        updateStatus('✅ index.html accessible');
+                    } else {
+                        updateStatus('❌ index.html not accessible');
+                    }
+                })
+                .catch(error => {
+                    updateStatus('❌ Error accessing index.html: ' + error.message);
+                });
+
+            // Check if we can access the JSON data
+            fetch('/inex-live-data.json')
+                .then(response => {
+                    if (response.ok) {
+                        updateStatus('✅ inex-live-data.json accessible');
+                    } else {
+                        updateStatus('❌ inex-live-data.json not accessible');
+                    }
+                })
+                .catch(error => {
+                    updateStatus('❌ Error accessing JSON: ' + error.message);
+                });
+        }
+
+        function updateStatus(message) {
+            const statusDiv = document.getElementById('testStatus');
+            statusDiv.innerHTML = message;
+            console.log('Test Status:', message);
+        }
+
+        // Auto-check on load
+        window.addEventListener('load', () => {
+            updateStatus('Test page loaded. Ready to test INEX message system.');
+        });
+    </script>
+</body>
+</html>
