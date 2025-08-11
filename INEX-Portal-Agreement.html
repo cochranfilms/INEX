@@ -379,7 +379,7 @@
     }
     // Allowed emails (gate access) — base list + optional overrides (query/local)
     function getAllowedEmails(){
-      const base = ['info@inexsystemsdesigns.com','info@cochranfilms.com'];
+      const base = ['info@inexsystemsdesigns.com','info@cochranfilms.com','codylcochran89@gmail.com'];
       try{
         const qp = new URLSearchParams(location.search).get('allow');
         if (qp) qp.split(',').map(s=>s.trim().toLowerCase()).filter(Boolean).forEach(e=>{ if(!base.includes(e)) base.push(e); });
