@@ -2,11 +2,6 @@
   "version": 2,
   "buildCommand": "node vercel-build-hook.js",
   "outputDirectory": ".",
-  "functions": {
-    "api/**/*.js": {
-      "runtime": "@vercel/node@18"
-    }
-  },
   "env": {
     "NODE_ENV": "production"
   },
