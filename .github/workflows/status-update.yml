@@ -23,6 +23,8 @@ jobs:
     steps:
     - name: Checkout repository
       uses: actions/checkout@v4
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
       
     - name: Update status data
       run: |
@@ -42,8 +44,8 @@ jobs:
         
     - name: Commit and push changes
       run: |
-        git config --local user.email "action@github.com"
-        git config --local user.name "GitHub Action"
+        git config --local user.email "github-actions[bot]@users.noreply.github.com"
+        git config --local user.name "github-actions[bot]"
         git add inex-live-data.json
         git commit -m "Update project status: ${{ inputs.phase }} - ${{ inputs.progress }}% - ${{ inputs.status }}"
-        git push
+        git push origin main

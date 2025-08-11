@@ -34,6 +34,8 @@ jobs:
     steps:
     - name: Checkout repository
       uses: actions/checkout@v4
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
       
     - name: Add new message
       run: |
@@ -76,8 +78,8 @@ jobs:
         
     - name: Commit and push changes
       run: |
-        git config --local user.email "action@github.com"
-        git config --local user.name "GitHub Action"
+        git config --local user.email "github-actions[bot]@users.noreply.github.com"
+        git config --local user.name "github-actions[bot]"
         git add inex-messages.json
         git commit -m "Add new message from ${{ inputs.name }}: ${{ inputs.text }}"
-        git push
+        git push origin main
