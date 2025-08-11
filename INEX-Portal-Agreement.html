@@ -524,8 +524,12 @@
       const ratio = canvas.width / imgWidthPt; // px per pt
       const pageHeightPx = Math.floor(pageHeightPt * ratio);
       let rendered = false;
+      let totalHeight = 0;
       for (let topPx = 0, page = 0; topPx < canvas.height; topPx += pageHeightPx, page++) {
         const sliceHeight = Math.min(pageHeightPx, canvas.height - topPx);
+        // Skip if this slice is essentially empty (less than 50px in canvas space)
+        if (sliceHeight < 50) continue;
+        
         pageCanvas.width = canvas.width;
         pageCanvas.height = sliceHeight;
         pageCtx.clearRect(0,0,pageCanvas.width,pageCanvas.height);
@@ -534,14 +538,24 @@
         if (page > 0) doc.addPage();
         const sliceHeightPt = sliceHeight / ratio;
         doc.addImage(imgData, 'PNG', 0, 0, imgWidthPt, sliceHeightPt, undefined, 'FAST');
+        totalHeight += sliceHeightPt;
         rendered = true;
       }
-      // Remove a trailing blank page if html2canvas returned height rounding that created an extra page
-      try { if (rendered && doc.internal.getCurrentPageInfo().pageNumber > 1) {
-        const lastPage = doc.internal.getCurrentPageInfo().pageNumber;
-        // Heuristic: if the last page height is effectively empty, delete it
-        // jsPDF doesn't expose page content metrics; instead, track if the last sliceHeightPt was very small
-      } } catch(_){}
+      
+      // Remove trailing blank page if the last page is essentially empty
+      try { 
+        if (rendered && doc.internal.getCurrentPageInfo().pageNumber > 1) {
+          const lastPage = doc.internal.getCurrentPageInfo().pageNumber;
+          const lastPageInfo = doc.internal.getCurrentPageInfo();
+          // If the last page has very little content, remove it
+          if (lastPageInfo && lastPageInfo.pageNumber > 1) {
+            const pageCount = doc.internal.getNumberOfPages();
+            if (pageCount > 1) {
+              doc.deletePage(pageCount);
+            }
+          }
+        }
+      } catch(_){}
       return doc;
     }
 
@@ -919,6 +933,32 @@
       }
     }
     
+    // Add CSS animations for pop-up
+    const style = document.createElement('style');
+    style.textContent = `
+      @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+      }
+      
+      @keyframes slideUp {
+        from { 
+          opacity: 0; 
+          transform: translateY(30px) scale(0.95); 
+        }
+        to { 
+          opacity: 1; 
+          transform: translateY(0) scale(1); 
+        }
+      }
+      
+      @keyframes fadeOut {
+        from { opacity: 1; }
+        to { opacity: 0; }
+      }
+    `;
+    document.head.appendChild(style);
+    
     function showINEXSuccessNotification(contractData) {
       // Create success overlay
       const overlay = document.createElement('div');
@@ -935,6 +975,8 @@
         display: flex;
         align-items: center;
         justify-content: center;
+        padding: 2rem;
+        box-sizing: border-box;
         animation: fadeIn 0.5s ease-out;
       `;
       
@@ -946,9 +988,11 @@
         background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
         border: 3px solid #22c55e;
         border-radius: 20px;
-        padding: 3rem;
+        padding: 2.5rem;
         max-width: 600px;
         width: 90%;
+        max-height: 85vh;
+        overflow-y: auto;
         z-index: 10000;
         box-shadow: 0 25px 80px rgba(0,0,0,0.9);
         backdrop-filter: blur(25px);
@@ -956,6 +1000,7 @@
         text-align: center;
         font-family: 'Inter', sans-serif;
         animation: slideUp 0.6s ease-out;
+        margin: 2rem auto;
       `;
       
       successContainer.innerHTML = `
