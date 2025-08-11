@@ -431,16 +431,17 @@ app.post('/api/messages', (req, res) => {
     // Save back to consolidated file (single write)
     fs.writeFileSync(liveDataPath, JSON.stringify(data, null, 2));
     
-    console.log('Message saved and backups created:', {
+    console.log('Message saved successfully:', {
       liveData: liveDataFile,
-      dataBackup: backupFile,
-      messagesBackup: messagesBackupFile
+      messageId: newMessage.id,
+      totalMessages: messages.length
     });
     
     res.status(201).json({
       success: true,
       message: 'Message sent successfully',
       data: newMessage,
+      allMessages: messages,
       totalMessages: messages.length
     });
     

@@ -1260,29 +1260,29 @@
               })
             });
 
-                      if (response.ok) {
-            // API success - message added directly to JSON file
-            const result = await response.json();
-            console.log('✅ Message sent successfully via API on live site:', result);
-            
-            // Display the new message immediately using the returned data
-            if (result.allMessages) {
-              displayDevMessages(result.allMessages);
+            if (response.ok) {
+              // API success - message added directly to JSON file
+              const result = await response.json();
+              console.log('✅ Message sent successfully via API on live site:', result);
+              
+              // Display the new message immediately using the returned data
+              if (result.allMessages) {
+                displayDevMessages(result.allMessages);
+              } else {
+                // Fallback: reload messages
+                await loadDevMessages();
+              }
+              
+              // Show success message
+              showMessageSuccess('Message sent successfully! It has been saved and will appear on this page immediately.');
+              
+              // Reset form
+              textInput.value = '';
+              charCount.textContent = '0 characters';
+              return; // Exit early on success
             } else {
-              // Fallback: reload messages
-              await loadDevMessages();
+              console.log('⚠️ API call failed on live site, falling back to local storage');
             }
-            
-            // Show success message
-            showMessageSuccess('Message sent successfully! It has been saved and will appear on this page immediately.');
-            
-            // Reset form
-            textInput.value = '';
-            charCount.textContent = '0 characters';
-            return; // Exit early on success
-          } else {
-            console.log('⚠️ API call failed on live site, falling back to local storage');
-          }
           } catch (error) {
             console.log('⚠️ API call error on live site, falling back to local storage:', error.message);
           }

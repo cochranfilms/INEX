@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Message Loading Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .message { border: 1px solid #ccc; padding: 10px; margin: 10px 0; border-radius: 5px; }
+        .priority-high { border-left: 4px solid #ff9800; }
+        .priority-urgent { border-left: 4px solid #f44336; }
+        .priority-low { border-left: 4px solid #4caf50; }
+        .status { padding: 10px; margin: 10px 0; border-radius: 5px; }
+        .success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .info { background: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
+    </style>
+</head>
+<body>
+    <h1>Message Loading Test</h1>
+    
+    <div id="status"></div>
+    
+    <h2>Messages from JSON File</h2>
+    <div id="messages"></div>
+    
+    <h2>Messages from API</h2>
+    <div id="apiMessages"></div>
+    
+    <script>
+        const statusDiv = document.getElementById('status');
+        const messagesDiv = document.getElementById('messages');
+        const apiMessagesDiv = document.getElementById('apiMessages');
+        
+        function showStatus(message, type = 'info') {
+            statusDiv.innerHTML = `<div class="status ${type}">${message}</div>`;
+        }
+        
+        function displayMessages(messages, container, source) {
+            if (messages.length === 0) {
+                container.innerHTML = '<p>No messages found</p>';
+                return;
+            }
+            
+            container.innerHTML = messages.map(msg => {
+                const priority = msg.priority || 'normal';
+                const priorityClass = priority !== 'normal' ? `priority-${priority}` : '';
+                const timestamp = new Date(msg.timestamp).toLocaleString();
+                
+                return `
+                    <div class="message ${priorityClass}">
+                        <strong>${msg.name}</strong> 
+                        ${msg.priority !== 'normal' ? `<span style="color: #666;">(${msg.priority})</span>` : ''}
+                        <br>
+                        <small>${timestamp}</small>
+                        <br>
+                        ${msg.text}
+                        ${msg.email ? `<br><small>Email: ${msg.email}</small>` : ''}
+                        ${msg.responses && msg.responses.length > 0 ? 
+                            `<br><strong>Response:</strong> ${msg.responses[msg.responses.length - 1].text}` : ''}
+                    </div>
+                `;
+            }).join('');
+        }
+        
+        // Test 1: Load messages directly from JSON file
+        async function testJSONLoading() {
+            try {
+                showStatus('Loading messages from JSON file...', 'info');
+                
+                const response = await fetch('inex-live-data.json');
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                const data = await response.json();
+                const messages = data.messages || [];
+                
+                showStatus(`✅ Successfully loaded ${messages.length} messages from JSON file`, 'success');
+                displayMessages(messages, messagesDiv, 'JSON');
+                
+                return messages;
+            } catch (error) {
+                showStatus(`❌ Failed to load from JSON: ${error.message}`, 'error');
+                return [];
+            }
+        }
+        
+        // Test 2: Load messages from API
+        async function testAPILoading() {
+            try {
+                showStatus('Loading messages from API...', 'info');
+                
+                const response = await fetch('http://localhost:3000/api/messages');
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                const data = await response.json();
+                const messages = data.messages || [];
+                
+                showStatus(`✅ Successfully loaded ${messages.length} messages from API`, 'success');
+                displayMessages(messages, apiMessagesDiv, 'API');
+                
+                return messages;
+            } catch (error) {
+                showStatus(`❌ Failed to load from API: ${error.message}`, 'error');
+                return [];
+            }
+        }
+        
+        // Run tests
+        async function runTests() {
+            showStatus('Starting message loading tests...', 'info');
+            
+            // Test JSON loading first
+            const jsonMessages = await testJSONLoading();
+            
+            // Test API loading
+            const apiMessages = await testAPILoading();
+            
+            // Compare results
+            if (jsonMessages.length > 0 && apiMessages.length > 0) {
+                if (jsonMessages.length === apiMessages.length) {
+                    showStatus(`✅ Both sources have ${jsonMessages.length} messages - Data is consistent!`, 'success');
+                } else {
+                    showStatus(`⚠️ Data mismatch: JSON has ${jsonMessages.length} messages, API has ${apiMessages.length} messages`, 'error');
+                }
+            }
+        }
+        
+        // Run tests when page loads
+        window.addEventListener('load', runTests);
+    </script>
+</body>
+</html>
