@@ -126,7 +126,7 @@
     <!-- Client Notice -->
     <div style="text-align:center;margin-bottom:20px;padding:1rem;background:linear-gradient(135deg, rgba(166,46,63,.1), rgba(255,178,0,.1));border:1px solid rgba(166,46,63,.2);border-radius:12px;max-width:800px;margin-left:auto;margin-right:auto">
       <strong>🎯 Welcome to INEX Project Status</strong><br>
-      <small>This page shows the current progress of your INEX-branded operations portal development. Messages are automatically sent to GitHub in real-time - no manual workflow runs needed!</small>
+      <small>This page shows the current progress of your INEX-branded operations portal development. Messages and status updates are saved via Vercel API to inex-live-data.json in real-time!</small>
     </div>
 
     <!-- Manual Refresh Controls -->
@@ -263,8 +263,8 @@
             
             <!-- GitHub Pages Notice -->
             <div id="githubPagesNotice" style="display:block;margin-bottom:16px;padding:12px;background:rgba(0,150,136,.1);border:1px solid rgba(0,150,136,.2);border-radius:8px;font-size:12px">
-              <strong>✅ GitHub Integration Active</strong><br>
-              <small>Messages are automatically synced via GitHub. On the live site, messages are saved locally and will appear after the next deployment. On development, messages are pushed immediately.</small>
+              <strong>✅ Vercel API Integration Active</strong><br>
+              <small>Messages are automatically saved via Vercel API to inex-live-data.json. Both client and developer can respond to messages in real-time.</small>
             </div>
             
             <form id="messageForm" style="display:grid;gap:16px">
@@ -309,7 +309,7 @@
     </div>
     <div style="text-align:center;margin:20px 0;padding:1rem;background:rgba(0,150,136,.1);border:1px solid rgba(0,150,136,.2);border-radius:8px;max-width:600px;margin-left:auto;margin-right:auto">
       <strong>🔄 Real-Time Updates</strong><br>
-      <small>This page automatically updates when changes are made in the management dashboard. Messages are automatically pushed to GitHub in real-time - no manual workflow runs needed!</small>
+      <small>This page automatically updates when changes are made in the management dashboard. Messages and status updates are saved via Vercel API to inex-live-data.json in real-time!</small>
     </div>
   </main>
 
@@ -754,10 +754,11 @@
                   window.location.port !== '' ||
                   window.location.protocol === 'file:';
     
-    const API_BASE = isDev ? 'http://localhost:3000' : window.location.origin;
+    const API_BASE = isDev ? 'http://localhost:3000' : 'https://inex.cochranfilms.com';
     const MESSAGES_API = `${API_BASE}/api/messages`;
+    const STATUS_API = `${API_BASE}/api/status-update`;
     
-    // For live site, we'll use GitHub integration instead of API calls
+    // For live site, we'll use Vercel API endpoints
     const isLiveSite = !isDev && window.location.hostname === 'inex.cochranfilms.com';
 
     // Debug logging for API configuration
@@ -1061,33 +1062,46 @@
 
       try {
         if (isLiveSite) {
-          // For live site, show GitHub integration message
-          showMessageSuccess('Message saved! For live site integration, messages are automatically synced via GitHub. Your message will appear after the next deployment.');
-          
-          // Save to localStorage for immediate display
-          const message = {
-            name: name,
-            text: text,
-            timestamp: new Date().toISOString(),
-            id: Date.now(),
-            priority: 'normal',
-            category: 'client-feedback',
-            status: 'new',
-            read: false,
-            responded: false
-          };
+          // For live site, use Vercel API to save message
+          safeLog('debug', 'Sending message via Vercel API on live site');
+          const response = await safeFetch(MESSAGES_API, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              name: name,
+              text: text,
+              priority: 'normal',
+              category: 'client-feedback'
+            })
+          });
 
-          const savedMessages = localStorage.getItem('inex-messages') || '[]';
-          const messages = JSON.parse(savedMessages);
-          messages.unshift(message);
-          
-          localStorage.setItem('inex-messages', JSON.stringify(messages));
-          displayMessages(messages);
-          
-          // Reset form
-          textInput.value = '';
-          charCount.textContent = '0 characters';
-          
+          if (response.ok) {
+            // API success - message saved to JSON file
+            const result = await response.json();
+            safeLog('debug', '✅ Message sent successfully via Vercel API:', result);
+            
+            // Reload messages to show the new one
+            await loadMessages();
+            
+            // Show success message
+            showMessageSuccess('Message sent successfully! It has been saved and will appear on this page immediately.');
+            
+            // Reset form
+            textInput.value = '';
+            charCount.textContent = '0 characters';
+            
+          } else {
+            // API failed - try to get error details
+            let errorMessage = 'Failed to send message';
+            try {
+              const errorData = await response.json();
+              errorMessage = errorData.error || errorMessage;
+            } catch (e) {
+              // Ignore JSON parse errors
+            }
+            
+            throw new Error(`API Error: ${errorMessage}`);
+          }
         } else {
           // For development, try the API endpoint first for automatic GitHub push
           safeLog('debug', 'Sending message via API for automatic GitHub push');
