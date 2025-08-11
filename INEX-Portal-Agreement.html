@@ -206,8 +206,10 @@
           </div>
           <div class="sigbox">
             <p><strong>Provider: Cochran Films LLC — Systems Division</strong></p>
+            <label for="ceoSignatureInput" class="muted" style="display:block;margin-top:6px;margin-bottom:6px">Type your full name to sign <span id="ceoSignatureReady" class="ok-badge" style="display:none"><i class="fa-solid fa-check"></i> Signature Ready</span></label>
+            <input id="ceoSignatureInput" class="sig-input" type="text" placeholder="Full legal name" autocomplete="off" spellcheck="false" value="Cody Cochran">
             <div class="sigline"></div>
-            <p class="sig-script">Cody Cochran — Founder & CEO</p>
+            <p class="sig-preview" id="ceoSignaturePreview">Cody Cochran</p>
             <p class="muted" style="margin-top:6px">Date: <span id="dateCochran"></span></p>
           </div>
         </div>
@@ -247,7 +249,7 @@
     const EMAILJS_CONFIG = {
       publicKey: 'p4pF3OWvh-DXtae4c', // Your EmailJS public key
       serviceId: 'service_t11yvru',    // Your EmailJS service ID
-      templateId: 'template_n89b1e3',  // Admin notification template
+      templateId: 'template_cktbnss',  // Admin notification template
       userTemplateId: 'template_n89b1e3' // User confirmation template - replace with your actual EmailJS template ID
     };
 
@@ -457,7 +459,8 @@
         projectScopeSummary: 'INEX‑branded Operations Portal (Dashboard, Jobs, Inventory, RMA, SLAs, Clients, Careers) with documentation and deployment.',
         contactName: 'Zebadiah Henry',
         contactEmail: window.firebaseAuth?.currentUser?.email || '',
-        clientSignature: (document.getElementById('clientSignatureInput')?.value || '').trim()
+        clientSignature: (document.getElementById('clientSignatureInput')?.value || '').trim(),
+        ceoSignature: (document.getElementById('ceoSignatureInput')?.value || '').trim()
       };
     }
 
@@ -476,7 +479,7 @@
       node.querySelector('[data-client-date]').textContent = data.effectiveDate;
       node.querySelector('[data-client-sign]').textContent = data.clientSignature || 'Zebadiah Henry';
       const companySig = node.querySelector('[data-company-sign]');
-      if (companySig) companySig.textContent = 'Cody Cochran';
+      if (companySig) companySig.textContent = data.ceoSignature || 'Cody Cochran';
       const stamp = node.querySelector('#pdf-print-stamp');
       if (stamp) stamp.textContent = new Date().toLocaleString();
       // Ensure fonts and layout are ready before rasterizing
@@ -511,6 +514,8 @@
       node.querySelector('[data-provider-date]').textContent = data.effectiveDate;
       node.querySelector('[data-client-date]').textContent = data.effectiveDate;
       node.querySelector('[data-client-sign]').textContent = data.clientSignature || 'Zebadiah Henry';
+      const companySig = node.querySelector('[data-company-sign]');
+      if (companySig) companySig.textContent = data.ceoSignature || 'Cody Cochran';
       const stamp = node.querySelector('#pdf-print-stamp');
       if (stamp) stamp.textContent = new Date().toLocaleString();
       try { if (document.fonts && document.fonts.ready) { await document.fonts.ready; } } catch(_){}
@@ -611,7 +616,7 @@
       // Provider block
       doc.text('COCHRAN FILMS (COMPANY)', 22, y);
       line(22, y+13, 95); doc.text('Authorized Signature:', 22, y+9);
-      doc.setFont('helvetica','italic'); doc.setFontSize(12); doc.text('Cody Cochran', 22, y+12);
+      doc.setFont('helvetica','italic'); doc.setFontSize(12); doc.text(data.ceoSignature || 'Cody Cochran', 22, y+12);
       doc.setFont('helvetica','normal'); doc.setFontSize(7); doc.text('Title: Founder & CEO', 22, y+18); doc.text('Date: '+data.effectiveDate, 22, y+22);
 
       // Client block
@@ -738,19 +743,46 @@
     const clientPreview = document.getElementById('clientSignaturePreview');
     const sigReady = document.getElementById('signatureReady');
     const progressIndicator = document.getElementById('progressIndicator');
+    
+    // CEO signature input handling
+    const ceoInput = document.getElementById('ceoSignatureInput');
+    const ceoPreview = document.getElementById('ceoSignaturePreview');
+    const ceoSigReady = document.getElementById('ceoSignatureReady');
+    
     if (clientInput && clientPreview) {
       const updatePreview = ()=>{
         const v = clientInput.value.trim();
         clientPreview.textContent = v || 'Zebadiah Henry';
         const valid = isValidFullName(v);
         if (sigReady) sigReady.style.display = valid ? 'inline-block' : 'none';
+        
+        // Check both signatures for button state
+        const ceoValid = isValidFullName(ceoInput?.value?.trim() || 'Cody Cochran');
         const finalizeBtn = document.getElementById('finalizeBtn');
-        if (finalizeBtn) finalizeBtn.disabled = !valid;
-        if (progressIndicator) progressIndicator.textContent = valid ? 'Step 2 of 2: Send Contract' : 'Step 1 of 2: Sign';
+        if (finalizeBtn) finalizeBtn.disabled = !(valid && ceoValid);
+        if (progressIndicator) progressIndicator.textContent = (valid && ceoValid) ? 'Step 2 of 2: Send Contract' : 'Step 1 of 2: Sign';
       };
       clientInput.addEventListener('input', updatePreview);
       updatePreview();
       setTimeout(()=>{ try { clientInput.focus(); } catch(_){} }, 0);
+    }
+    
+    // CEO signature preview updates
+    if (ceoInput && ceoPreview) {
+      const updateCEOPreview = ()=>{
+        const v = ceoInput.value.trim();
+        ceoPreview.textContent = v || 'Cody Cochran';
+        const valid = isValidFullName(v);
+        if (ceoSigReady) ceoSigReady.style.display = valid ? 'inline-block' : 'none';
+        
+        // Update button state when CEO signature changes
+        const clientValid = isValidFullName(clientInput?.value?.trim() || 'Zebadiah Henry');
+        const finalizeBtn = document.getElementById('finalizeBtn');
+        if (finalizeBtn) finalizeBtn.disabled = !(valid && clientValid);
+        if (progressIndicator) progressIndicator.textContent = (valid && clientValid) ? 'Step 2 of 2: Send Contract' : 'Step 1 of 2: Sign';
+      };
+      ceoInput.addEventListener('input', updateCEOPreview);
+      updateCEOPreview();
     }
 
     finalizeBtn.addEventListener('click', async ()=>{
@@ -793,9 +825,14 @@
           }
         }
         lastData = buildContractData();
-        // Require client signature
+        // Require both signatures
         if (!isValidFullName(lastData.clientSignature)) {
           alert('Please type your full legal name to sign (first and last).');
+          finalizeBtn.disabled = false; finalizeBtn.innerHTML = '<i class="fa-solid fa-file-signature"></i> Sign & Send Contract';
+          return;
+        }
+        if (!isValidFullName(lastData.ceoSignature)) {
+          alert('Please ensure the CEO signature is properly filled out.');
           finalizeBtn.disabled = false; finalizeBtn.innerHTML = '<i class="fa-solid fa-file-signature"></i> Sign & Send Contract';
           return;
         }

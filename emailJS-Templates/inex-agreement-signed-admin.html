@@ -1,0 +1,174 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>INEX Agreement - Admin Notification</title>
+    <style>
+      /* Modern 2025 Email-safe inline CSS - Admin Theme */
+      .wrapper { width:100%; background:linear-gradient(135deg, #1a1a2e 0%, #0f0f23 100%); margin:0; padding:32px 0; }
+      .container { width:100%; max-width:680px; margin:0 auto; background:#ffffff; color:#1a1a2e; border-radius:16px; box-shadow:0 20px 40px rgba(0,0,0,0.1); overflow:hidden; }
+      .header { background:linear-gradient(135deg, #A62E3F 0%, #8B1A2A 100%); color:#fff; padding:24px 32px; display:flex; align-items:center; justify-content:space-between; position:relative; }
+      .header::before { content:''; position:absolute; top:0; left:0; right:0; bottom:0; background:url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="50" cy="50" r="1" fill="rgba(255,255,255,0.1)"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>'); opacity:0.3; }
+      .brand { display:flex; align-items:center; gap:16px; position:relative; z-index:1; }
+      .brand-logo { width:40px; height:40px; border-radius:8px; background:#fff; display:flex; align-items:center; justify-content:center; box-shadow:0 4px 12px rgba(0,0,0,0.2); }
+      .brand-title { font-weight:900; letter-spacing:0.5px; font-size:18px; text-transform:uppercase; text-shadow:0 2px 4px rgba(0,0,0,0.1); }
+      .meta { padding:20px 32px; color:#111; background:linear-gradient(90deg, #f8f9fa 0%, #ffffff 100%); border-bottom:1px solid #e9ecef; font-weight:700; font-size:14px; letter-spacing:0.3px; }
+      .body { padding:32px; font-size:15px; line-height:1.7; color:#2d3748; }
+      .callout { background:linear-gradient(135deg, rgba(166,46,63,0.08) 0%, rgba(166,46,63,0.12) 100%); border:2px solid rgba(166,46,63,0.3); color:#A62E3F; padding:20px; border-radius:12px; margin:24px 0; position:relative; }
+      .callout::before { content:''; position:absolute; top:0; left:0; right:0; height:4px; background:linear-gradient(90deg, #A62E3F, #8B1A2A); border-radius:12px 12px 0 0; }
+      .admin-section { background:linear-gradient(135deg, rgba(255,178,0,0.08) 0%, rgba(255,178,0,0.12) 100%); border:2px solid rgba(255,178,0,0.3); padding:20px; border-radius:12px; margin:24px 0; }
+      .admin-section::before { content:''; position:absolute; top:0; left:0; right:0; height:4px; background:linear-gradient(90deg, #FFB200, #FF8C00); border-radius:12px 12px 0 0; }
+      .table { width:100%; border-collapse:separate; border-spacing:0; margin:24px 0; border-radius:12px; overflow:hidden; box-shadow:0 4px 16px rgba(0,0,0,0.08); }
+      .table th { text-align:left; font-size:13px; color:#6b7280; font-weight:700; padding:16px 20px; background:#f8f9fa; border-bottom:2px solid #e5e7eb; text-transform:uppercase; letter-spacing:0.5px; }
+      .table td { padding:16px 20px; border-bottom:1px solid #f1f5f9; font-size:14px; color:#374151; font-weight:500; }
+      .table tr:last-child td { border-bottom:none; }
+      .table tr:hover td { background:#f8fafc; }
+      .cta-wrap { text-align:center; padding:24px 0 8px; }
+      .btn { display:inline-block; background:linear-gradient(135deg, #A62E3F 0%, #8B1A2A 100%); color:#fff !important; font-weight:800; text-decoration:none; padding:16px 24px; border-radius:12px; border:none; margin:0 8px; box-shadow:0 8px 24px rgba(166,46,63,0.3); transition:all 0.3s ease; text-transform:uppercase; letter-spacing:0.5px; font-size:13px; }
+      .btn:hover { transform:translateY(-2px); box-shadow:0 12px 32px rgba(166,46,63,0.4); }
+      .footer { padding:24px 32px; font-size:12px; color:#6b7280; border-top:1px solid #e5e7eb; text-align:center; background:#f8f9fa; }
+      .tiny { font-size:12px; color:#9ca3af; }
+      .signature-highlight { font-family:'Georgia', 'Times New Roman', serif; font-style:italic; font-size:16px; color:#A62E3F; font-weight:600; }
+      .timestamp { font-size:13px; color:#9ca3af; font-weight:500; }
+      .admin-note { background:#f8f9fa; border-left:4px solid #A62E3F; padding:16px; margin:20px 0; border-radius:0 8px 8px 0; }
+      
+      /* Responsive design */
+      @media (max-width: 640px) {
+        .container { margin:16px; border-radius:12px; }
+        .header { padding:20px 24px; }
+        .brand-title { font-size:16px; }
+        .body { padding:24px; }
+        .meta { padding:16px 24px; }
+        .cta-wrap { padding:20px 0; }
+        .btn { display:block; margin:8px 0; }
+      }
+      
+      @media (prefers-color-scheme: dark) {
+        .wrapper { background:linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 100%); }
+        .container { background:#1a1a1a; color:#f5f5f5; border:1px solid #333; }
+        .body { color:#e5e7eb; }
+        .table th { background:#2d3748; color:#a3a3a3; border-bottom-color:#4a5568; }
+        .table td { color:#e2e8f0; border-bottom-color:#4a5568; }
+        .table tr:hover td { background:#2d3748; }
+        .footer { background:#2d3748; color:#a3a3af; border-top-color:#4a5568; }
+        .meta { background:linear-gradient(90deg, #2d3748 0%, #1a1a1a 100%); color:#e2e8f0; border-bottom-color:#4a5568; }
+        .admin-note { background:#2d3748; border-left-color:#A62E3F; }
+      }
+    </style>
+  </head>
+  <body style="margin:0; padding:0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">
+    <div class="wrapper">
+      <div class="container">
+        <div class="header">
+          <div class="brand">
+            <div class="brand-logo">
+              <img src="https://inex.cochranfilms.com/inex-logo.png" alt="INEX" width="32" height="32" style="display:block; width:32px; height:32px; object-fit:contain;">
+            </div>
+            <div class="brand-title">INEX Systems & Designs — Admin Alert</div>
+          </div>
+          <div class="brand-logo">
+            <img src="https://inex.cochranfilms.com/CochranFilms-logo.png" alt="Cochran Films" width="32" height="32" style="display:block; width:32px; height:32px; object-fit:contain;">
+          </div>
+        </div>
+
+        <div class="meta">
+          Contract ID: {{contract_id}} · Effective Date: {{effective_date}} · Signed by: {{client_name}}
+        </div>
+
+        <div class="body">
+          <p style="margin:0 0 16px 0; font-size:16px;">Admin Notification:</p>
+          <p style="margin:0 0 24px 0;">
+            <strong>{{client_name}}</strong> has successfully signed the INEX agreement. 
+            This contract is now legally binding and requires immediate attention.
+          </p>
+
+          <div class="callout">
+            <strong style="color:#A62E3F;">Contract Details:</strong><br>
+            <strong>Client Signature:</strong> <span class="signature-highlight">{{client_signature}}</span><br>
+            <strong>Signing Time:</strong> <span class="timestamp">{{signed_timestamp}}</span><br>
+            <strong>Client Email:</strong> <span class="timestamp">{{to_email}}</span>
+          </div>
+
+          <div class="admin-section">
+            <strong style="color:#FF8C00;">Business Impact & Next Steps:</strong><br>
+            <ul style="margin:12px 0; padding-left:20px;">
+              <li>Revenue commitment: <strong>{{amount}}</strong> implementation fee</li>
+              <li>Recurring revenue: <strong>{{care_plan}}</strong> monthly managed care</li>
+              <li>Project scope: {{project_scope_summary}}</li>
+              <li>Contract effective immediately upon signature</li>
+              <li>Project kickoff should be scheduled within 48 hours</li>
+            </ul>
+          </div>
+
+          <table class="table" role="presentation" cellspacing="0" cellpadding="0" border="0">
+            <thead>
+              <tr>
+                <th>Contract Field</th>
+                <th>Value</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Contract ID</td>
+                <td><strong>{{contract_id}}</strong></td>
+              </tr>
+              <tr>
+                <td>Effective Date</td>
+                <td><strong>{{effective_date}}</strong></td>
+              </tr>
+              <tr>
+                <td>Client Name</td>
+                <td><strong>{{client_name}}</strong></td>
+              </tr>
+              <tr>
+                <td>Client Email</td>
+                <td><strong>{{to_email}}</strong></td>
+              </tr>
+              <tr>
+                <td>Implementation Fee</td>
+                <td><strong>{{amount}}</strong></td>
+              </tr>
+              <tr>
+                <td>Monthly Care Plan</td>
+                <td><strong>{{care_plan}}</strong></td>
+              </tr>
+              <tr>
+                <td>Project Scope</td>
+                <td>{{project_scope_summary}}</td>
+              </tr>
+              <tr>
+                <td>Digital Signature</td>
+                <td><em>{{client_signature}}</em></td>
+              </tr>
+              <tr>
+                <td>Signing Timestamp</td>
+                <td>{{signed_timestamp}}</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <div class="admin-note">
+            <strong>⚠️ ADMIN ACTION REQUIRED:</strong><br>
+            • Verify contract details match proposal<br>
+            • Schedule project kickoff meeting<br>
+            • Update CRM/project management system<br>
+            • Prepare welcome package for client<br>
+            • Set up project timeline and milestones
+          </div>
+
+          <div class="cta-wrap">
+            <a class="btn" href="https://inex.cochranfilms.com/status.html" target="_blank" rel="noopener">View Project Status</a>
+            <a class="btn" href="https://inex.cochranfilms.com/index.html" target="_blank" rel="noopener">Access Dashboard</a>
+          </div>
+
+          <p class="tiny" style="margin-top:20px;">This admin notification was sent to {{to_email}}.</p>
+        </div>
+
+        <div class="footer">
+          © {{company_name}} · Contract ID: {{contract_id}} · {{signed_timestamp}} · Admin Notification
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
