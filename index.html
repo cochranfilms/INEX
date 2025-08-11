@@ -379,7 +379,7 @@
             </div>
             <div style="margin-top:1rem;padding:1rem;background:rgba(0,150,136,.1);border:1px solid rgba(0,150,136,.2);border-radius:8px">
               <strong>🚀 Live Deployment Controls</strong><br>
-              <small>These buttons will automatically update both local status AND deploy live to Zebediah's status page via GitHub API:</small>
+              <small>These buttons will automatically update both local status AND deploy to Zebediah's status page via GitHub API:</small>
               <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-top:1rem">
                 <button class="btn primary" onclick="deployStatusUpdate()">🚀 Deploy Status Update</button>
                 <button class="btn secondary" onclick="deployPhaseChange()">🔄 Deploy Phase Change</button>
@@ -476,7 +476,8 @@
                   white-space:normal;
                   word-wrap:break-word;
                   overflow-wrap:break-word;
-                ">Real-time Updates</strong>
+                  word-break:normal;
+                ">GitHub Integration</strong>
               </div>
               <p style="
                 font-size:11px;
@@ -487,7 +488,7 @@
                 word-wrap:break-word;
                 overflow-wrap:break-word;
                 word-break:normal;
-              ">Messages update automatically via GitHub API integration.</p>
+              ">Messages are automatically pushed to GitHub and visible immediately.</p>
             </div>
           </div>
         </article>
@@ -503,9 +504,9 @@
     const route = location.hash.replace('#/','') || 'dashboard';
     setActive(route);
     view.innerHTML = Views[route] || Views.dashboard;
-    // After rendering, if we're on the status view, try to sync from live JSON
+    // After rendering, initialize status displays
     if (route === 'status') {
-      loadLiveStatusFromJson();
+      updateAllStatusDisplays();
     }
   }
   window.addEventListener('hashchange', render);
@@ -515,37 +516,11 @@
   window.addEventListener('load', function() {
     // Wait a bit for the DOM to be fully ready
     setTimeout(() => {
-      // Load from live JSON first, then fallback to localStorage
-      loadLiveStatusFromJson().then(() => {
-        const savedProgress = localStorage.getItem('inex-project-progress') || '5';
-        const savedPhase = localStorage.getItem('inex-project-phase') || 'Phase 1';
-        const savedStatus = localStorage.getItem('inex-project-status') || 'Phase 1 (Prototype Polish) in progress. Working on INEX branding integration and basic UI framework. On track for Aug 22 completion.';
-        
-        // Update all progress displays to ensure consistency
-        updateDashboardProgress();
-        
-        // Only update if elements exist (they only exist in the status view)
-        const phaseElement = document.getElementById('phaseDisplay');
-        const statusElement = document.getElementById('statusText');
-        
-        if (phaseElement) {
-          phaseElement.textContent = savedPhase;
-        }
-        if (statusElement) {
-          statusElement.textContent = savedStatus;
-        }
-      });
+      // Initialize status from localStorage
+      initializeStatus();
       
-      // Initialize default values if none exist
-      if (!localStorage.getItem('inex-project-progress')) {
-        localStorage.setItem('inex-project-progress', '5');
-      }
-      if (!localStorage.getItem('inex-project-phase')) {
-        localStorage.setItem('inex-project-phase', 'Phase 1');
-      }
-      if (!localStorage.getItem('inex-project-status')) {
-        localStorage.setItem('inex-project-status', 'Phase 1 (Prototype Polish) in progress. Working on INEX branding integration and basic UI framework. On track for Aug 22 completion.');
-      }
+      // Update all progress displays to ensure consistency
+      updateAllStatusDisplays();
     }, 100);
   });
 
@@ -581,9 +556,9 @@
                 window.location.protocol === 'file:';
   
   // API endpoints for automatic GitHub integration
-  let API_BASE = isDev ? 'http://localhost:3000' : window.location.origin;
-  let API_STATUS_UPDATE = `${API_BASE}/api/status-update`;
-  let API_MESSAGES = `${API_BASE}/api/messages`;
+  const API_BASE = isDev ? 'http://localhost:3000' : window.location.origin;
+  const API_STATUS_UPDATE = `${API_BASE}/api/status-update`;
+  const API_MESSAGES = `${API_BASE}/api/messages`;
 
   // Debug logging
   console.log('🔍 API Configuration Debug:');
@@ -595,28 +570,6 @@
   console.log('  API_BASE:', API_BASE);
   console.log('  API_STATUS_UPDATE:', API_STATUS_UPDATE);
   console.log('  API_MESSAGES:', API_MESSAGES);
-
-  const candidateBases = isDev ? [API_BASE] : [
-    window.location.origin,
-    window.location.origin.replace('://inex.', '://www.inex.'),
-    window.location.origin.replace('://www.inex.', '://inex.'),
-  ].filter((v, i, a) => v && a.indexOf(v) === i);
-
-  async function detectApiBaseForStatus() {
-    if (isDev) return;
-    for (const base of candidateBases) {
-      try {
-        // Probe with a safe HEAD/GET to messages endpoint, which exists everywhere
-        const resp = await fetch(`${base}/api/messages`, { method: 'GET', cache: 'no-store' });
-        if (resp.ok) {
-          API_BASE = base;
-          API_STATUS_UPDATE = `${API_BASE}/api/status-update`;
-          console.log('Selected API Base (index):', API_BASE);
-          return;
-        }
-      } catch (_) {}
-    }
-  }
 
   // Centralized Status Management System
   let currentStatus = {
@@ -685,12 +638,6 @@
     localStorage.setItem('inex-project-last-updated', currentStatus.lastUpdated);
     
     updateAllStatusDisplays();
-    
-    // Trigger storage event for real-time updates
-    window.dispatchEvent(new StorageEvent('storage', {
-      key: 'inex-project-progress',
-      newValue: currentStatus.progress.toString()
-    }));
   }
 
   // Status Update Functions - Now work from any view
@@ -740,12 +687,6 @@
           const updates = JSON.parse(localStorage.getItem('inex-project-updates') || '[]');
           updates.push({ date, update, status });
           localStorage.setItem('inex-project-updates', JSON.stringify(updates));
-          
-          // Trigger storage event for real-time updates
-          window.dispatchEvent(new StorageEvent('storage', {
-            key: 'inex-project-updates',
-            newValue: JSON.stringify(updates)
-          }));
           
           alert('Update added successfully!');
         }
@@ -1036,84 +977,13 @@
     }
   }
 
-  // Auto-load messages when dashboard loads
+  // Load messages when page loads
   window.addEventListener('load', function() {
     // Wait a bit for the DOM to be fully ready
     setTimeout(() => {
       loadDevMessages();
     }, 500);
   });
-
-  // Listen for new messages from client
-  window.addEventListener('storage', function(e) {
-    if (e.key === 'inex-messages') {
-      try {
-        const messages = JSON.parse(e.newValue || '[]');
-        displayDevMessages(messages);
-        
-        // Show notification for new messages
-        if (messages.length > 0) {
-          const latestMessage = messages[0];
-          if (latestMessage.timestamp) {
-            const messageAge = Date.now() - new Date(latestMessage.timestamp).getTime();
-            if (messageAge < 300000) { // 5 minutes
-              console.log('📨 New message received:', latestMessage);
-            }
-          }
-        }
-      } catch (e) {
-        console.warn('Error parsing messages from storage');
-      }
-    }
-  });
-
-  // Show notification for new messages
-  function showMessageNotification(message) {
-    // Check if we're in the status view
-    const messagesList = document.getElementById('messagesList');
-    if (!messagesList) return;
-    
-    // Create notification element
-    const notification = document.createElement('div');
-    notification.style.cssText = `
-      position: fixed;
-      top: 80px;
-      right: 20px;
-      background: var(--maroon);
-      color: white;
-      padding: 12px 16px;
-      border-radius: 8px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-      z-index: 1000;
-      max-width: 300px;
-      animation: slideIn 0.3s ease-out;
-    `;
-    
-    notification.innerHTML = `
-      <div style="font-weight: 700; margin-bottom: 4px;">💬 New Message from ${message.name || 'Client'}</div>
-      <div style="font-size: 13px; opacity: 0.9;">${message.text.substring(0, 100)}${message.text.length > 100 ? '...' : ''}</div>
-      <button onclick="this.parentElement.remove()" style="position: absolute; top: 8px; right: 8px; background: none; border: none; color: white; cursor: pointer; font-size: 16px;">×</button>
-    `;
-    
-    // Add CSS animation
-    const style = document.createElement('style');
-    style.textContent = `
-      @keyframes slideIn {
-        from { transform: translateX(100%); opacity: 0; }
-        to { transform: translateX(0); opacity: 1; }
-      }
-    `;
-    document.head.appendChild(style);
-    
-    document.body.appendChild(notification);
-    
-    // Auto-remove after 8 seconds
-    setTimeout(() => {
-      if (notification.parentElement) {
-        notification.remove();
-      }
-    }, 8000);
-  }
 
   // Function to update dashboard progress display
   function updateDashboardProgress() {
