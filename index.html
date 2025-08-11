@@ -409,64 +409,36 @@
       <!-- Communication Section -->
       <section class="cards" style="margin-top:1rem">
         <article class="card span-8">
-          <div class="head">💬 Client Messages</div>
+          <div class="head">💬 Message Developer</div>
           <div class="body">
-            <div style="margin-bottom:1rem">
+            <div style="margin-bottom:16px">
               <p style="margin:0 0 12px 0;font-size:13px;color:var(--muted)">
-                Messages from Zebediah (INEX) will appear here automatically. The system now pushes messages to GitHub in real-time via API.
+                Send a message to the development team. Your message will be visible to both you and the developers.
               </p>
+              
+              <!-- GitHub Pages Notice -->
+              <div id="githubPagesNotice" style="display:none;margin-bottom:16px;padding:12px;background:rgba(0,150,136,.1);border:1px solid rgba(0,150,136,.2);border-radius:8px;font-size:12px">
+                <strong>✅ Automatic GitHub Integration Active</strong><br>
+                <small>This site automatically pushes messages to GitHub in real-time. When you send a message, it's immediately committed to the repository and visible to the development team.</small>
+              </div>
+              
+              <form id="messageForm" style="display:grid;gap:12px">
+                <input type="text" id="messageName" placeholder="Your name (optional)" style="padding:8px 12px;border:1px solid var(--border);border-radius:8px;background:var(--panel);color:var(--panel-ink);font-size:13px">
+                <textarea id="messageText" placeholder="Type your message here..." rows="3" style="padding:8px 12px;border:1px solid var(--border);border-radius:8px;background:var(--panel);color:var(--panel-ink);font-size:13px;resize:vertical"></textarea>
+                <div style="display:flex;justify-content:space-between;align-items:center">
+                  <small style="color:var(--muted);font-size:11px" id="charCount">0 characters</small>
+                  <button type="submit" class="btn primary" style="justify-self:end;padding:8px 16px;font-size:13px">📤 Send Message</button>
+                </div>
+              </form>
             </div>
             
-            <div id="devMessagesList" style="max-height:400px;overflow-y:auto;border:1px solid var(--border);border-radius:8px;padding:1rem;background:var(--panel)">
-              <div style="
-                text-align:center;
-                padding:40px 20px;
-                color:var(--muted);
-                font-size:14px;
-              ">
-                <div style="font-size:24px;margin-bottom:16px;opacity:0.5">⏳</div>
-                <div style="font-weight:600;margin-bottom:8px;color:var(--panel-ink)">Loading Messages...</div>
-                <div>Fetching latest messages from GitHub...</div>
+            <div style="border-top:1px solid var(--border);padding-top:16px">
+              <h4 style="margin:0 0 12px 0;font-size:14px;color:var(--accent)">📨 Recent Messages</h4>
+              <div id="messagesList" style="max-height:300px;overflow-y:auto">
+                <div style="text-align:center;padding:20px;color:var(--muted);font-size:13px">
+                  No messages yet. Send the first one!
+                </div>
               </div>
-            </div>
-            
-            <div style="
-              margin-top:1rem;
-              padding:.8rem;
-              background:rgba(0,150,136,.1);
-              border:1px solid rgba(0,150,136,.2);
-              border-radius:8px;
-              font-size:12px;
-              word-wrap:break-word;
-              white-space:normal;
-              overflow-wrap:break-word;
-            ">
-              <div style="
-                display:flex;
-                align-items:center;
-                gap:6px;
-                margin-bottom:6px;
-                flex-wrap:wrap;
-              ">
-                <div style="font-size:16px;flex-shrink:0">🚀</div>
-                <strong style="
-                  font-size:12px;
-                  color:var(--panel-ink);
-                  white-space:normal;
-                  word-wrap:break-word;
-                  overflow-wrap:break-word;
-                ">Real-time Updates</strong>
-              </div>
-              <p style="
-                font-size:11px;
-                color:var(--muted);
-                line-height:1.3;
-                margin:0;
-                white-space:normal;
-                word-wrap:break-word;
-                overflow-wrap:break-word;
-                word-break:normal;
-              ">Messages update automatically via GitHub API integration.</p>
             </div>
           </div>
         </article>
@@ -958,12 +930,13 @@
 
   // Messaging System Functions - Automatic GitHub Integration
   async function loadDevMessages() {
-    const messagesList = document.getElementById('devMessagesList');
+    const messagesList = document.getElementById('messagesList');
     if (!messagesList) return;
     
     try {
-      // Try API endpoint first (both local and production)
-      const response = await fetch('/api/messages', { 
+      // Always try the API endpoint first (both local and production)
+      console.log('Loading messages from API endpoint');
+      const response = await fetch(MESSAGES_API, { 
         cache: 'no-store',
         headers: { 'Content-Type': 'application/json' }
       });
@@ -1007,54 +980,33 @@
   }
 
   function displayDevMessages(messages) {
-    const messagesList = document.getElementById('devMessagesList');
+    const messagesList = document.getElementById('messagesList');
     if (!messagesList) return;
     
     if (messages.length === 0) {
       messagesList.innerHTML = `
-        <div style="
-          text-align:center;
-          padding:40px 20px;
-          color:var(--muted);
-          font-size:14px;
-          background:var(--panel);
-          border:2px dashed var(--border);
-          border-radius:12px;
-        ">
-          <div style="font-size:48px;margin-bottom:16px;opacity:0.5">💬</div>
-          <div style="font-weight:600;margin-bottom:8px;color:var(--panel-ink)">No Messages Yet</div>
-          <div>Messages from Zebediah (INEX) will appear here automatically when sent from the status page.</div>
+        <div style="text-align:center;padding:20px;color:var(--muted);font-size:13px">
+          No messages yet. Send the first one!
         </div>
       `;
       return;
     }
 
     messagesList.innerHTML = messages.map(msg => `
-      <div style="
-        padding:16px;
-        border:1px solid var(--border);
-        border-radius:12px;
-        margin-bottom:12px;
-        background:var(--panel);
-        box-shadow:0 2px 8px rgba(0,0,0,.05);
-        transition:all 0.2s ease;
-      ">
-        <div style="
-          display:flex;
-          justify-content:space-between;
-          align-items:center;
-          margin-bottom:8px;
-          padding-bottom:8px;
-          border-bottom:1px solid var(--border);
-        ">
-          <div style="display:flex;align-items:center;gap:8px;">
-            <div style="
-              width:32px;
-              height:32px;
-              border-radius:50%;
-              background:var(--maroon);
-              display:flex;
-              align-items:center;
+      <div style="padding:12px;border:1px solid var(--border);border-radius:8px;margin-bottom:8px;background:rgba(255,255,255,.02)">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+          <strong style="font-size:13px;color:var(--accent)">${msg.name || 'Anonymous'}</strong>
+          <small style="color:var(--muted);font-size:11px">${formatTimestamp(msg.timestamp)}</small>
+        </div>
+        <div style="font-size:13px;line-height:1.4">${msg.text}</div>
+        ${msg.responses && msg.responses.length > 0 ? `
+          <div style="margin-top:8px;padding-top:8px;border-top:1px solid var(--border);font-size:12px;color:var(--muted)">
+            <strong>Response:</strong> ${msg.responses[msg.responses.length - 1].text}
+          </div>
+        ` : ''}
+      </div>
+    `).join('');
+  }
               justify-content:center;
               color:white;
               font-weight:700;
@@ -1254,7 +1206,7 @@
   // Show notification for new messages
   function showMessageNotification(message) {
     // Check if we're in the status view
-    const messagesList = document.getElementById('devMessagesList');
+    const messagesList = document.getElementById('messagesList');
     if (!messagesList) return;
     
     // Create notification element
@@ -1315,6 +1267,196 @@
     if (statusProgress) {
       statusProgress.textContent = progress + '%';
     }
+  }
+
+  // Message Form Functionality - Copy from working status page
+  const messageForm = document.getElementById('messageForm');
+  const messageText = document.getElementById('messageText');
+  const charCount = document.getElementById('charCount');
+  const githubPagesNotice = document.getElementById('githubPagesNotice');
+
+  // API endpoint for messages - detect development vs production
+  const isDev = window.location.hostname === 'localhost' || 
+                window.location.hostname === '127.0.0.1' ||
+                window.location.port !== '' ||
+                window.location.protocol === 'file:';
+  
+  const API_BASE = isDev ? 'http://localhost:3000' : window.location.origin;
+  const MESSAGES_API = `${API_BASE}/api/messages`;
+
+  // Debug logging for API configuration
+  console.log('🔍 Index Page API Configuration:');
+  console.log('  Hostname:', window.location.hostname);
+  console.log('  Port:', window.location.port);
+  console.log('  Protocol:', window.location.protocol);
+  console.log('  Origin:', window.location.origin);
+  console.log('  isDev:', isDev);
+  console.log('  API_BASE:', API_BASE);
+  console.log('  MESSAGES_API:', MESSAGES_API);
+
+  // Update character count
+  if (messageText) {
+    messageText.addEventListener('input', function() {
+      const textLength = this.value.length;
+      if (charCount) charCount.textContent = `${textLength} characters`;
+    });
+  }
+
+  // Handle message form submission
+  if (messageForm) {
+    messageForm.addEventListener('submit', async function(e) {
+      e.preventDefault();
+      
+      const nameInput = document.getElementById('messageName');
+      const textInput = document.getElementById('messageText');
+      
+      const name = nameInput.value.trim() || 'Anonymous';
+      const text = textInput.value.trim();
+      
+      if (!text) {
+        alert('Please enter a message');
+        return;
+      }
+
+      // Show loading state
+      const submitBtn = messageForm.querySelector('button[type="submit"]');
+      const originalText = submitBtn.innerHTML;
+      submitBtn.innerHTML = '📤 Sending...';
+      submitBtn.disabled = true;
+
+      try {
+        // Always try the API endpoint first for automatic GitHub push
+        console.log('Sending message via API for automatic GitHub push');
+        const response = await fetch(MESSAGES_API, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            name: name,
+            text: text,
+            priority: 'normal',
+            category: 'client-feedback'
+          })
+        });
+
+        if (response.ok) {
+          // API success - message automatically pushed to GitHub
+          const result = await response.json();
+          console.log('✅ Message sent successfully via API:', result);
+          
+          // Reload messages to show the new one
+          await loadDevMessages();
+          
+          // Show success message
+          showMessageSuccess('Message sent successfully! It has been automatically pushed to GitHub and will appear on this page immediately.');
+          
+          // Reset form
+          textInput.value = '';
+          if (charCount) charCount.textContent = '0 characters';
+          
+        } else {
+          // API failed - try to get error details
+          let errorMessage = 'Failed to send message';
+          try {
+            const errorData = await response.json();
+            errorMessage = errorData.error || errorMessage;
+          } catch (e) {
+            // Ignore JSON parse errors
+          }
+          
+          throw new Error(`API Error: ${errorMessage}`);
+        }
+        
+      } catch (error) {
+        console.error('Failed to send message via API:', error.message);
+        
+        // Fallback to localStorage if API completely fails
+        const message = {
+          name: name,
+          text: text,
+          timestamp: new Date().toISOString(),
+          id: Date.now()
+        };
+
+        const savedMessages = localStorage.getItem('inex-messages') || '[]';
+        const messages = JSON.parse(savedMessages);
+        messages.unshift(message);
+        
+        localStorage.setItem('inex-messages', JSON.stringify(messages));
+        displayDevMessages(messages);
+        
+        showMessageSuccess('Message saved locally (API unavailable). Please try again later.');
+      }
+
+      // Reset button
+      submitBtn.innerHTML = originalText;
+      submitBtn.disabled = false;
+    });
+  }
+
+  // Format timestamp for messages
+  function formatTimestamp(timestamp) {
+    if (!timestamp) return 'Unknown time';
+    try {
+      const date = new Date(timestamp);
+      const now = new Date();
+      const diffMs = now - date;
+      const diffMins = Math.floor(diffMs / 60000);
+      const diffHours = Math.floor(diffMs / 3600000);
+      const diffDays = Math.floor(diffMs / 86400000);
+      
+      if (diffMins < 1) return 'Just now';
+      if (diffMins < 60) return `${diffMins}m ago`;
+      if (diffHours < 24) return `${diffHours}h ago`;
+      if (diffDays < 7) return `${diffDays}d ago`;
+      
+      return date.toLocaleDateString();
+    } catch (e) {
+      return 'Unknown time';
+    }
+  }
+
+  // Show success message
+  function showMessageSuccess(message) {
+    // Create notification element
+    const notification = document.createElement('div');
+    notification.style.cssText = `
+      position: fixed;
+      top: 80px;
+      right: 20px;
+      background: var(--maroon);
+      color: white;
+      padding: 12px 16px;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+      z-index: 1000;
+      max-width: 300px;
+      animation: slideIn 0.3s ease-out;
+    `;
+    
+    notification.innerHTML = `
+      <div style="font-weight: 700; margin-bottom: 4px;">✅ Success!</div>
+      <div style="font-size: 13px; opacity: 0.9;">${message}</div>
+      <button onclick="this.parentElement.remove()" style="position: absolute; top: 8px; right: 8px; background: none; border: none; color: white; cursor: pointer; font-size: 16px;">×</button>
+    `;
+    
+    // Add CSS animation
+    const style = document.createElement('style');
+    style.textContent = `
+      @keyframes slideIn {
+        from { transform: translateX(100%); opacity: 0; }
+        to { transform: translateX(0); opacity: 1; }
+      }
+    `;
+    document.head.appendChild(style);
+    
+    document.body.appendChild(notification);
+    
+    // Auto-remove after 8 seconds
+    setTimeout(() => {
+      if (notification.parentElement) {
+        notification.remove();
+      }
+    }, 8000);
   }
 
   // Call loadDevMessages when the status view is rendered
