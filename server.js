@@ -505,7 +505,7 @@ app.get('/api/message-manager', (req, res) => {
 
 app.put('/api/message-manager', (req, res) => {
   try {
-    const { id, status, read, responded, response, priority, category } = req.body;
+    const { id, action, responseText, responder, status, read, responded, response, priority, category } = req.body;
 
     if (!id) {
       return res.status(400).json({
@@ -534,14 +534,35 @@ app.put('/api/message-manager', (req, res) => {
       });
     }
 
-    // Update message fields
+    // Handle different actions
+    if (action === 'markRead') {
+      messages[messageIndex].read = true;
+    } else if (action === 'addResponse') {
+      if (!responseText) {
+        return res.status(400).json({
+          success: false,
+          error: 'Response text is required for addResponse action'
+        });
+      }
+      
+      if (!messages[messageIndex].responses) messages[messageIndex].responses = [];
+      messages[messageIndex].responses.push({
+        text: responseText,
+        timestamp: new Date().toISOString(),
+        responder: responder || 'Development Team'
+      });
+      messages[messageIndex].responded = true;
+      messages[messageIndex].status = 'responded';
+    }
+
+    // Update message fields (for backward compatibility)
     if (status !== undefined) messages[messageIndex].status = status;
     if (read !== undefined) messages[messageIndex].read = read;
     if (responded !== undefined) messages[messageIndex].responded = responded;
     if (priority !== undefined) messages[messageIndex].priority = priority;
     if (category !== undefined) messages[messageIndex].category = category;
 
-    // Add response if provided
+    // Add response if provided (for backward compatibility)
     if (response) {
       if (!messages[messageIndex].responses) messages[messageIndex].responses = [];
       messages[messageIndex].responses.push({
