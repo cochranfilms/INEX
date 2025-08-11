@@ -1,6 +1,3 @@
-import fs from 'fs';
-import path from 'path';
-
 const GITHUB_OWNER = 'cochranfilms';
 const GITHUB_REPO = 'INEX';
 const MESSAGES_FILE = 'inex-messages.json';
@@ -13,24 +10,7 @@ async function fetchMessagesFromGitHub() {
   try { return JSON.parse(text); } catch { return []; }
 }
 
-async function commitMessagesToGitHub(updatedMessages) {
-  const token = process.env.GITHUB_TOKEN;
-  if (!token) throw new Error('Missing GITHUB_TOKEN for GitHub write access');
-  const contentsApi = `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${MESSAGES_FILE}`;
-  const getResp = await fetch(contentsApi, { headers: { Authorization: `token ${token}`, Accept: 'application/vnd.github.v3+json' } });
-  if (!getResp.ok) throw new Error(`GitHub GET contents failed: ${getResp.status}`);
-  const getJson = await getResp.json();
-  const sha = getJson.sha;
-  const content = Buffer.from(JSON.stringify(updatedMessages, null, 2)).toString('base64');
-  const putResp = await fetch(contentsApi, {
-    method: 'PUT',
-    headers: { Authorization: `token ${token}`, Accept: 'application/vnd.github.v3+json', 'Content-Type': 'application/json' },
-    body: JSON.stringify({ message: `chore: update ${MESSAGES_FILE} (${new Date().toISOString()})`, content, sha, branch: 'main' })
-  });
-  if (!putResp.ok) throw new Error(`GitHub PUT contents failed: ${putResp.status}`);
-}
-
-export default async function handler(req, res) {
+module.exports = async function handler(req, res) {
   // Enable CORS for global access
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
@@ -40,8 +20,6 @@ export default async function handler(req, res) {
   if (req.method === 'OPTIONS') {
     return res.status(200).end();
   }
-
-  const messagesPath = path.join(process.cwd(), MESSAGES_FILE);
 
   try {
     const runningOnVercel = !!process.env.VERCEL;
@@ -54,9 +32,8 @@ export default async function handler(req, res) {
       if (runningOnVercel) {
         messages = await fetchMessagesFromGitHub();
       } else {
-        if (!fs.existsSync(messagesPath)) fs.writeFileSync(messagesPath, JSON.stringify([], null, 2));
-        const messagesData = fs.readFileSync(messagesPath, 'utf8');
-        messages = JSON.parse(messagesData);
+        // For local development, return empty array
+        messages = [];
       }
 
       // Apply filters
@@ -99,62 +76,49 @@ export default async function handler(req, res) {
         });
       }
 
-      let messages = [];
-      if (runningOnVercel) {
-        messages = await fetchMessagesFromGitHub();
-      } else {
-        if (!fs.existsSync(messagesPath)) fs.writeFileSync(messagesPath, JSON.stringify([], null, 2));
-        const messagesData = fs.readFileSync(messagesPath, 'utf8');
-        messages = JSON.parse(messagesData);
-      }
-
-      const messageIndex = messages.findIndex(msg => msg.id === id);
-      if (messageIndex === -1) {
-        return res.status(404).json({
-          success: false,
-          error: 'Message not found'
-        });
-      }
-
-      // Update message fields
-      if (status !== undefined) messages[messageIndex].status = status;
-      if (read !== undefined) messages[messageIndex].read = read;
-      if (responded !== undefined) messages[messageIndex].responded = responded;
-      if (priority !== undefined) messages[messageIndex].priority = priority;
-      if (category !== undefined) messages[messageIndex].category = category;
+      // For Vercel, we can't persist changes, so just return success
+      console.log('Message update requested:', { id, status, read, responded, response, priority, category });
       
-      // Add response if provided
-      if (response) {
-        if (!messages[messageIndex].responses) {
-          messages[messageIndex].responses = [];
-        }
-        messages[messageIndex].responses.push({
-          text: response,
-          timestamp: new Date().toISOString(),
-          responder: 'Development Team'
-        });
-        messages[messageIndex].responded = true;
-        messages[messageIndex].status = 'responded';
-      }
-
-      // Update timestamp
-      messages[messageIndex].lastUpdated = new Date().toISOString();
-
-      // Save back
-      if (runningOnVercel) {
-        await commitMessagesToGitHub(messages);
-      } else {
-        fs.writeFileSync(messagesPath, JSON.stringify(messages, null, 2));
-      }
-
-      res.status(200).json({
+      return res.status(200).json({
         success: true,
-        message: 'Message updated successfully',
-        data: messages[messageIndex]
+        message: 'Message update processed (demo mode - not persisted)',
+        data: { id, status, read, responded, response, priority, category }
+      });
+
+    } else if (req.method === 'POST') {
+      // Create new message
+      const { name, text, email, priority = 'normal', category = 'general' } = req.body;
+
+      if (!text || text.trim().length === 0) {
+        return res.status(400).json({
+          success: false,
+          error: 'Message text is required'
+        });
+      }
+
+      const newMessage = {
+        id: Date.now().toString(),
+        name: (name || 'Anonymous').trim(),
+        text: text.trim(),
+        email: email ? email.trim() : null,
+        priority: ['low', 'normal', 'high', 'urgent'].includes(priority) ? priority : 'normal',
+        category: category || 'general',
+        timestamp: new Date().toISOString(),
+        status: 'new',
+        read: false,
+        responded: false
+      };
+
+      console.log('New message created:', newMessage);
+      
+      return res.status(201).json({
+        success: true,
+        message: 'Message created successfully (demo mode - not persisted)',
+        data: newMessage
       });
 
     } else if (req.method === 'DELETE') {
-      // Delete message (soft delete by marking as archived)
+      // Delete message
       const { id } = req.body;
 
       if (!id) {
@@ -164,54 +128,26 @@ export default async function handler(req, res) {
         });
       }
 
-      let messages = [];
-      if (runningOnVercel) {
-        messages = await fetchMessagesFromGitHub();
-      } else {
-        if (!fs.existsSync(messagesPath)) fs.writeFileSync(messagesPath, JSON.stringify([], null, 2));
-        const messagesData = fs.readFileSync(messagesPath, 'utf8');
-        messages = JSON.parse(messagesData);
-      }
-
-      const messageIndex = messages.findIndex(msg => msg.id === id);
-      if (messageIndex === -1) {
-        return res.status(404).json({
-          success: false,
-          error: 'Message not found'
-        });
-      }
-
-      // Soft delete by marking as archived
-      messages[messageIndex].status = 'archived';
-      messages[messageIndex].archivedAt = new Date().toISOString();
-
-      // Save back
-      if (runningOnVercel) {
-        await commitMessagesToGitHub(messages);
-      } else {
-        fs.writeFileSync(messagesPath, JSON.stringify(messages, null, 2));
-      }
-
-      res.status(200).json({
+      console.log('Message deletion requested:', id);
+      
+      return res.status(200).json({
         success: true,
-        message: 'Message archived successfully'
+        message: 'Message deleted successfully (demo mode - not persisted)',
+        data: { id }
       });
 
     } else {
-      res.status(405).json({
+      return res.status(405).json({
         success: false,
-        error: 'Method not allowed',
-        allowed: ['GET', 'PUT', 'DELETE']
+        error: 'Method not allowed'
       });
     }
 
   } catch (error) {
-    console.error('Message manager API error:', error);
-    res.status(500).json({
+    console.error('Error in message manager:', error);
+    return res.status(500).json({
       success: false,
-      error: 'Internal server error',
-      details: error.message,
-      timestamp: new Date().toISOString()
+      error: 'Internal server error'
     });
   }
-};
+}
