@@ -12,11 +12,7 @@
   ],
   "buildCommand": "node vercel-build-hook.js",
   "outputDirectory": ".",
-  "functions": {
-    "vercel-build-hook.js": {
-      "includeFiles": ["inex-progress.json", "package.json"]
-    }
-  },
+
   "env": {
     "NODE_ENV": "production"
   },
