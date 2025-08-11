@@ -129,6 +129,17 @@
       <small>This page shows the current progress of your INEX-branded operations portal development. Messages are automatically sent to GitHub in real-time - no manual workflow runs needed!</small>
     </div>
 
+    <!-- Manual Refresh Controls -->
+    <div style="text-align:center;margin-bottom:20px;padding:1rem;background:rgba(0,150,136,.1);border:1px solid rgba(0,150,136,.2);border-radius:12px;max-width:800px;margin-left:auto;margin-right:auto">
+      <strong>🔄 Manual Refresh Controls</strong><br>
+      <small>Click these buttons to manually refresh data when needed (automatic intervals have been disabled to prevent constant API calls)</small>
+      <div style="margin-top:12px;display:flex;gap:8px;justify-content:center;flex-wrap:wrap">
+        <button onclick="loadLiveStatusFromJson()" class="btn secondary" style="padding:8px 16px;font-size:12px">🔄 Refresh Status</button>
+        <button onclick="loadMessages()" class="btn secondary" style="padding:8px 16px;font-size:12px">📨 Refresh Messages</button>
+        <button onclick="location.reload()" class="btn primary" style="padding:8px 16px;font-size:12px">🔄 Full Page Refresh</button>
+      </div>
+    </div>
+
     <section class="grid grid-cols-3">
       <!-- Overview / Progress -->
       <article class="card">
@@ -477,14 +488,14 @@
     // Override from live JSON if available, and refresh periodically
     loadLiveStatusFromJson();
     
-    // Use a more robust interval that can be cleared if needed
-    const liveStatusInterval = setInterval(() => {
-      try {
-        loadLiveStatusFromJson();
-      } catch (error) {
-        safeLog('warn', 'Live status refresh failed:', error.message);
-      }
-    }, CONFIG.autoRefreshInterval);
+    // Remove automatic interval - only refresh when user takes action
+    // const liveStatusInterval = setInterval(() => {
+    //   try {
+    //     loadLiveStatusFromJson();
+    //   } catch (error) {
+    //     safeLog('warn', 'Live status refresh failed:', error.message);
+    //   }
+    // }, CONFIG.autoRefreshInterval);
 
     // Helper function to update timeline steps
     function updateTimelineSteps(phases, currentPhase) {
@@ -606,14 +617,14 @@
       localStorage.setItem('inex-project-progress', newProgress);
     }
 
-    // Auto-save progress every 30 seconds
-    const autoSaveInterval = setInterval(() => {
-      try {
-        localStorage.setItem('inex-data', JSON.stringify(projectData));
-      } catch (error) {
-        safeLog('warn', 'Failed to save progress data:', error.message);
-      }
-    }, CONFIG.autoRefreshInterval);
+    // Auto-save progress every 30 seconds - REMOVED to prevent constant API calls
+    // const autoSaveInterval = setInterval(() => {
+    //   try {
+    //     localStorage.setItem('inex-data', JSON.stringify(projectData));
+    //   } catch (error) {
+    //     safeLog('warn', 'Failed to save progress data:', error.message);
+    //   }
+    // }, CONFIG.autoRefreshInterval);
 
     // Listen for localStorage changes to update the page in real-time
     window.addEventListener('storage', function(e) {
@@ -1198,14 +1209,14 @@
     // Load messages on page load
     loadMessages();
 
-    // Auto-refresh messages every 30 seconds
-    const messagesInterval = setInterval(() => {
-      try {
-        loadMessages();
-      } catch (error) {
-        safeLog('warn', 'Messages refresh failed:', error.message);
-      }
-    }, CONFIG.autoRefreshInterval);
+    // Auto-refresh messages every 30 seconds - REMOVED to prevent constant API calls
+    // const messagesInterval = setInterval(() => {
+    //   try {
+    //     loadMessages();
+    //   } catch (error) {
+    //     safeLog('warn', 'Messages refresh failed:', error.message);
+    //   }
+    // }, CONFIG.autoRefreshInterval);
 
     // Toggle GitHub Pages notice visibility
     if (!isDev) {
@@ -1217,9 +1228,10 @@
     // Cleanup intervals when page is unloaded
     window.addEventListener('beforeunload', () => {
       try {
-        if (liveStatusInterval) clearInterval(liveStatusInterval);
-        if (messagesInterval) clearInterval(messagesInterval);
-        if (autoSaveInterval) clearInterval(autoSaveInterval);
+        // All intervals have been removed to prevent constant API calls
+        // if (liveStatusInterval) clearInterval(liveStatusInterval);
+        // if (messagesInterval) clearInterval(messagesInterval);
+        // if (autoSaveInterval) clearInterval(autoSaveInterval);
       } catch (error) {
         // Silent cleanup
       }
