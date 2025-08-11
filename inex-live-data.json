@@ -1,6 +1,6 @@
 {
   "currentPhase": "Design",
-  "overallProgress": 25,
+  "overallProgress": 40,
   "phases": {
     "Discovery": {
       "order": 1,
@@ -9,7 +9,7 @@
     },
     "Design": {
       "order": 2,
-      "progress": 25,
+      "progress": 40,
       "status": "active"
     },
     "Shell": {
@@ -40,22 +40,22 @@
   },
   "updates": [
     {
-      "date": "Dec 18",
-      "message": "Phase: Design - Progress: 25%",
-      "status": "25%",
-      "commit": "test-com",
+      "date": "Aug 10",
+      "message": "Phase: Design - Progress: 40% - Enable live progress tracking in meta description",
+      "status": "40%",
+      "commit": "3c24a575",
       "phase": "Design"
     }
   ],
-  "lastCommit": "test-commit-123",
-  "lastUpdate": "2024-12-18T10:00:00.000Z",
+  "lastCommit": "3c24a575fe4889271ea53ffa32004998797a569b",
+  "lastUpdate": "2025-08-11T03:02:52.000Z",
   "deployment": {
     "environment": "main",
-    "triggeredBy": "test-user",
-    "timestamp": "2024-12-18T10:00:00.000Z"
+    "triggeredBy": "cochranfilms",
+    "timestamp": "2025-08-11T03:02:52.000Z"
   },
   "buildInfo": {
-    "buildTime": "2025-08-11T02:59:28.131Z",
+    "buildTime": "2025-08-11T03:05:24.233Z",
     "environment": "development",
     "version": "unknown"
   },
@@ -65,6 +65,6 @@
       "updates": "/api/inex/updates",
       "phases": "/api/inex/phases"
     },
-    "lastSync": "2025-08-11T02:59:28.131Z"
+    "lastSync": "2025-08-11T03:05:24.233Z"
   }
 }
