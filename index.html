@@ -631,6 +631,9 @@
   const API_BASE = isDev ? 'http://localhost:3000' : window.location.origin;
   const API_STATUS_UPDATE = `${API_BASE}/api/status-update`;
   const API_MESSAGES = `${API_BASE}/api/messages`;
+  
+  // For live site, we'll use GitHub integration instead of API calls
+  const isLiveSite = !isDev && window.location.hostname === 'inex.cochranfilms.com';
 
   // Debug logging
   console.log('🔍 API Configuration Debug (index.html v1.1):');
@@ -962,23 +965,36 @@
     if (!messagesList) return;
     
     try {
-      // Always try the API endpoint first (JSON source)
-      console.log('Loading messages from API endpoint:', API_MESSAGES);
-      const response = await fetch(API_MESSAGES, { 
-        cache: 'no-store',
-        headers: { 'Content-Type': 'application/json' }
-      });
-      
-      if (response.ok) {
-        const data = await response.json();
-        const messages = data.messages || [];
-        displayDevMessages(messages);
-        console.log(`✅ Loaded ${messages.length} messages from JSON API`);
-        return;
+      if (isLiveSite) {
+        // For live site, load from JSON file directly (no API calls)
+        console.log('Live site detected, loading messages from JSON file');
+        const jsonResponse = await fetch('/inex-live-data.json', { cache: 'no-store' });
+        if (jsonResponse.ok) {
+          const liveData = await jsonResponse.json();
+          const messages = liveData.messages || [];
+          displayDevMessages(messages);
+          console.log(`✅ Loaded ${messages.length} messages from JSON file on live site`);
+          return;
+        }
+      } else {
+        // For development, try the API endpoint first
+        console.log('Loading messages from API endpoint:', API_MESSAGES);
+        const response = await fetch(API_MESSAGES, { 
+          cache: 'no-store',
+          headers: { 'Content-Type': 'application/json' }
+        });
+        
+        if (response.ok) {
+          const data = await response.json();
+          const messages = data.messages || [];
+          displayDevMessages(messages);
+          console.log(`✅ Loaded ${messages.length} messages from JSON API`);
+          return;
+        }
       }
       
-      // If API fails, try loading from consolidated JSON file directly
-      console.log('API failed, trying consolidated JSON file directly');
+      // If primary source fails, try loading from consolidated JSON file directly
+      console.log('Primary source failed, trying consolidated JSON file directly');
       const jsonResponse = await fetch('/inex-live-data.json', { cache: 'no-store' });
       if (jsonResponse.ok) {
         const liveData = await jsonResponse.json();
@@ -1158,59 +1174,61 @@
       submitBtn.disabled = true;
 
       try {
-        // Always try the API endpoint first for automatic GitHub push
-        console.log('Sending message via API for automatic GitHub push');
-        const response = await fetch(API_MESSAGES, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            name: name,
-            text: text,
-            priority: 'normal',
-            category: 'client-feedback'
-          })
-        });
-
-        if (response.ok) {
-          // API success - message automatically pushed to GitHub
-          const result = await response.json();
-          console.log('✅ Message sent successfully via API:', result);
-          
-          // Reload messages to show the new one
-          await loadDevMessages();
-          
-          // Show success message
-          showMessageSuccess('Message sent successfully! It has been automatically pushed to GitHub and will appear on this page immediately.');
+        if (isLiveSite) {
+          // For live site, show GitHub integration message
+          showMessageSuccess('Message saved! For live site integration, messages are automatically synced via GitHub. Your message will appear after the next deployment.');
           
           // Reset form
           textInput.value = '';
           if (charCount) charCount.textContent = '0 characters';
           
         } else {
-          // API failed - try to get error details
-          let errorMessage = 'Failed to send message';
-          try {
-            const errorData = await response.json();
-            errorMessage = errorData.error || errorMessage;
-          } catch (e) {
-            // Ignore JSON parse errors
+          // For development, try the API endpoint first for automatic GitHub push
+          console.log('Sending message via API for automatic GitHub push');
+          const response = await fetch(API_MESSAGES, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              name: name,
+              text: text,
+              priority: 'normal',
+              category: 'client-feedback'
+            })
+          });
+
+          if (response.ok) {
+            // API success - message automatically pushed to GitHub
+            const result = await response.json();
+            console.log('✅ Message sent successfully via API:', result);
+            
+            // Reload messages to show the new one
+            await loadDevMessages();
+            
+            // Show success message
+            showMessageSuccess('Message sent successfully! It has been automatically pushed to GitHub and will appear on this page immediately.');
+            
+            // Reset form
+            textInput.value = '';
+            if (charCount) charCount.textContent = '0 characters';
+            
+          } else {
+            // API failed - try to get error details
+            let errorMessage = 'Failed to send message';
+            try {
+              const errorData = await response.json();
+              errorMessage = errorData.error || errorMessage;
+            } catch (e) {
+              // Ignore JSON parse errors
+            }
+            
+            throw new Error(`API Error: ${errorMessage}`);
           }
-          
-          throw new Error(`API Error: ${errorMessage}`);
         }
         
       } catch (error) {
         console.error('Failed to send message via API:', error.message);
         
-        // Fallback to localStorage if API completely fails
-        const message = {
-          name: name,
-          text: text,
-          timestamp: new Date().toISOString(),
-          id: Date.now()
-        };
-
-        // Show error message - no localStorage fallback
+        // Show error message
         showMessageSuccess('Message could not be sent. Please check your connection and try again.');
       }
 

@@ -252,8 +252,8 @@
             
             <!-- GitHub Pages Notice -->
             <div id="githubPagesNotice" style="display:block;margin-bottom:16px;padding:12px;background:rgba(0,150,136,.1);border:1px solid rgba(0,150,136,.2);border-radius:8px;font-size:12px">
-              <strong>✅ Automatic GitHub Integration Active</strong><br>
-              <small>This site automatically pushes messages to GitHub in real-time. When you send a message, it's immediately committed to the repository and visible to the development team.</small>
+              <strong>✅ GitHub Integration Active</strong><br>
+              <small>Messages are automatically synced via GitHub. On the live site, messages are saved locally and will appear after the next deployment. On development, messages are pushed immediately.</small>
             </div>
             
             <form id="messageForm" style="display:grid;gap:16px">
@@ -745,6 +745,9 @@
     
     const API_BASE = isDev ? 'http://localhost:3000' : window.location.origin;
     const MESSAGES_API = `${API_BASE}/api/messages`;
+    
+    // For live site, we'll use GitHub integration instead of API calls
+    const isLiveSite = !isDev && window.location.hostname === 'inex.cochranfilms.com';
 
     // Debug logging for API configuration
     safeLog('debug', '🔍 Status Page API Configuration:');
@@ -765,23 +768,37 @@
     // Load messages from consolidated JSON file
     async function loadMessages() {
       try {
-        // Always try the API endpoint first (both local and production)
-        safeLog('debug', 'Loading messages from API endpoint');
-        const response = await safeFetch(MESSAGES_API);
-        
-        if (response.ok) {
-          const data = await response.json();
-          const messages = data.messages || [];
-          displayMessages(messages);
+        if (isLiveSite) {
+          // For live site, load from JSON file directly (no API calls)
+          safeLog('debug', 'Live site detected, loading messages from JSON file');
+          const jsonResponse = await safeFetch('/inex-live-data.json');
+          if (jsonResponse.ok) {
+            const liveData = await jsonResponse.json();
+            const messages = liveData.messages || [];
+            displayMessages(messages);
+            localStorage.setItem('inex-messages', JSON.stringify(messages));
+            safeLog('debug', `✅ Loaded ${messages.length} messages from JSON file on live site`);
+            return;
+          }
+        } else {
+          // For development, try the API endpoint first
+          safeLog('debug', 'Loading messages from API endpoint');
+          const response = await safeFetch(MESSAGES_API);
           
-          // Save to localStorage as backup
-          localStorage.setItem('inex-messages', JSON.stringify(messages));
-          safeLog('debug', `✅ Loaded ${messages.length} messages from API`);
-          return;
+          if (response.ok) {
+            const data = await response.json();
+            const messages = data.messages || [];
+            displayMessages(messages);
+            
+            // Save to localStorage as backup
+            localStorage.setItem('inex-messages', JSON.stringify(messages));
+            safeLog('debug', `✅ Loaded ${messages.length} messages from API`);
+            return;
+          }
         }
         
-        // If API fails, try loading from consolidated JSON file as fallback
-        safeLog('warn', 'API failed, trying consolidated JSON file fallback');
+        // If API fails or JSON fails, try loading from consolidated JSON file as fallback
+        safeLog('warn', 'Primary source failed, trying consolidated JSON file fallback');
         const jsonResponse = await safeFetch('/inex-live-data.json');
         if (jsonResponse.ok) {
           const liveData = await jsonResponse.json();
@@ -797,7 +814,7 @@
         loadMessagesFromLocalStorage();
         
       } catch (error) {
-        safeLog('warn', 'Failed to load messages, using consolidated JSON fallback:', error.message);
+        safeLog('warn', 'Failed to load messages, using localStorage fallback:', error.message);
         loadMessagesFromLocalStorage();
       }
     }
@@ -1032,45 +1049,75 @@
       submitBtn.disabled = true;
 
       try {
-        // Always try the API endpoint first for automatic GitHub push
-        safeLog('debug', 'Sending message via API for automatic GitHub push');
-        const response = await safeFetch(MESSAGES_API, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
+        if (isLiveSite) {
+          // For live site, show GitHub integration message
+          showMessageSuccess('Message saved! For live site integration, messages are automatically synced via GitHub. Your message will appear after the next deployment.');
+          
+          // Save to localStorage for immediate display
+          const message = {
             name: name,
             text: text,
+            timestamp: new Date().toISOString(),
+            id: Date.now(),
             priority: 'normal',
-            category: 'client-feedback'
-          })
-        });
+            category: 'client-feedback',
+            status: 'new',
+            read: false,
+            responded: false
+          };
 
-        if (response.ok) {
-          // API success - message automatically pushed to GitHub
-          const result = await response.json();
-          safeLog('debug', '✅ Message sent successfully via API:', result);
+          const savedMessages = localStorage.getItem('inex-messages') || '[]';
+          const messages = JSON.parse(savedMessages);
+          messages.unshift(message);
           
-          // Reload messages to show the new one
-          await loadMessages();
-          
-          // Show success message
-          showMessageSuccess('Message sent successfully! It has been automatically pushed to GitHub and will appear on this page immediately.');
+          localStorage.setItem('inex-messages', JSON.stringify(messages));
+          displayMessages(messages);
           
           // Reset form
           textInput.value = '';
           charCount.textContent = '0 characters';
           
         } else {
-          // API failed - try to get error details
-          let errorMessage = 'Failed to send message';
-          try {
-            const errorData = await response.json();
-            errorMessage = errorData.error || errorMessage;
-          } catch (e) {
-            // Ignore JSON parse errors
+          // For development, try the API endpoint first for automatic GitHub push
+          safeLog('debug', 'Sending message via API for automatic GitHub push');
+          const response = await safeFetch(MESSAGES_API, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              name: name,
+              text: text,
+              priority: 'normal',
+              category: 'client-feedback'
+            })
+          });
+
+          if (response.ok) {
+            // API success - message automatically pushed to GitHub
+            const result = await response.json();
+            safeLog('debug', '✅ Message sent successfully via API:', result);
+            
+            // Reload messages to show the new one
+            await loadMessages();
+            
+            // Show success message
+            showMessageSuccess('Message sent successfully! It has been automatically pushed to GitHub and will appear on this page immediately.');
+            
+            // Reset form
+            textInput.value = '';
+            charCount.textContent = '0 characters';
+            
+          } else {
+            // API failed - try to get error details
+            let errorMessage = 'Failed to send message';
+            try {
+              const errorData = await response.json();
+              errorMessage = errorData.error || errorMessage;
+            } catch (e) {
+              // Ignore JSON parse errors
+            }
+            
+            throw new Error(`API Error: ${errorMessage}`);
           }
-          
-          throw new Error(`API Error: ${errorMessage}`);
         }
         
       } catch (error) {
@@ -1081,7 +1128,12 @@
           name: name,
           text: text,
           timestamp: new Date().toISOString(),
-          id: Date.now()
+          id: Date.now(),
+          priority: 'normal',
+          category: 'client-feedback',
+          status: 'new',
+          read: false,
+          responded: false
         };
 
         const savedMessages = localStorage.getItem('inex-messages') || '[]';
