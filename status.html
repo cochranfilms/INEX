@@ -124,10 +124,10 @@
         <div class="head">Overview</div>
         <div class="body">
           <div class="progress-wrap">
-            <div class="ring" style="--p:15"><div class="ring-inner"><strong id="pct">15%</strong></div></div>
+            <div class="ring" style="--p:5"><div class="ring-inner"><strong id="pct">5%</strong></div></div>
             <div>
               <div style="font-weight:900;font-size:18px">Current Phase: <span id="phaseLabel">Phase 1</span></div>
-              <div class="muted" id="eta">ETA: Mar 5-19, 2025 · Weekly updates posted below</div>
+              <div class="muted" id="eta">ETA: Sep 11-18, 2025 · Weekly updates posted below</div>
               <div style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap">
                 <span class="pill" id="badgeScope">Scope v1.0</span>
                 <span class="pill" id="badgeOwner">Owner: Cochran Full Stack Solutions</span>
@@ -168,7 +168,7 @@
     <section class="card" style="margin-top:16px">
       <div class="head">Project Timeline</div>
       <div class="body timeline">
-        <div class="bar"><span id="barFill" style="--bar:15%"></span></div>
+        <div class="bar"><span id="barFill" style="--bar:5%"></span></div>
         <div class="steps" id="steps">
           <div class="step active" data-phase="Phase 1"><span class="dot"></span><strong>Phase 1</strong><small>Prototype Polish</small></div>
           <div class="step" data-phase="Phase 2"><span class="dot"></span><strong>Phase 2</strong><small>Auth + Connectors</small></div>
@@ -230,6 +230,34 @@
         </div>
       </article>
 
+      <!-- Communication Section -->
+      <article class="card">
+        <div class="head">💬 Message Developer</div>
+        <div class="body">
+          <div style="margin-bottom:16px">
+            <p style="margin:0 0 12px 0;font-size:13px;color:var(--muted)">
+              Send a message to the development team. Your message will be visible to both you and the developers.
+            </p>
+            <form id="messageForm" style="display:grid;gap:12px">
+              <input type="text" id="messageName" placeholder="Your name (optional)" style="padding:8px 12px;border:1px solid var(--border);border-radius:8px;background:var(--panel);color:var(--panel-ink);font-size:13px">
+              <textarea id="messageText" placeholder="Type your message here..." rows="3" style="padding:8px 12px;border:1px solid var(--border);border-radius:8px;background:var(--panel);color:var(--panel-ink);font-size:13px;resize:vertical"></textarea>
+              <div style="display:flex;justify-content:space-between;align-items:center">
+                <small style="color:var(--muted);font-size:11px" id="charCount">0 characters</small>
+                <button type="submit" class="btn primary" style="justify-self:end;padding:8px 16px;font-size:13px">📤 Send Message</button>
+              </div>
+            </form>
+          </div>
+          
+          <div style="border-top:1px solid var(--border);padding-top:16px">
+            <h4 style="margin:0 0 12px 0;font-size:14px;color:var(--accent)">📨 Recent Messages</h4>
+            <div id="messagesList" style="max-height:300px;overflow-y:auto">
+              <div style="text-align:center;padding:20px;color:var(--muted);font-size:13px">
+                No messages yet. Send the first one!
+              </div>
+            </div>
+          </div>
+        </div>
+      </article>
     </section>
 
     <p class="muted" style="text-align:center;margin:20px 0">Shareable link • Add query params like <code>?progress=25&phase=Phase 2</code> to reflect live status.</p>
@@ -247,9 +275,9 @@
     // Project tracking data - Phase 1: Prototype Polish
     const projectData = {
       currentPhase: 'Phase 1',
-      progress: 15,
+      progress: 5,
       phases: [
-        { name: 'Phase 1', progress: 15, status: 'active', tasks: ['inex-branding', 'ui-framework', 'dashboard-structure', 'project-docs', 'deployment-prep'] },
+        { name: 'Phase 1', progress: 5, status: 'active', tasks: ['inex-branding', 'ui-framework', 'dashboard-structure', 'project-docs', 'deployment-prep'] },
         { name: 'Phase 2', progress: 0, status: 'pending', tasks: ['authentication', 'data-connectors', 'integration'] },
         { name: 'Phase 3', progress: 0, status: 'pending', tasks: ['client-portal', 'reporting', 'deployment'] }
       ],
@@ -289,7 +317,7 @@
     
     const pct = Math.max(0, Math.min(100, parseInt(params.get('progress') || savedProgress || projectData.progress.toString(), 10)));
     const phase = params.get('phase') || savedPhase || projectData.currentPhase;
-    const eta = params.get('eta') || 'ETA: Mar 5-19, 2025 · Weekly updates posted below';
+    const eta = params.get('eta') || 'ETA: Sep 11-18, 2025 · Weekly updates posted below';
     const scope = params.get('scope') || 'Scope v1.0';
     const owner = params.get('owner') || 'Cochran Full Stack Solutions';
     const client = params.get('client') || 'INEX';
@@ -414,7 +442,7 @@
       projectData.progress = parseInt(savedProgress);
     } else {
       // Set default progress if none saved
-      projectData.progress = 15;
+      projectData.progress = 5;
     }
 
     // Load saved updates from localStorage
@@ -456,6 +484,109 @@
 
     // Example: Add a new update (you can call this from console or add a form)
     // addUpdate('Dec 18', 'Requirements document drafted', 'Complete');
+
+    // Messaging System
+    const messageForm = document.getElementById('messageForm');
+    const messagesList = document.getElementById('messagesList');
+    const messageText = document.getElementById('messageText');
+    const charCount = document.getElementById('charCount');
+
+    // Update character count
+    messageText.addEventListener('input', function() {
+      const textLength = this.value.length;
+      charCount.textContent = `${textLength} characters`;
+    });
+
+    // Load saved messages
+    function loadMessages() {
+      const savedMessages = localStorage.getItem('inex-messages') || '[]';
+      const messages = JSON.parse(savedMessages);
+      displayMessages(messages);
+    }
+
+    // Display messages
+    function displayMessages(messages) {
+      if (messages.length === 0) {
+        messagesList.innerHTML = `
+          <div style="text-align:center;padding:20px;color:var(--muted);font-size:13px">
+            No messages yet. Send the first one!
+          </div>
+        `;
+        return;
+      }
+
+      messagesList.innerHTML = messages.map(msg => `
+        <div style="padding:12px;border:1px solid var(--border);border-radius:8px;margin-bottom:8px;background:rgba(255,255,255,.02)">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+            <strong style="font-size:13px;color:var(--accent)">${msg.name || 'Anonymous'}</strong>
+            <small style="color:var(--muted);font-size:11px">${msg.timestamp}</small>
+          </div>
+          <div style="font-size:13px;line-height:1.4">${msg.text}</div>
+        </div>
+      `).join('');
+    }
+
+    // Handle message form submission
+    messageForm.addEventListener('submit', function(e) {
+      e.preventDefault();
+      
+      const nameInput = document.getElementById('messageName');
+      const textInput = document.getElementById('messageText');
+      
+      const name = nameInput.value.trim() || 'Anonymous';
+      const text = textInput.value.trim();
+      
+      if (!text) {
+        alert('Please enter a message');
+        return;
+      }
+
+      // Create message object
+      const message = {
+        name: name,
+        text: text,
+        timestamp: new Date().toLocaleString(),
+        id: Date.now()
+      };
+
+      // Get existing messages and add new one
+      const savedMessages = localStorage.getItem('inex-messages') || '[]';
+      const messages = JSON.parse(savedMessages);
+      messages.unshift(message); // Add to beginning
+      
+      // Save to localStorage
+      localStorage.setItem('inex-messages', JSON.stringify(messages));
+      
+      // Display updated messages
+      displayMessages(messages);
+      
+      // Clear form
+      textInput.value = '';
+      charCount.textContent = '0 characters'; // Reset character count
+      
+      // Trigger storage event for real-time updates
+      window.dispatchEvent(new StorageEvent('storage', {
+        key: 'inex-messages',
+        newValue: JSON.stringify(messages)
+      }));
+      
+      alert('Message sent successfully! The development team will see it immediately.');
+    });
+
+    // Listen for new messages from other windows
+    window.addEventListener('storage', function(e) {
+      if (e.key === 'inex-messages') {
+        try {
+          const messages = JSON.parse(e.newValue || '[]');
+          displayMessages(messages);
+        } catch (e) {
+          console.log('Error parsing messages');
+        }
+      }
+    });
+
+    // Load messages on page load
+    loadMessages();
   </script>
 </body>
 </html>

@@ -5,6 +5,9 @@ const fs = require('fs');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// Middleware for parsing JSON bodies
+app.use(express.json());
+
 // Serve static files
 app.use(express.static('.'));
 
@@ -111,6 +114,68 @@ htmlFiles.forEach(file => {
       res.status(404).send('File not found');
     }
   });
+});
+
+// API Endpoints
+app.post('/api/status-update', (req, res) => {
+  try {
+    const { progress, phase, status } = req.body;
+    
+    // Validate input
+    if (typeof progress !== 'number' || progress < 0 || progress > 100) {
+      return res.status(400).json({ 
+        success: false, 
+        error: 'Invalid progress value. Must be a number between 0 and 100.' 
+      });
+    }
+    
+    if (!phase || typeof phase !== 'string') {
+      return res.status(400).json({ 
+        success: false, 
+        error: 'Invalid phase value. Must be a string.' 
+      });
+    }
+    
+    if (!status || typeof status !== 'string') {
+      return res.status(400).json({ 
+        success: false, 
+        error: 'Invalid status value. Must be a string.' 
+      });
+    }
+    
+    // Here you would typically save to a database or file
+    // For now, we'll just log the update and return success
+    console.log('Status Update Received:', { progress, phase, status, timestamp: new Date().toISOString() });
+    
+    // Save to a simple JSON file for persistence
+    const statusData = {
+      progress,
+      phase,
+      status,
+      lastUpdated: new Date().toISOString()
+    };
+    
+    try {
+      fs.writeFileSync('inex-live-data.json', JSON.stringify(statusData, null, 2));
+      console.log('Status data saved to inex-live-data.json');
+    } catch (writeError) {
+      console.error('Error saving status data:', writeError);
+      // Continue anyway - this is not critical
+    }
+    
+    res.json({ 
+      success: true, 
+      message: 'Status update received and saved successfully',
+      data: statusData
+    });
+    
+  } catch (error) {
+    console.error('Error processing status update:', error);
+    res.status(500).json({ 
+      success: false, 
+      error: 'Internal server error processing status update' 
+    });
+  }
 });
 
 // Catch-all route for 404
