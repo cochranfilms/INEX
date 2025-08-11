@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>INEX Live API Test - Production Verification</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            min-height: 100vh;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+        }
+        .test-section {
+            background: rgba(255, 255, 255, 0.1);
+            margin: 20px 0;
+            padding: 20px;
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+        }
+        .endpoint {
+            background: rgba(0, 0, 0, 0.2);
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 10px;
+            border-left: 4px solid #4CAF50;
+        }
+        .endpoint.pending {
+            border-left-color: #FF9800;
+        }
+        .endpoint.error {
+            border-left-color: #f44336;
+        }
+        .endpoint.success {
+            border-left-color: #4CAF50;
+        }
+        .status {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+            margin-left: 10px;
+        }
+        .status.pending { background: #FF9800; }
+        .status.success { background: #4CAF50; }
+        .status.error { background: #f44336; }
+        .response {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        .btn {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+            font-size: 14px;
+        }
+        .btn:hover {
+            background: #45a049;
+        }
+        .btn:disabled {
+            background: #cccccc;
+            cursor: not-allowed;
+        }
+        .summary {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 20px;
+            border-radius: 15px;
+            margin: 20px 0;
+            text-align: center;
+        }
+        .progress-bar {
+            width: 100%;
+            height: 20px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #4CAF50, #45a049);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+        .live-url {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 15px;
+            border-radius: 10px;
+            margin: 20px 0;
+            text-align: center;
+        }
+        .live-url a {
+            color: #4CAF50;
+            text-decoration: none;
+            font-weight: bold;
+        }
+        .live-url a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🚀 INEX Live API Test</h1>
+        <h2>Production Environment Verification</h2>
+        <p>Testing all API endpoints on your live hosted website</p>
+    </div>
+
+    <div class="live-url">
+        <h3>🌐 Live Website URL</h3>
+        <p><strong>Production Domain:</strong> <a href="https://inex.cochranfilms.com" target="_blank">https://inex.cochranfilms.com</a></p>
+        <p><strong>Current Test Location:</strong> <span id="current-url"></span></p>
+    </div>
+
+    <div class="summary">
+        <h3>📊 Test Summary</h3>
+        <div class="progress-bar">
+            <div class="progress-fill" id="progress-fill"></div>
+        </div>
+        <p><strong>Progress:</strong> <span id="progress-text">0/0</span> endpoints tested</p>
+        <p><strong>Status:</strong> <span id="overall-status">Ready to test</span></p>
+        <button class="btn" onclick="runAllTests()">🧪 Run All Tests</button>
+        <button class="btn" onclick="clearResults()">🗑️ Clear Results</button>
+    </div>
+
+    <div class="test-section">
+        <h3>🔗 Core API Endpoints</h3>
+        
+        <div class="endpoint pending" id="messages-get">
+            <h4>GET /api/messages</h4>
+            <p>Retrieve all messages from the system</p>
+            <span class="status pending">PENDING</span>
+            <button class="btn" onclick="testEndpoint('messages-get', 'GET', '/api/messages')">Test</button>
+            <div class="response" id="messages-get-response" style="display: none;"></div>
+        </div>
+
+        <div class="endpoint pending" id="messages-post">
+            <h4>POST /api/messages</h4>
+            <p>Send a new message to the system</p>
+            <span class="status pending">PENDING</span>
+            <button class="btn" onclick="testEndpoint('messages-post', 'POST', '/api/messages', {name: 'Test User', email: 'test@example.com', message: 'API test message', category: 'General'})">Test</button>
+            <div class="response" id="messages-post-response" style="display: none;"></div>
+        </div>
+
+        <div class="endpoint pending" id="message-manager-get">
+            <h4>GET /api/message-manager</h4>
+            <p>Get filtered messages for management</p>
+            <span class="status pending">PENDING</span>
+            <button class="btn" onclick="testEndpoint('message-manager-get', 'GET', '/api/message-manager')">Test</button>
+            <div class="response" id="message-manager-get-response" style="display: none;"></div>
+        </div>
+
+        <div class="endpoint pending" id="status-update-post">
+            <h4>POST /api/status-update</h4>
+            <p>Update project status and progress</p>
+            <span class="status pending">PENDING</span>
+            <button class="btn" onclick="testEndpoint('status-update-post', 'POST', '/api/status-update', {progress: 10, phase: 'Discovery', status: 'API test update'})">Test</button>
+            <div class="response" id="status-update-post-response" style="display: none;"></div>
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h3>📁 Data Files</h3>
+        
+        <div class="endpoint pending" id="live-data">
+            <h4>GET /inex-live-data.json</h4>
+            <p>Access live project data</p>
+            <span class="status pending">PENDING</span>
+            <button class="btn" onclick="testDataFile('live-data', '/inex-live-data.json')">Test</button>
+            <div class="response" id="live-data-response" style="display: none;"></div>
+        </div>
+
+        <div class="endpoint pending" id="messages-data">
+            <h4>GET /inex-messages.json</h4>
+            <p>Access message database</p>
+            <span class="status pending">Pspan class="status pending">PENDING</span>
+            <button class="btn" onclick="testDataFile('messages-data', '/inex-messages.json')">Test</button>
+            <div class="response" id="messages-data-response" style="display: none;"></div>
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h3>🔐 Contract & Security Endpoints</h3>
+        
+        <div class="endpoint pending" id="contracts-finalize">
+            <h4>POST /api/contracts/finalize</h4>
+            <p>Finalize contract agreements</p>
+            <span class="status pending">PENDING</span>
+            <button class="btn" onclick="testEndpoint('contracts-finalize', 'POST', '/api/contracts/finalize', {contractId: 'test-123'})">Test</button>
+            <div class="response" id="contracts-finalize-response" style="display: none;"></div>
+        </div>
+
+        <div class="endpoint pending" id="contracts-upload">
+            <h4>POST /api/contracts/secure-upload</h4>
+            <p>Secure file upload for contracts</p>
+            <span class="status pending">PENDING</span>
+            <button class="btn" onclick="testEndpoint('contracts-upload', 'POST', '/api/contracts/secure-upload', {filename: 'test.pdf'})">Test</button>
+            <div class="response" id="contracts-upload-response" style="display: none;"></div>
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h3>🧪 System Health</h3>
+        
+        <div class="endpoint pending" id="system-test">
+            <h4>GET /api/test</h4>
+            <p>System health check endpoint</p>
+            <span class="status pending">PENDING</span>
+            <button class="btn" onclick="testEndpoint('system-test', 'GET', '/api/test')">Test</button>
+            <div class="response" id="system-test-response" style="display: none;"></div>
+        </div>
+
+        <div class="endpoint pending" id="firebase-config">
+            <h4>GET /api/firebase/public-config</h4>
+            <p>Firebase public configuration</p>
+            <span class="status pending">PENDING</span>
+            <button class="btn" onclick="testEndpoint('firebase-config', 'GET', '/api/firebase/public-config')">Test</button>
+            <div class="response" id="firebase-config-response" style="display: none;"></div>
+        </div>
+    </div>
+
+    <script>
+        let testResults = {};
+        let totalTests = 0;
+        let completedTests = 0;
+
+        // Show current URL
+        document.getElementById('current-url').textContent = window.location.href;
+
+        // Initialize test count
+        function initializeTestCount() {
+            const endpoints = document.querySelectorAll('.endpoint');
+            totalTests = endpoints.length;
+            updateProgress();
+        }
+
+        // Update progress bar
+        function updateProgress() {
+            const progressFill = document.getElementById('progress-fill');
+            const progressText = document.getElementById('progress-text');
+            const overallStatus = document.getElementById('overall-status');
+            
+            const percentage = totalTests > 0 ? (completedTests / totalTests) * 100 : 0;
+            progressFill.style.width = percentage + '%';
+            progressText.textContent = `${completedTests}/${totalTests}`;
+            
+            if (completedTests === 0) {
+                overallStatus.textContent = 'Ready to test';
+            } else if (completedTests === totalTests) {
+                const successCount = Object.values(testResults).filter(r => r.status === 'success').length;
+                const errorCount = Object.values(testResults).filter(r => r.status === 'error').length;
+                overallStatus.textContent = `Complete: ${successCount} success, ${errorCount} errors`;
+            } else {
+                overallStatus.textContent = 'Testing in progress...';
+            }
+        }
+
+        // Test API endpoint
+        async function testEndpoint(id, method, endpoint, data = null) {
+            const element = document.getElementById(id);
+            const responseDiv = document.getElementById(id + '-response');
+            const statusSpan = element.querySelector('.status');
+            
+            // Reset status
+            element.className = 'endpoint pending';
+            statusSpan.textContent = 'TESTING';
+            statusSpan.className = 'status pending';
+            responseDiv.style.display = 'none';
+            
+            try {
+                const url = endpoint.startsWith('http') ? endpoint : `https://inex.cochranfilms.com${endpoint}`;
+                
+                const options = {
+                    method: method,
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                };
+                
+                if (data && method !== 'GET') {
+                    options.body = JSON.stringify(data);
+                }
+                
+                console.log(`Testing ${method} ${url}`, options);
+                
+                const response = await fetch(url, options);
+                const responseData = await response.text();
+                
+                let result;
+                try {
+                    result = JSON.parse(responseData);
+                } catch (e) {
+                    result = responseData;
+                }
+                
+                // Update status
+                if (response.ok) {
+                    element.className = 'endpoint success';
+                    statusSpan.textContent = 'SUCCESS';
+                    statusSpan.className = 'status success';
+                    testResults[id] = { status: 'success', response: result, statusCode: response.status };
+                } else {
+                    element.className = 'endpoint error';
+                    statusSpan.textContent = 'ERROR';
+                    statusSpan.className = 'status error';
+                    testResults[id] = { status: 'error', response: result, statusCode: response.status };
+                }
+                
+                // Show response
+                responseDiv.style.display = 'block';
+                responseDiv.innerHTML = `
+                    <strong>Status:</strong> ${response.status} ${response.statusText}<br>
+                    <strong>Response:</strong><br>
+                    <pre>${JSON.stringify(result, null, 2)}</pre>
+                `;
+                
+            } catch (error) {
+                element.className = 'endpoint error';
+                statusSpan.textContent = 'ERROR';
+                statusSpan.className = 'status error';
+                testResults[id] = { status: 'error', error: error.message };
+                
+                responseDiv.style.display = 'block';
+                responseDiv.innerHTML = `
+                    <strong>Error:</strong><br>
+                    <pre>${error.message}</pre>
+                `;
+            }
+            
+            completedTests++;
+            updateProgress();
+        }
+
+        // Test data file
+        async function testDataFile(id, filepath) {
+            const element = document.getElementById(id);
+            const responseDiv = document.getElementById(id + '-response');
+            const statusSpan = element.querySelector('.status');
+            
+            // Reset status
+            element.className = 'endpoint pending';
+            statusSpan.textContent = 'TESTING';
+            statusSpan.className = 'status pending';
+            responseDiv.style.display = 'none';
+            
+            try {
+                const url = `https://inex.cochranfilms.com${filepath}`;
+                console.log(`Testing data file: ${url}`);
+                
+                const response = await fetch(url);
+                const responseData = await response.text();
+                
+                let result;
+                try {
+                    result = JSON.parse(responseData);
+                } catch (e) {
+                    result = responseData;
+                }
+                
+                // Update status
+                if (response.ok) {
+                    element.className = 'endpoint success';
+                    statusSpan.textContent = 'SUCCESS';
+                    statusSpan.className = 'status success';
+                    testResults[id] = { status: 'success', response: result, statusCode: response.status };
+                } else {
+                    element.className = 'endpoint error';
+                    statusSpan.textContent = 'ERROR';
+                    statusSpan.className = 'status error';
+                    testResults[id] = { status: 'error', response: result, statusCode: response.status };
+                }
+                
+                // Show response
+                responseDiv.style.display = 'block';
+                responseDiv.innerHTML = `
+                    <strong>Status:</strong> ${response.status} ${response.statusText}<br>
+                    <strong>File Size:</strong> ${responseData.length} characters<br>
+                    <strong>Response Preview:</strong><br>
+                    <pre>${JSON.stringify(result, null, 2).substring(0, 500)}${JSON.stringify(result, null, 2).length > 500 ? '...' : ''}</pre>
+                `;
+                
+            } catch (error) {
+                element.className = 'endpoint error';
+                statusSpan.textContent = 'ERROR';
+                statusSpan.className = 'status error';
+                testResults[id] = { status: 'error', error: error.message };
+                
+                responseDiv.style.display = 'block';
+                responseDiv.innerHTML = `
+                    <strong>Error:</strong><br>
+                    <pre>${error.message}</pre>
+                `;
+            }
+            
+            completedTests++;
+            updateProgress();
+        }
+
+        // Run all tests
+        async function runAllTests() {
+            // Reset all tests
+            clearResults();
+            
+            // Test all endpoints
+            const tests = [
+                () => testEndpoint('messages-get', 'GET', '/api/messages'),
+                () => testEndpoint('messages-post', 'POST', '/api/messages', {name: 'Test User', email: 'test@example.com', message: 'API test message', category: 'General'}),
+                () => testEndpoint('message-manager-get', 'GET', '/api/message-manager'),
+                () => testEndpoint('status-update-post', 'POST', '/api/status-update', {progress: 10, phase: 'Discovery', status: 'API test update'}),
+                () => testDataFile('live-data', '/inex-live-data.json'),
+                () => testDataFile('messages-data', '/inex-messages.json'),
+                () => testEndpoint('contracts-finalize', 'POST', '/api/contracts/finalize', {contractId: 'test-123'}),
+                () => testEndpoint('contracts-upload', 'POST', '/api/contracts/secure-upload', {filename: 'test.pdf'}),
+                () => testEndpoint('system-test', 'GET', '/api/test'),
+                () => testEndpoint('firebase-config', 'GET', '/api/firebase/public-config')
+            ];
+            
+            // Run tests with slight delay to avoid overwhelming the server
+            for (let i = 0; i < tests.length; i++) {
+                setTimeout(tests[i], i * 500);
+            }
+        }
+
+        // Clear results
+        function clearResults() {
+            testResults = {};
+            completedTests = 0;
+            
+            // Reset all endpoints
+            const endpoints = document.querySelectorAll('.endpoint');
+            endpoints.forEach(endpoint => {
+                endpoint.className = 'endpoint pending';
+                const statusSpan = endpoint.querySelector('.status');
+                statusSpan.textContent = 'PENDING';
+                statusSpan.className = 'status pending';
+                
+                const responseDiv = endpoint.querySelector('.response');
+                if (responseDiv) {
+                    responseDiv.style.display = 'none';
+                }
+            });
+            
+            updateProgress();
+        }
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeTestCount();
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple API Test - Debug</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .test-section {
+            background: white;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .btn {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        .btn:hover { background: #0056b3; }
+        .result {
+            background: #f8f9fa;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 4px;
+            border-left: 4px solid #007bff;
+            white-space: pre-wrap;
+            font-family: monospace;
+        }
+        .error { border-left-color: #dc3545; }
+        .success { border-left-color: #28a745; }
+    </style>
+</head>
+<body>
+    <h1>🔍 Simple API Debug Test</h1>
+    
+    <div class="test-section">
+        <h3>🌐 Test Basic Connectivity</h3>
+        <button class="btn" onclick="testBasicConnectivity()">Test Basic Connection</button>
+        <div id="basic-result" class="result" style="display: none;"></div>
+    </div>
+
+    <div class="test-section">
+        <h3>📁 Test Data Files</h3>
+        <button class="btn" onclick="testDataFiles()">Test Data Files</button>
+        <div id="data-result" class="result" style="display: none;"></div>
+    </div>
+
+    <div class="test-section">
+        <h3>🔗 Test API Endpoints</h3>
+        <button class="btn" onclick="testAPIEndpoints()">Test API Endpoints</button>
+        <div id="api-result" class="result" style="display: none;"></div>
+    </div>
+
+    <div class="test-section">
+        <h3>🚀 Test Vercel Functions</h3>
+        <button class="btn" onclick="testVercelFunctions()">Test Vercel Functions</button>
+        <div id="vercel-result" class="result" style="display: none;"></div>
+    </div>
+
+    <script>
+        const BASE_URL = 'https://inex.cochranfilms.com';
+        
+        function showResult(elementId, content, isError = false) {
+            const element = document.getElementById(elementId);
+            element.textContent = content;
+            element.className = `result ${isError ? 'error' : 'success'}`;
+            element.style.display = 'block';
+        }
+
+        async function testBasicConnectivity() {
+            const resultDiv = document.getElementById('basic-result');
+            resultDiv.textContent = 'Testing basic connectivity...';
+            resultDiv.style.display = 'block';
+            resultDiv.className = 'result';
+
+            try {
+                // Test basic HTML page access
+                const response = await fetch(`${BASE_URL}/`);
+                const html = await response.text();
+                
+                if (response.ok) {
+                    showResult('basic-result', 
+                        `✅ Basic connectivity successful!\n` +
+                        `Status: ${response.status} ${response.statusText}\n` +
+                        `Content length: ${html.length} characters\n` +
+                        `First 100 chars: ${html.substring(0, 100)}...`
+                    );
+                } else {
+                    showResult('basic-result', 
+                        `❌ Basic connectivity failed!\n` +
+                        `Status: ${response.status} ${response.statusText}`,
+                        true
+                    );
+                }
+            } catch (error) {
+                showResult('basic-result', 
+                    `❌ Connection error: ${error.message}`,
+                    true
+                );
+            }
+        }
+
+        async function testDataFiles() {
+            const resultDiv = document.getElementById('data-result');
+            resultDiv.textContent = 'Testing data files...';
+            resultDiv.style.display = 'block';
+            resultDiv.className = 'result';
+
+            try {
+                // Test live data file
+                const liveDataResponse = await fetch(`${BASE_URL}/inex-live-data.json`);
+                const liveDataText = await liveDataResponse.text();
+                
+                let result = `📊 Data Files Test Results:\n\n`;
+                
+                if (liveDataResponse.ok) {
+                    try {
+                        const liveData = JSON.parse(liveDataText);
+                        result += `✅ inex-live-data.json: SUCCESS\n`;
+                        result += `   Status: ${liveDataResponse.status}\n`;
+                        result += `   Size: ${liveDataText.length} characters\n`;
+                        result += `   Progress: ${liveData.progress}%\n`;
+                        result += `   Phase: ${liveData.phase}\n`;
+                    } catch (parseError) {
+                        result += `⚠️ inex-live-data.json: Parse Error\n`;
+                        result += `   Raw content: ${liveDataText.substring(0, 200)}...\n`;
+                    }
+                } else {
+                    result += `❌ inex-live-data.json: FAILED\n`;
+                    result += `   Status: ${liveDataResponse.status} ${liveDataResponse.statusText}\n`;
+                }
+
+                // Test messages file
+                const messagesResponse = await fetch(`${BASE_URL}/inex-messages.json`);
+                if (messagesResponse.ok) {
+                    result += `\n✅ inex-messages.json: SUCCESS\n`;
+                    result += `   Status: ${messagesResponse.status}\n`;
+                } else {
+                    result += `\n❌ inex-messages.json: FAILED\n`;
+                    result += `   Status: ${messagesResponse.status} ${messagesResponse.statusText}\n`;
+                }
+
+                showResult('data-result', result);
+            } catch (error) {
+                showResult('data-result', 
+                    `❌ Data files test error: ${error.message}`,
+                    true
+                );
+            }
+        }
+
+        async function testAPIEndpoints() {
+            const resultDiv = document.getElementById('api-result');
+            resultDiv.textContent = 'Testing API endpoints...';
+            resultDiv.style.display = 'block';
+            resultDiv.className = 'result';
+
+            const endpoints = [
+                { name: 'GET /api/messages', method: 'GET', url: '/api/messages' },
+                { name: 'POST /api/messages', method: 'POST', url: '/api/messages', body: { test: true } },
+                { name: 'GET /api/message-manager', method: 'GET', url: '/api/message-manager' },
+                { name: 'POST /api/status-update', method: 'POST', url: '/api/status-update', body: { progress: 10 } }
+            ];
+
+            let result = `🔗 API Endpoints Test Results:\n\n`;
+            
+            for (const endpoint of endpoints) {
+                try {
+                    const options = {
+                        method: endpoint.method,
+                        headers: { 'Content-Type': 'application/json' }
+                    };
+                    
+                    if (endpoint.body) {
+                        options.body = JSON.stringify(endpoint.body);
+                    }
+
+                    const response = await fetch(`${BASE_URL}${endpoint.url}`, options);
+                    
+                    if (response.ok) {
+                        result += `✅ ${endpoint.name}: SUCCESS (${response.status})\n`;
+                    } else {
+                        result += `❌ ${endpoint.name}: FAILED (${response.status} ${response.statusText})\n`;
+                    }
+                } catch (error) {
+                    result += `❌ ${endpoint.name}: ERROR (${error.message})\n`;
+                }
+            }
+
+            showResult('api-result', result);
+        }
+
+        async function testVercelFunctions() {
+            const resultDiv = document.getElementById('vercel-result');
+            resultDiv.textContent = 'Testing Vercel serverless functions...';
+            resultDiv.style.display = 'block';
+            resultDiv.className = 'result';
+
+            try {
+                // Test if Vercel is recognizing the API routes
+                const response = await fetch(`${BASE_URL}/api/test`);
+                let result = `🚀 Vercel Functions Test:\n\n`;
+                
+                if (response.ok) {
+                    const data = await response.text();
+                    result += `✅ /api/test: SUCCESS\n`;
+                    result += `   Status: ${response.status}\n`;
+                    result += `   Response: ${data}\n`;
+                } else {
+                    result += `❌ /api/test: FAILED\n`;
+                    result += `   Status: ${response.status} ${response.statusText}\n`;
+                    result += `   This suggests Vercel functions are not working\n`;
+                }
+
+                // Test a simple GET request to see what error we get
+                try {
+                    const messagesResponse = await fetch(`${BASE_URL}/api/messages`);
+                    result += `\n📝 /api/messages test:\n`;
+                    result += `   Status: ${messagesResponse.status} ${messagesResponse.statusText}\n`;
+                    
+                    if (messagesResponse.status === 404) {
+                        result += `   ❌ 404 suggests Vercel is not recognizing API routes\n`;
+                    } else if (messagesResponse.status === 500) {
+                        result += `   ⚠️ 500 suggests function error, not routing issue\n`;
+                    }
+                } catch (fetchError) {
+                    result += `\n📝 /api/messages test:\n`;
+                    result += `   ❌ Fetch error: ${fetchError.message}\n`;
+                }
+
+                showResult('vercel-result', result);
+            } catch (error) {
+                showResult('vercel-result', 
+                    `❌ Vercel functions test error: ${error.message}`,
+                    true
+                );
+            }
+        }
+    </script>
+</body>
+</html>

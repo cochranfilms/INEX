@@ -61,8 +61,8 @@ export default function handler(req, res) {
     }
     
     // Read existing consolidated data
-    const liveDataFile = 'inex-live-data.json';
-    const liveDataPath = path.join(__dirname, '..', liveDataFile);
+      const liveDataFile = 'inex-live-data.json';
+  const liveDataPath = path.join(process.cwd(), liveDataFile);
     
     let liveData = {};
     

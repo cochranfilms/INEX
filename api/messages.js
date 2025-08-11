@@ -16,8 +16,9 @@ export default function handler(req, res) {
     return res.status(200).end();
   }
 
+  // Use process.cwd() for Vercel serverless environment
   const liveDataFile = 'inex-live-data.json';
-  const liveDataPath = path.join(__dirname, '..', liveDataFile);
+  const liveDataPath = path.join(process.cwd(), liveDataFile);
 
   try {
     // Ensure live data file exists with default structure
