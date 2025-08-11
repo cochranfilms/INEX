@@ -4,7 +4,7 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>INEX Systems Portal — Management Dashboard</title>
-        <meta name="description" content="INEX Systems & Designs — Internal management dashboard for Phase 1: Discovery phase. Project management and status updates." />
+        <meta name="description" content="INEX Systems & Designs — Internal management dashboard for Phase 1: Prototype Polish phase. Project management and status updates." />
 <link rel="icon" type="image/svg+xml" href="vite.svg" />
 <link rel="alternate icon" type="image/x-icon" href="vite.ico" />
 <style>
@@ -138,26 +138,26 @@
     <div class="pitch-head">
       <img src="inex-logo.png" alt="INEX Logo">
       <h2 id="pitchTitle" style="margin:0;font-size:18px;">INEX Systems Portal — Phase 1</h2>
-              <span style="opacity:.85;font-weight:700;margin-left:.5rem">Discovery Phase</span>
+              <span style="opacity:.85;font-weight:700;margin-left:.5rem">Prototype Polish Phase</span>
     </div>
     <div class="pitch-scroll">
       <div class="pitch-grid">
         <div class="p-card">
-          <div class="p-head">Phase 1: Discovery</div>
+          <div class="p-head">Phase 1: Prototype Polish</div>
           <div class="p-body">
             <h4 style="margin:.2rem 0 .5rem 0">🎯 Current Focus</h4>
             <ul class="list">
-              <li><strong>Project Kickoff:</strong> Initial requirements gathering and stakeholder alignment</li>
-              <li><strong>Scope Definition:</strong> Understanding INEX's operational needs and system requirements</li>
-              <li><strong>Brand Research:</strong> Exploring INEX design direction and visual identity</li>
-              <li><strong>Timeline Planning:</strong> Creating project roadmap and milestone structure</li>
+              <li><strong>Working Prototype:</strong> INEX branding integration and basic UI framework</li>
+              <li><strong>UI Framework:</strong> Dark/Light theme implementation with INEX colors</li>
+              <li><strong>Core Structure:</strong> Dashboard layout and navigation framework</li>
+              <li><strong>Documentation:</strong> Project specs and deployment preparation</li>
             </ul>
             <h4 style="margin:1rem 0 .5rem 0">📋 Next Steps</h4>
             <ul class="list">
-              <li>Complete stakeholder interviews and requirements documentation</li>
-              <li>Define technical architecture and system requirements</li>
-              <li>Create project timeline with key milestones</li>
-              <li>Obtain stakeholder approval to proceed to Phase 2</li>
+              <li>Complete INEX branding integration</li>
+              <li>Finalize basic UI framework and themes</li>
+              <li>Prepare core dashboard structure</li>
+              <li>Complete Phase 1 documentation</li>
             </ul>
           </div>
         </div>
@@ -174,6 +174,12 @@
             <div style="margin-top:8px;padding:8px;background:rgba(255,178,0,.1);border:1px solid rgba(255,178,0,.2);border-radius:8px;font-size:12px">
               <strong>📅 Timeline:</strong> 4-5 weeks total • <strong>💰 Investment:</strong> $4,500 + $150/month care plan
             </div>
+            <div style="margin-top:8px;padding:8px;background:rgba(166,46,63,.1);border:1px solid rgba(166,46,63,.2);border-radius:8px;font-size:12px">
+              <strong>🔄 Development Phases:</strong><br>
+              • Phase 1: Prototype Polish (1-2 weeks) - Current<br>
+              • Phase 2: Auth + Connectors (2-4 weeks)<br>
+              • Phase 3: Client Portal & Reports (2-3 weeks)
+            </div>
             <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:8px">
               <a class="btn secondary" href="status.html" target="_blank">📊 View Status</a>
               <a class="btn ghost" href="#/dashboard">Back to Dashboard</a>
@@ -186,25 +192,25 @@
 </div>
 
   <script>
-  /* Views: Phase 1 - Discovery Focus */
+  /* Views: Phase 1 - Prototype Polish Focus */
   const Views = {
     dashboard: `
-      <div class="header"><h1>Welcome to INEX Systems Portal</h1><span class="muted">Phase 1: Discovery — Project kickoff and requirements gathering</span></div>
+      <div class="header"><h1>Welcome to INEX Systems Portal</h1><span class="muted">Phase 1: Prototype Polish — INEX-branded operations portal development</span></div>
       <section class="cards">
         <article class="card span-6">
-          <div class="head">Current Phase: Discovery</div>
+          <div class="head">Current Phase: Prototype Polish</div>
           <div class="body">
             <div style="display:flex;align-items:center;gap:1rem;margin-bottom:1rem">
-              <div style="width:80px;height:80px;border-radius:50%;background:conic-gradient(#A62E3F 5%, #e6e6e6 0);display:grid;place-items:center;border:3px solid #f0f0f0">
-                <strong style="font-size:16px">5%</strong>
+              <div style="width:80px;height:80px;border-radius:50%;background:conic-gradient(#A62E3F 15%, #e6e6e6 0);display:grid;place-items:center;border:3px solid #f0f0f0">
+                <strong style="font-size:16px">15%</strong>
               </div>
               <div>
-                <strong>Project Status: Discovery Phase</strong><br>
-                <small class="muted">Requirements gathering and project planning in progress</small>
+                <strong>Project Status: Phase 1 - Prototype Polish</strong><br>
+                <small class="muted">INEX branding integration and basic UI framework in progress</small>
               </div>
             </div>
             <div style="background:#f8f8f8;border-radius:8px;padding:.8rem;border:1px solid var(--border)">
-              <strong>Focus:</strong> Understanding INEX's operational needs, defining project scope, and creating implementation timeline.
+              <strong>Focus:</strong> Working prototype with INEX branding, basic UI framework (Dark/Light themes), core dashboard structure, and project documentation.
             </div>
             <div style="margin-top:1rem;padding:.8rem;background:rgba(166,46,63,.1);border:1px solid rgba(166,46,63,.2);border-radius:8px">
               <strong>💡 Management Note:</strong> This is your internal dashboard. Use the Status Management section to update progress that Zebediah will see on the public status page.
@@ -215,31 +221,33 @@
           <div class="head">Quick Actions</div>
           <div class="body">
             <div style="display:grid;gap:.6rem">
-              <a class="btn primary" href="#/projects">View Project Plan</a>
-              <a class="btn secondary" href="#/planning">Planning Documents</a>
+              <a class="btn primary" href="#/projects">View Project Timeline</a>
+              <a class="btn secondary" href="#/planning">Technical Specs</a>
               <a class="btn primary" href="#/status">Manage Status</a>
               <a class="btn secondary" href="status.html" target="_blank">Client Status Page</a>
             </div>
           </div>
         </article>
         <article class="card span-8">
-          <div class="head">Discovery Phase Objectives</div>
+          <div class="head">Project Timeline Overview</div>
           <div class="body">
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">
               <div style="border:1px solid var(--border);border-radius:12px;padding:1rem">
-                <span class="pill">Requirements</span>
+                <span class="pill">Phase 1 (Current)</span>
                 <ul class="list" style="margin-top:.5rem">
-                  <li>Stakeholder interviews</li>
-                  <li>Operational workflow analysis</li>
-                  <li>System requirements definition</li>
+                  <li>Prototype Polish: 1-2 weeks</li>
+                  <li>INEX branding integration</li>
+                  <li>Basic UI framework</li>
+                  <li>ETA: Jan 15-22</li>
                 </ul>
               </div>
               <div style="border:1px solid var(--border);border-radius:12px;padding:1rem">
-                <span class="pill">Planning</span>
+                <span class="pill">Phase 2 & 3</span>
                 <ul class="list" style="margin-top:.5rem">
-                  <li>Project timeline creation</li>
-                  <li>Resource allocation planning</li>
-                  <li>Risk assessment</li>
+                  <li>Auth + Connectors: 2-4 weeks</li>
+                  <li>Client Portal: 2-3 weeks</li>
+                  <li>Total: 4-5 weeks</li>
+                  <li>Full ETA: Mar 5-19</li>
                 </ul>
               </div>
             </div>
@@ -250,78 +258,83 @@
           <div class="body">
             <ul class="list">
               <li><strong>Client:</strong> INEX Systems & Designs</li>
-              <li><strong>Phase:</strong> 1 - Discovery</li>
-              <li><strong>Progress:</strong> 5%</li>
-              <li><strong>ETA:</strong> Feb 2025</li>
+              <li><strong>Phase:</strong> 1 - Prototype Polish</li>
+              <li><strong>Progress:</strong> 15%</li>
+              <li><strong>ETA:</strong> Mar 5-19, 2025</li>
             </ul>
           </div>
         </article>
       </section>
-      <p class="footer">INEX Systems Portal • Phase 1: Discovery • © Cochran Full Stack Solutions</p>
+      <p class="footer">INEX Systems Portal • Phase 1: Prototype Polish • © Cochran Full Stack Solutions</p>
     `,
     projects: `
-      <div class="header"><h1>Project Planning</h1><span class="muted">Discovery phase planning and requirements gathering</span></div>
+      <div class="header"><h1>Project Planning</h1><span class="muted">Prototype Polish phase planning and development</span></div>
       <div class="cards">
         <article class="card span-8">
-          <div class="head">Discovery Phase Plan</div>
+          <div class="head">Project Timeline</div>
           <div class="body">
             <table class="table">
-              <thead><tr><th>Task</th><th>Status</th><th>Owner</th><th>Due Date</th><th>Notes</th></tr></thead>
+              <thead><tr><th>Phase</th><th>Duration</th><th>Status</th><th>Deliverables</th><th>ETA</th></tr></thead>
               <tbody>
-                <tr><td>Project kickoff meeting</td><td><span class="pill">In Progress</span></td><td>Project Team</td><td>Dec 15</td><td>Initial requirements gathering</td></tr>
-                <tr><td>Stakeholder interviews</td><td><span class="pill">Planned</span></td><td>Project Manager</td><td>Dec 20</td><td>Key personnel interviews</td></tr>
-                <tr><td>Requirements documentation</td><td><span class="pill">Planned</span></td><td>Business Analyst</td><td>Dec 25</td><td>Detailed requirements doc</td></tr>
-                <tr><td>Technical architecture</td><td><span class="pill">Planned</span></td><td>Technical Lead</td><td>Dec 30</td><td>System design & architecture</td></tr>
-                <tr><td>Project timeline</td><td><span class="pill">Planned</span></td><td>Project Manager</td><td>Jan 5</td><td>Complete project roadmap</td></tr>
+                <tr><td><strong>Phase 1:</strong> Prototype Polish</td><td>1-2 weeks</td><td><span class="pill">In Progress</span></td><td>Working prototype, basic UI</td><td>Jan 15-22</td></tr>
+                <tr><td><strong>Phase 2:</strong> Auth + Connectors</td><td>2-4 weeks</td><td><span class="pill">Planned</span></td><td>Authentication, data integration</td><td>Feb 5-26</td></tr>
+                <tr><td><strong>Phase 3:</strong> Client Portal & Reports</td><td>2-3 weeks</td><td><span class="pill">Planned</span></td><td>Full deployment, training</td><td>Mar 5-19</td></tr>
               </tbody>
             </table>
+            <div style="margin-top:1rem;padding:.8rem;background:rgba(166,46,63,.1);border:1px solid rgba(166,46,63,.2);border-radius:8px">
+              <strong>📅 Total Timeline:</strong> 4-5 weeks from signed agreement • <strong>💰 Investment:</strong> $4,500 + $150/month care plan
+            </div>
           </div>
         </article>
         <article class="card span-4">
           <div class="head">Phase 1 Deliverables</div>
           <div class="body">
             <ul class="list">
-              <li>Project requirements document</li>
-              <li>Technical architecture plan</li>
-              <li>Project timeline & milestones</li>
-              <li>Resource allocation plan</li>
-              <li>Risk assessment document</li>
-              <li>Stakeholder approval</li>
+              <li>Working prototype with INEX branding</li>
+              <li>Basic UI framework (Dark/Light themes)</li>
+              <li>Core dashboard structure</li>
+              <li>Project documentation</li>
+              <li>Deployment preparation</li>
             </ul>
           </div>
         </article>
       </div>
     `,
     planning: `
-      <div class="header"><h1>Planning Documents</h1><span class="muted">Discovery phase planning and documentation</span></div>
+      <div class="header"><h1>Planning Documents</h1><span class="muted">Project planning and technical specifications</span></div>
       <div class="cards">
         <article class="card span-6">
-          <div class="head">Requirements Gathering</div>
+          <div class="head">Technical Architecture</div>
           <div class="body">
-            <h4>Key Areas of Focus:</h4>
+            <h4>Portal Structure:</h4>
             <ul class="list">
-              <li><strong>Operational Workflows:</strong> Current processes and pain points</li>
-              <li><strong>System Integration:</strong> Existing systems and data sources</li>
-              <li><strong>User Experience:</strong> Team member needs and preferences</li>
-              <li><strong>Scalability:</strong> Future growth and expansion plans</li>
+              <li><strong>Dashboard:</strong> Operations overview and KPIs</li>
+              <li><strong>Projects:</strong> Job management and tracking</li>
+              <li><strong>Jobs/Dispatch:</strong> Assignment and workflow</li>
+              <li><strong>Inventory:</strong> ClickShare units and parts</li>
+              <li><strong>RMA/Warranties:</strong> Service tracking</li>
+              <li><strong>SLAs/Reports:</strong> Performance metrics</li>
+              <li><strong>Knowledge:</strong> Documentation hub</li>
+              <li><strong>Clients:</strong> Client management</li>
+              <li><strong>Careers:</strong> Job listings</li>
+              <li><strong>Settings:</strong> System configuration</li>
             </ul>
             <div style="margin-top:1rem">
-              <a class="btn primary" href="#">Create Requirements Doc</a>
+              <a class="btn primary" href="#">View Technical Specs</a>
             </div>
           </div>
         </article>
         <article class="card span-6">
-          <div class="head">Technical Planning</div>
+          <div class="head">Implementation Plan</div>
           <div class="body">
-            <h4>Architecture Considerations:</h4>
+            <h4>Development Phases:</h4>
             <ul class="list">
-              <li><strong>Frontend:</strong> Modern web application framework</li>
-              <li><strong>Backend:</strong> API design and data management</li>
-              <li><strong>Database:</strong> Data structure and relationships</li>
-              <li><strong>Security:</strong> Authentication and authorization</li>
+              <li><strong>Phase 1 (1-2 weeks):</strong> Prototype polish and basic UI</li>
+              <li><strong>Phase 2 (2-4 weeks):</strong> Authentication and data connectors</li>
+              <li><strong>Phase 3 (2-3 weeks):</strong> Client portal and reporting</li>
             </ul>
             <div style="margin-top:1rem">
-              <a class="btn secondary" href="#">Technical Specs</a>
+              <a class="btn secondary" href="#">Project Roadmap</a>
             </div>
           </div>
         </article>
@@ -335,24 +348,24 @@
           <div class="body">
             <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin-bottom:1rem">
               <div style="text-align:center;padding:1rem;border:1px solid var(--border);border-radius:12px">
-                <div style="font-size:24px;font-weight:900;color:var(--maroon)" id="progressDisplay">5%</div>
+                <div style="font-size:24px;font-weight:900;color:var(--maroon)" id="progressDisplay">15%</div>
                 <div style="font-size:12px;color:var(--muted)">Overall Progress</div>
               </div>
               <div style="text-align:center;padding:1rem;border:1px solid var(--border);border-radius:12px">
-                <div style="font-size:24px;font-weight:900;color:var(--accent)" id="tasksDisplay">1/5</div>
-                <div style="font-size:12px;color:var(--muted)">Tasks Complete</div>
+                <div style="font-size:24px;font-weight:900;color:var(--accent)" id="tasksDisplay">1/3</div>
+                <div style="font-size:12px;color:var(--muted)">Phases Complete</div>
               </div>
               <div style="text-align:center;padding:1rem;border:1px solid var(--border);border-radius:12px">
-                <div style="font-size:24px;font-weight:900;color:var(--muted)" id="phaseDisplay">Discovery</div>
+                <div style="font-size:24px;font-weight:900;color:var(--muted)" id="phaseDisplay">Phase 1</div>
                 <div style="font-size:12px;color:var(--muted)">Current Phase</div>
               </div>
               <div style="text-align:center;padding:1rem;border:1px solid var(--border);border-radius:12px">
-                <div style="font-size:24px;font-weight:900;color:var(--muted)" id="etaDisplay">Feb 2025</div>
-                <div style="font-size:12px;color:var(--muted)">Phase End</div>
+                <div style="font-size:24px;font-weight:900;color:var(--muted)" id="etaDisplay">Jan 22</div>
+                <div style="font-size:12px;color:var(--muted)">Phase 1 End</div>
               </div>
             </div>
             <div style="background:#f8f8f8;border-radius:8px;padding:1rem;border:1px solid var(--border);margin-bottom:1rem">
-              <strong>Current Status:</strong> <span id="statusText">Project kickoff initiated. Team is conducting initial requirements gathering and stakeholder interviews. Next milestone is completion of requirements documentation by Dec 25.</span>
+              <strong>Current Status:</strong> <span id="statusText">Phase 1 (Prototype Polish) in progress. Working on INEX branding integration and basic UI framework. On track for Jan 22 completion.</span>
             </div>
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">
               <button class="btn primary" onclick="updateStatus()">Update Status</button>
@@ -483,13 +496,16 @@
   }
 
   function nextPhase() {
-    const phases = ['Discovery', 'Design & Setup', 'Development & Testing', 'Deployment & Training'];
+    const phases = ['Phase 1', 'Phase 2', 'Phase 3'];
+    const phaseNames = ['Prototype Polish', 'Auth + Connectors', 'Client Portal & Reports'];
     const currentPhase = document.getElementById('phaseDisplay').textContent;
     const currentIndex = phases.indexOf(currentPhase);
     if (currentIndex < phases.length - 1) {
       const nextPhase = phases[currentIndex + 1];
+      const nextPhaseName = phaseNames[currentIndex + 1];
       document.getElementById('phaseDisplay').textContent = nextPhase;
       localStorage.setItem('inex-project-phase', nextPhase);
+      localStorage.setItem('inex-project-phase-name', nextPhaseName);
       
       // Trigger storage event for real-time updates
       window.dispatchEvent(new StorageEvent('storage', {

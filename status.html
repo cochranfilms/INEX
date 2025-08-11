@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>INEX Project Status — Public Status Page</title>
-  <meta name="description" content="INEX Systems & Designs — Public project status and progress tracking for Phase 1: Discovery phase." />
+  <meta name="description" content="INEX Systems & Designs — Public project status and progress tracking for Phase 1: Prototype Polish phase." />
   <link rel="icon" type="image/svg+xml" href="vite.svg" />
   <link rel="alternate icon" type="image/x-icon" href="vite.ico" />
   <style>
@@ -124,10 +124,10 @@
         <div class="head">Overview</div>
         <div class="body">
           <div class="progress-wrap">
-            <div class="ring" style="--p:5"><div class="ring-inner"><strong id="pct">5%</strong></div></div>
+            <div class="ring" style="--p:15"><div class="ring-inner"><strong id="pct">15%</strong></div></div>
             <div>
-              <div style="font-weight:900;font-size:18px">Current Phase: <span id="phaseLabel">Discovery</span></div>
-              <div class="muted" id="eta">ETA: Feb 2025 · Weekly updates posted below</div>
+              <div style="font-weight:900;font-size:18px">Current Phase: <span id="phaseLabel">Phase 1</span></div>
+              <div class="muted" id="eta">ETA: Mar 5-19, 2025 · Weekly updates posted below</div>
               <div style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap">
                 <span class="pill" id="badgeScope">Scope v1.0</span>
                 <span class="pill" id="badgeOwner">Owner: Cochran Full Stack Solutions</span>
@@ -143,10 +143,10 @@
         <div class="head">Milestones</div>
         <div class="body">
           <ul class="list">
-            <li>Project kickoff & requirements — <strong>In Progress</strong> ⏳</li>
-            <li>Branding & design tokens — <strong>Planned</strong> 📅</li>
-            <li>Portal modules & features — <strong>Planned</strong> 📅</li>
-            <li>Testing & deployment — <strong>Planned</strong> 📅</li>
+            <li>Phase 1: Prototype Polish — <strong>In Progress</strong> ⏳</li>
+            <li>Phase 2: Auth + Connectors — <strong>Planned</strong> 📅</li>
+            <li>Phase 3: Client Portal & Reports — <strong>Planned</strong> 📅</li>
+            <li>Full Deployment — <strong>Planned</strong> 📅</li>
           </ul>
         </div>
       </article>
@@ -156,9 +156,9 @@
         <div class="head">Next Actions</div>
         <div class="body">
           <ul class="list" id="nextActions">
-            <li>Complete project requirements gathering</li>
-            <li>Define INEX brand guidelines & color palette</li>
-            <li>Create project timeline & milestones</li>
+            <li>Complete INEX branding integration</li>
+            <li>Finalize basic UI framework and themes</li>
+            <li>Prepare core dashboard structure</li>
           </ul>
         </div>
       </article>
@@ -168,12 +168,11 @@
     <section class="card" style="margin-top:16px">
       <div class="head">Project Timeline</div>
       <div class="body timeline">
-        <div class="bar"><span id="barFill" style="--bar:5%"></span></div>
+        <div class="bar"><span id="barFill" style="--bar:15%"></span></div>
         <div class="steps" id="steps">
-          <div class="step active" data-phase="Discovery"><span class="dot"></span><strong>Discovery</strong><small>Kickoff + scope</small></div>
-          <div class="step" data-phase="Design & Setup"><span class="dot"></span><strong>Design & Setup</strong><small>Branding + layout</small></div>
-          <div class="step" data-phase="Development & Testing"><span class="dot"></span><strong>Development & Testing</strong><small>Core features + QA</small></div>
-          <div class="step" data-phase="Deployment & Training"><span class="dot"></span><strong>Deployment & Training</strong><small>Deploy + handoff</small></div>
+          <div class="step active" data-phase="Phase 1"><span class="dot"></span><strong>Phase 1</strong><small>Prototype Polish</small></div>
+          <div class="step" data-phase="Phase 2"><span class="dot"></span><strong>Phase 2</strong><small>Auth + Connectors</small></div>
+          <div class="step" data-phase="Phase 3"><span class="dot"></span><strong>Phase 3</strong><small>Client Portal</small></div>
         </div>
       </div>
     </section>
@@ -183,31 +182,31 @@
       <div class="head">Development Tracker</div>
       <div class="body">
         <div class="dev-tracker">
-          <h4>🔄 Phase 1: Discovery Items</h4>
+          <h4>🔄 Phase 1: Prototype Polish Items</h4>
           <div id="devItems">
             <div class="dev-item">
-              <input type="checkbox" class="dev-checkbox" id="dev1" data-task="project-kickoff">
-              <label for="dev1" class="dev-label">Project kickoff & requirements gathering</label>
+              <input type="checkbox" class="dev-checkbox" id="dev1" data-task="inex-branding">
+              <label for="dev1" class="dev-label">INEX branding integration and color tokens</label>
               <span class="dev-status status-progress">In Progress</span>
             </div>
             <div class="dev-item">
-              <input type="checkbox" class="dev-checkbox" id="dev2" data-task="brand-research">
-              <label for="dev2" class="dev-label">INEX brand research & initial concepts</label>
+              <input type="checkbox" class="dev-checkbox" id="dev2" data-task="ui-framework">
+              <label for="dev2" class="dev-label">Basic UI framework (Dark/Light themes)</label>
               <span class="dev-status status-pending">Pending</span>
             </div>
             <div class="dev-item">
-              <input type="checkbox" class="dev-checkbox" id="dev3" data-task="scope-definition">
-              <label for="dev3" class="dev-label">Portal scope definition & project planning</label>
+              <input type="checkbox" class="dev-checkbox" id="dev3" data-task="dashboard-structure">
+              <label for="dev3" class="dev-label">Core dashboard structure and navigation</label>
               <span class="dev-status status-pending">Pending</span>
             </div>
             <div class="dev-item">
-              <input type="checkbox" class="dev-checkbox" id="dev4" data-task="timeline-creation">
-              <label for="dev4" class="dev-label">Timeline & milestone creation</label>
+              <input type="checkbox" class="dev-checkbox" id="dev4" data-task="project-docs">
+              <label for="dev4" class="dev-label">Project documentation and specs</label>
               <span class="dev-status status-pending">Pending</span>
             </div>
             <div class="dev-item">
-              <input type="checkbox" class="dev-checkbox" id="dev5" data-task="stakeholder-approval">
-              <label for="dev5" class="dev-label">Stakeholder approval & signoff</label>
+              <input type="checkbox" class="dev-checkbox" id="dev5" data-task="deployment-prep">
+              <label for="dev5" class="dev-label">Deployment preparation and testing</label>
               <span class="dev-status status-pending">Pending</span>
             </div>
           </div>
@@ -223,9 +222,9 @@
           <table>
             <thead><tr><th>Date</th><th>Update</th><th>Status</th></tr></thead>
             <tbody id="updates">
-              <tr><td>Dec 15</td><td>Project kickoff initiated</td><td><span class="pill">In Progress</span></td></tr>
-              <tr><td>Dec 16</td><td>Initial client meeting scheduled</td><td><span class="pill">Planned</span></td></tr>
-              <tr><td>Dec 17</td><td>Requirements gathering begins</td><td><span class="pill">Planned</span></tr>
+              <tr><td>Jan 8</td><td>Phase 1 initiated - INEX branding integration started</td><td><span class="pill">In Progress</span></td></tr>
+              <tr><td>Jan 9</td><td>Basic UI framework development</td><td><span class="pill">In Progress</span></td></tr>
+              <tr><td>Jan 10</td><td>Dashboard structure planning</td><td><span class="pill">Planned</span></tr>
             </tbody>
           </table>
         </div>
@@ -233,7 +232,7 @@
 
     </section>
 
-    <p class="muted" style="text-align:center;margin:20px 0">Shareable link • Add query params like <code>?progress=25&phase=Design</code> to reflect live status.</p>
+    <p class="muted" style="text-align:center;margin:20px 0">Shareable link • Add query params like <code>?progress=25&phase=Phase 2</code> to reflect live status.</p>
     <div style="text-align:center;margin:20px 0;padding:1rem;background:rgba(166,46,63,.1);border:1px solid rgba(166,46,63,.2);border-radius:8px;max-width:800px;margin-left:auto;margin-right:auto">
       <strong>📋 Project Scope</strong><br>
       <small>INEX-branded Operations Portal: Dashboard, Jobs/Dispatch, Inventory, RMA/Warranties, SLAs/Reports, Knowledge, Clients, Careers, Settings. Dark/Light themes with SVG charts and mock data layer.</small>
@@ -245,25 +244,24 @@
   </main>
 
   <script>
-    // Project tracking data - Phase 1: Discovery
+    // Project tracking data - Phase 1: Prototype Polish
     const projectData = {
-      currentPhase: 'Discovery',
-      progress: 5,
+      currentPhase: 'Phase 1',
+      progress: 15,
       phases: [
-        { name: 'Discovery', progress: 5, status: 'active', tasks: ['requirements', 'scope', 'timeline'] },
-        { name: 'Design & Setup', progress: 0, status: 'pending', tasks: ['branding', 'tokens', 'layout'] },
-        { name: 'Development & Testing', progress: 0, status: 'pending', tasks: ['core features', 'testing', 'polish'] },
-        { name: 'Deployment & Training', progress: 0, status: 'pending', tasks: ['deploy', 'handoff', 'training'] }
+        { name: 'Phase 1', progress: 15, status: 'active', tasks: ['inex-branding', 'ui-framework', 'dashboard-structure', 'project-docs', 'deployment-prep'] },
+        { name: 'Phase 2', progress: 0, status: 'pending', tasks: ['authentication', 'data-connectors', 'integration'] },
+        { name: 'Phase 3', progress: 0, status: 'pending', tasks: ['client-portal', 'reporting', 'deployment'] }
       ],
       updates: [
-        { date: 'Dec 15', update: 'Project kickoff initiated', status: 'In Progress' },
-        { date: 'Dec 16', update: 'Initial client meeting scheduled', status: 'Planned' },
-        { date: 'Dec 17', update: 'Requirements gathering begins', status: 'Planned' }
+        { date: 'Jan 8', update: 'Phase 1 initiated - INEX branding integration started', status: 'In Progress' },
+        { date: 'Jan 9', update: 'Basic UI framework development', status: 'In Progress' },
+        { date: 'Jan 10', update: 'Dashboard structure planning', status: 'Planned' }
       ],
       nextActions: [
-        'Complete project requirements gathering',
-        'Define INEX brand guidelines & color palette',
-        'Create project timeline & milestones'
+        'Complete INEX branding integration',
+        'Finalize basic UI framework and themes',
+        'Prepare core dashboard structure'
       ]
     };
 
@@ -291,7 +289,7 @@
     
     const pct = Math.max(0, Math.min(100, parseInt(params.get('progress') || savedProgress || projectData.progress.toString(), 10)));
     const phase = params.get('phase') || savedPhase || projectData.currentPhase;
-    const eta = params.get('eta') || 'ETA: Feb 2025 · Weekly updates posted below';
+    const eta = params.get('eta') || 'ETA: Mar 5-19, 2025 · Weekly updates posted below';
     const scope = params.get('scope') || 'Scope v1.0';
     const owner = params.get('owner') || 'Cochran Full Stack Solutions';
     const client = params.get('client') || 'INEX';
@@ -309,14 +307,14 @@
     // Mark active step
     const steps = Array.from(document.querySelectorAll('.step'));
     steps.forEach(s => {
-      const stepPhase = s.dataset.phase.toLowerCase();
-      const currentPhase = phase.toLowerCase();
+      const stepPhase = s.dataset.phase;
+      const currentPhase = phase;
       
       s.classList.remove('active', 'complete');
       
       if (stepPhase === currentPhase) {
         s.classList.add('active');
-      } else if (projectData.phases.find(p => p.name.toLowerCase() === stepPhase)?.status === 'complete') {
+      } else if (projectData.phases.find(p => p.name === stepPhase)?.status === 'complete') {
         s.classList.add('complete');
       }
     });
@@ -367,25 +365,25 @@
     // Listen for localStorage changes to update the page in real-time
     window.addEventListener('storage', function(e) {
       if (e.key === 'inex-project-progress') {
-        const progress = parseInt(e.newValue || '5');
+        const progress = parseInt(e.newValue || '15');
         document.querySelector('.ring').style.setProperty('--p', progress);
         document.getElementById('pct').textContent = progress + '%';
         document.getElementById('barFill').style.setProperty('--bar', progress + '%');
       }
       if (e.key === 'inex-project-phase') {
-        const phase = e.newValue || 'Discovery';
+        const phase = e.newValue || 'Phase 1';
         document.getElementById('phaseLabel').textContent = phase;
         // Update active step
         const steps = Array.from(document.querySelectorAll('.step'));
         steps.forEach(s => {
-          const stepPhase = s.dataset.phase.toLowerCase();
-          const currentPhase = phase.toLowerCase();
+          const stepPhase = s.dataset.phase;
+          const currentPhase = phase;
           
           s.classList.remove('active', 'complete');
           
           if (stepPhase === currentPhase) {
             s.classList.add('active');
-          } else if (projectData.phases.find(p => p.name.toLowerCase() === stepPhase)?.status === 'complete') {
+          } else if (projectData.phases.find(p => p.name === stepPhase)?.status === 'complete') {
             s.classList.add('complete');
           }
         });
@@ -414,6 +412,9 @@
     // Load saved progress on page load (already loaded above, just update projectData)
     if (savedProgress) {
       projectData.progress = parseInt(savedProgress);
+    } else {
+      // Set default progress if none saved
+      projectData.progress = 15;
     }
 
     // Load saved updates from localStorage

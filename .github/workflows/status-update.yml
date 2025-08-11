@@ -28,6 +28,80 @@ jobs:
     runs-on: ubuntu-latest
     
     steps:
+    - name: Validate inputs
+      run: |
+        echo "🔍 Validating workflow inputs..."
+        
+        # Check required inputs
+        if [ -z "${{ github.event.inputs.progress }}" ]; then
+          echo "❌ Error: progress input is required"
+          exit 1
+        fi
+        
+        if [ -z "${{ github.event.inputs.phase }}" ]; then
+          echo "❌ Error: phase input is required"
+          exit 1
+        fi
+        
+        if [ -z "${{ github.event.inputs.status }}" ]; then
+          echo "❌ Error: status input is required"
+          exit 1
+        fi
+        
+        # Validate progress is a number between 0-100
+        if ! [[ "${{ github.event.inputs.progress }}" =~ ^[0-9]+$ ]] || [ "${{ github.event.inputs.progress }}" -lt 0 ] || [ "${{ github.event.inputs.progress }}" -gt 100 ]; then
+          echo "❌ Error: progress must be a number between 0-100, got: ${{ github.event.inputs.progress }}"
+          exit 1
+        fi
+        
+        # Validate phase is one of the allowed values
+        allowed_phases=("Discovery" "Design & Setup" "Development & Testing" "Deployment & Training")
+        phase_valid=false
+        for allowed_phase in "${allowed_phases[@]}"; do
+          if [ "${{ github.event.inputs.phase }}" = "$allowed_phase" ]; then
+            phase_valid=true
+            break
+          fi
+        done
+        
+        if [ "$phase_valid" = false ]; then
+          echo "❌ Error: phase must be one of: ${allowed_phases[*]}"
+          echo "   Got: ${{ github.event.inputs.phase }}"
+          exit 1
+        fi
+        
+        echo "✅ All inputs validated successfully"
+        echo "   Progress: ${{ github.event.inputs.progress }}%"
+        echo "   Phase: ${{ github.event.inputs.phase }}"
+        echo "   Status: ${{ github.event.inputs.status }}"
+        
+    - name: Check required secrets
+      run: |
+        echo "🔍 Checking required secrets..."
+        
+        if [ -n "${{ secrets.GITHUB_TOKEN }}" ]; then
+          echo "✅ GITHUB_TOKEN: Available (auto-provided by GitHub)"
+        else
+          echo "❌ GITHUB_TOKEN: Missing (this should be auto-provided)"
+        fi
+        
+        if [ -n "${{ secrets.VERCEL_DEPLOY_HOOK }}" ]; then
+          echo "✅ VERCEL_DEPLOY_HOOK: Available"
+        else
+          echo "⚠️ VERCEL_DEPLOY_HOOK: Not configured (optional)"
+          echo "   This secret enables manual Vercel deployment triggers"
+        fi
+        
+        echo ""
+        echo "📋 Required setup for this workflow:"
+        echo "1. GITHUB_TOKEN: ✅ Auto-provided by GitHub"
+        echo "2. VERCEL_DEPLOY_HOOK: ⚠️ Optional - add to enable manual deployments"
+        echo ""
+        echo "🔗 To add VERCEL_DEPLOY_HOOK:"
+        echo "   Repository Settings > Secrets and variables > Actions > New repository secret"
+        echo "   Name: VERCEL_DEPLOY_HOOK"
+        echo "   Value: Your Vercel deploy hook URL"
+        
     - name: Checkout repository
       uses: actions/checkout@v4
       
@@ -92,8 +166,12 @@ jobs:
           curl -X POST ${{ secrets.VERCEL_DEPLOY_HOOK }}
           echo "Vercel deployment triggered successfully"
         else
-          echo "No Vercel deploy hook configured - skipping deployment trigger"
+          echo "⚠️ VERCEL_DEPLOY_HOOK secret not configured - skipping deployment trigger"
           echo "Note: Vercel will still auto-deploy when changes are pushed to main branch"
+          echo "To enable manual deployment triggers, add VERCEL_DEPLOY_HOOK to repository secrets:"
+          echo "1. Go to Settings > Secrets and variables > Actions"
+          echo "2. Add new repository secret named 'VERCEL_DEPLOY_HOOK'"
+          echo "3. Set value to your Vercel deploy hook URL"
         fi
         
     - name: Workflow Summary
