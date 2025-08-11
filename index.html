@@ -1114,14 +1114,13 @@
       if (savedMessages) {
         try {
           const messages = JSON.parse(savedMessages);
-            if (messages.length > 0) {
-              displayDevMessages(messages);
-              console.log(`✅ Loaded ${messages.length} messages from localStorage fallback`);
-              return;
-            }
-          } catch (e) {
-            console.warn('Failed to parse localStorage messages in fallback:', e.message);
+          if (messages.length > 0) {
+            displayDevMessages(messages);
+            console.log(`✅ Loaded ${messages.length} messages from localStorage fallback`);
+            return;
           }
+        } catch (e) {
+          console.warn('Failed to parse localStorage messages in fallback:', e.message);
         }
       }
       
