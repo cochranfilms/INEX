@@ -240,7 +240,8 @@
   </div>
 </div>
 
-<script>
+  <script src="dev-tracker.js"></script>
+  <script>
   /* SVG helpers */
   const spark = (points, stroke="#7cf5ff") => `
     <svg class="spark" viewBox="0 0 100 30" preserveAspectRatio="none" aria-hidden="true">
@@ -659,6 +660,62 @@
   closePitch.addEventListener('click', closeOverlay);
   overlay.addEventListener('click', (e)=>{ if(e.target === overlay) closeOverlay(); });
   window.addEventListener('keydown', (e)=>{ if(e.key === 'Escape' && overlay.classList.contains('show')) closeOverlay(); });
+
+  // INEX Development Workflow Integration
+  if (typeof window.inexTracker !== 'undefined') {
+    // Track dashboard view changes
+    function trackViewChange(route) {
+      if (route === 'dashboard') {
+        window.inexTracker.addUpdate('Dashboard view accessed');
+      } else if (route === 'projects') {
+        window.inexTracker.addUpdate('Projects view accessed');
+      } else if (route === 'jobs') {
+        window.inexTracker.addUpdate('Jobs view accessed');
+      } else if (route === 'inventory') {
+        window.inexTracker.addUpdate('Inventory view accessed');
+      }
+    }
+
+    // Track theme changes
+    function trackThemeChange(theme) {
+      window.inexTracker.addUpdate(`Theme changed to ${theme} mode`);
+    }
+
+    // Override render function to track view changes
+    const originalRender = render;
+    render = function() {
+      const route = location.hash.replace('#/','') || 'dashboard';
+      setActive(route);
+      
+      // Track the view change
+      trackViewChange(route);
+      
+      // Call original render
+      originalRender();
+    };
+
+    // Override theme toggle to track changes
+    const originalThemeToggle = btn.addEventListener;
+    btn.addEventListener('click', (e)=>{
+      e.preventDefault();
+      const next = root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+      root.setAttribute('data-theme', next);
+      localStorage.setItem('inex-theme', next);
+      label.textContent = next === 'dark' ? '1.0 Light' : '2.0 Dark';
+      
+      // Track theme change
+      trackThemeChange(next);
+      
+      render(); // re-render with the correct dashboard variant
+    });
+
+    // Track initial load
+    window.addEventListener('load', () => {
+      window.inexTracker.addUpdate('INEX Portal loaded - development mode active');
+    });
+
+    console.log('🎯 INEX Development Tracker integrated with portal');
+  }
 
 </script>
 </body>

@@ -1,0 +1,673 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>INEX Portal Proposal - NX Systems and Designs</title>
+    <style>
+        /* Reset styles for email compatibility */
+        body, table, td, p, a, li, blockquote {
+            -webkit-text-size-adjust: 100%;
+            -ms-text-size-adjust: 100%;
+        }
+        table, td {
+            mso-table-lspace: 0pt;
+            mso-table-rspace: 0pt;
+        }
+        img {
+            -ms-interpolation-mode: bicubic;
+            border: 0;
+            height: auto;
+            line-height: 100%;
+            outline: none;
+            text-decoration: none;
+        }
+        
+        /* Main styles - Dark Theme */
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #1a1a1a;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #e0e0e0;
+        }
+        
+        .email-container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #2d2d2d;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #A62E3F 0%, #7c2330 100%);
+            padding: 40px 30px;
+            text-align: center;
+        }
+        
+        .logo {
+            color: #ffffff;
+            text-align: center;
+        }
+        
+        .tagline {
+            color: #e8f4fd;
+            font-size: 16px;
+            font-weight: 300;
+            margin-bottom: 0;
+            font-style: italic;
+        }
+        
+        .main-content {
+            padding: 40px 30px;
+        }
+        
+        .greeting {
+            font-size: 24px;
+            font-weight: 600;
+            color: #ff6b7a;
+            margin-bottom: 20px;
+        }
+        
+        .intro-text {
+            font-size: 16px;
+            color: #d0d0d0;
+            margin-bottom: 30px;
+            line-height: 1.8;
+        }
+        
+        .highlight-box {
+            background: linear-gradient(135deg, #3a3a3a 0%, #2a2a2a 100%);
+            border-left: 4px solid #28a745;
+            padding: 25px;
+            margin: 30px 0;
+            border-radius: 8px;
+        }
+        
+        .highlight-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #28a745;
+            margin-bottom: 15px;
+        }
+        
+        .highlight-text {
+            font-size: 15px;
+            color: #d0d0d0;
+            line-height: 1.7;
+        }
+        
+        .cta-section {
+            text-align: center;
+            margin: 40px 0;
+        }
+        
+        .cta-button {
+            display: inline-block;
+            background: linear-gradient(135deg, #A62E3F 0%, #7c2330 100%);
+            color: #ffffff;
+            text-decoration: none;
+            padding: 16px 32px;
+            border-radius: 50px;
+            font-weight: 700;
+            font-size: 16px;
+            margin: 10px;
+            box-shadow: 0 4px 15px rgba(166, 46, 63, 0.3);
+            transition: all 0.3s ease;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+        }
+        
+        .cta-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(166, 46, 63, 0.4);
+        }
+        
+        .secondary-button {
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+            box-shadow: 0 4px 15px rgba(44, 62, 80, 0.3);
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+        }
+        
+        .secondary-button:hover {
+            box-shadow: 0 6px 20px rgba(44, 62, 80, 0.4);
+        }
+        
+        .features-grid {
+            display: table;
+            width: 100%;
+            margin: 30px 0;
+        }
+        
+        .feature-item {
+            display: table-cell;
+            width: 50%;
+            padding: 20px;
+            text-align: center;
+            vertical-align: top;
+        }
+        
+        .feature-icon {
+            font-size: 32px;
+            color: #ff6b7a;
+            margin-bottom: 15px;
+        }
+        
+        .feature-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #ff6b7a;
+            margin-bottom: 10px;
+        }
+        
+        .feature-text {
+            font-size: 14px;
+            color: #ffffff;
+            line-height: 1.6;
+        }
+        
+        .footer-note {
+            background-color: #3a3a3a;
+            padding: 25px;
+            margin: 30px 0;
+            border-radius: 8px;
+            border-left: 4px solid #ffc107;
+        }
+        
+        .footer-note-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #ffc107;
+            margin-bottom: 10px;
+        }
+        
+        .footer-note-text {
+            font-size: 14px;
+            color: #ffffff;
+            line-height: 1.6;
+        }
+        
+        .closing {
+            font-size: 16px;
+            color: #ffffff;
+            margin: 30px 0;
+            line-height: 1.8;
+        }
+        
+        .signature {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 2px solid #404040;
+        }
+        
+        .signature-name {
+            font-size: 18px;
+            font-weight: 600;
+            color: #ff6b7a;
+            margin-bottom: 5px;
+        }
+        
+        .signature-title {
+            font-size: 14px;
+            color: #ffffff;
+            margin-bottom: 5px;
+        }
+        
+        .signature-company {
+            font-size: 14px;
+            color: #ff6b7a;
+            font-weight: 500;
+        }
+        
+        .contact-info {
+            background-color: #3a3a3a;
+            padding: 20px;
+            margin: 30px 0;
+            border-radius: 8px;
+            text-align: center;
+        }
+        
+        .contact-text {
+            font-size: 14px;
+            color: #ffffff;
+            margin-bottom: 10px;
+        }
+        
+        .contact-email {
+            color: #ff6b7a;
+            text-decoration: none;
+            font-weight: 500;
+        }
+        
+        /* Firebase Login Instructions Styles */
+        .firebase-login-box {
+            background: linear-gradient(135deg, #2d3748 0%, #1a202c 100%);
+            border: 2px solid #4299e1;
+            border-radius: 16px;
+            padding: 30px;
+            margin: 40px 0;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .firebase-login-box::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #4299e1, #3182ce, #2b6cb0);
+        }
+        
+        .firebase-header {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+        
+        .firebase-icon {
+            font-size: 48px;
+            margin-bottom: 15px;
+            display: block;
+        }
+        
+        .firebase-title {
+            font-size: 22px;
+            font-weight: 700;
+            color: #4299e1;
+            margin-bottom: 8px;
+        }
+        
+        .firebase-subtitle {
+            font-size: 16px;
+            color: #e2e8f0;
+            font-weight: 400;
+        }
+        
+        .credentials-box {
+            background-color: #1a202c;
+            border: 1px solid #4a5568;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        
+        .credentials-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #4299e1;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+        
+        .credential-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 10px 0;
+            padding: 8px 0;
+            border-bottom: 1px solid #4a5568;
+        }
+        
+        .credential-label {
+            font-weight: 600;
+            color: #e2e8f0;
+        }
+        
+        .credential-value {
+            background-color: #2d3748;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-family: 'Courier New', monospace;
+            color: #68d391;
+            font-weight: 500;
+        }
+        
+        .login-steps {
+            margin: 25px 0;
+        }
+        
+        .login-step {
+            display: flex;
+            align-items: flex-start;
+            margin: 15px 0;
+            padding: 8px 0;
+        }
+        
+        .step-number {
+            background-color: #4299e1;
+            color: #ffffff;
+            font-weight: 700;
+            font-size: 14px;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 15px;
+            flex-shrink: 0;
+        }
+        
+        .step-text {
+            color: #e2e8f0;
+            line-height: 1.6;
+        }
+        
+        .firebase-cta {
+            text-align: center;
+            margin-top: 30px;
+        }
+        
+        .firebase-button {
+            display: inline-flex;
+            align-items: center;
+            gap: 15px;
+            background: linear-gradient(135deg, #4299e1 0%, #3182ce 100%);
+            color: #ffffff;
+            text-decoration: none;
+            padding: 18px 32px;
+            border-radius: 50px;
+            font-weight: 600;
+            box-shadow: 0 6px 20px rgba(66, 153, 225, 0.3);
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+        
+        .firebase-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(66, 153, 225, 0.4);
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+        
+        /* Status Showcase Styles */
+        .status-showcase {
+            background: linear-gradient(135deg, #3a3a3a 0%, #2a2a2a 100%);
+            border: 2px solid #404040;
+            border-radius: 16px;
+            padding: 30px;
+            margin: 40px 0;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .status-showcase::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #28a745, #20c997, #17a2b8);
+        }
+        
+        .status-header {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+        
+        .status-icon {
+            font-size: 48px;
+            margin-bottom: 15px;
+            display: block;
+        }
+        
+        .status-title {
+            font-size: 22px;
+            font-weight: 700;
+            color: #ff6b7a;
+            margin-bottom: 8px;
+        }
+        
+        .status-subtitle {
+            font-size: 16px;
+            color: #b0b0b0;
+            font-weight: 400;
+        }
+        
+        .status-features {
+            margin: 25px 0;
+        }
+        
+        .status-feature {
+            display: flex;
+            align-items: center;
+            margin: 12px 0;
+            padding: 8px 0;
+        }
+        
+        .feature-bullet {
+            color: #28a745;
+            font-weight: 700;
+            font-size: 16px;
+            margin-right: 12px;
+            min-width: 20px;
+        }
+        
+        .status-cta {
+            text-align: center;
+            margin-top: 30px;
+        }
+        
+        .status-button {
+            display: inline-flex;
+            align-items: center;
+            gap: 15px;
+            background: linear-gradient(135deg, #A62E3F 0%, #7c2330 100%);
+            color: #ffffff;
+            text-decoration: none;
+            padding: 18px 32px;
+            border-radius: 50px;
+            font-weight: 600;
+            box-shadow: 0 6px 20px rgba(166, 46, 63, 0.3);
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+        
+        .status-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(166, 46, 63, 0.4);
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+        
+        .button-icon {
+            font-size: 24px;
+        }
+        
+        .button-text {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            text-align: left;
+        }
+        
+        .primary-text {
+            font-size: 16px;
+            font-weight: 600;
+        }
+        
+        .secondary-text {
+            font-size: 12px;
+            opacity: 0.9;
+            font-weight: 400;
+        }
+        
+        /* Responsive design */
+        @media only screen and (max-width: 600px) {
+            .email-container {
+                width: 100% !important;
+            }
+            .main-content {
+                padding: 20px 15px !important;
+            }
+            .header {
+                padding: 30px 20px !important;
+            }
+            .feature-item {
+                display: block !important;
+                width: 100% !important;
+                padding: 15px !important;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="email-container">
+        <!-- Header Section -->
+        <div class="header">
+            <div class="logo">
+                <img src="https://raw.githubusercontent.com/cochranfilms/INEX/cda6e7ab06f04af9a49bf87248f3a8bc51dd6a7c/inex-logo.png" alt="INEX Systems & Designs" style="height: 60px; width: auto; margin-bottom: 15px; filter: drop-shadow(0 2px 8px rgba(0,0,0,0.3));" />
+                <div style="font-size: 28px; font-weight: 700; margin-bottom: 8px; letter-spacing: 1px;">Cochran Full Stack Solutions</div>
+            </div>
+            <div class="tagline">From concept to code, we've got it covered.</div>
+        </div>
+        
+        <!-- Main Content -->
+        <div class="main-content">
+            <div class="greeting">Hello Zebediah,</div>
+            
+            <div class="intro-text">
+                I hope this email finds you well. I'm excited to share with you the comprehensive proposal for the INEX Portal project that we've been discussing. I've put together something special that I believe will perfectly align with INEX Systems and Designs' vision and requirements.
+            </div>
+            
+            <div class="highlight-box">
+                <div class="highlight-title">🎯 What You'll Find Inside</div>
+                <div class="highlight-text">
+                    This isn't just a proposal – it's a complete roadmap that showcases exactly how we'll transform your vision into a powerful, scalable dashboard solution. I've included detailed technical specifications, timeline projections, and a comprehensive breakdown of deliverables that will position INEX Systems and Designs as a leader in your industry.
+                </div>
+            </div>
+            
+            <!-- Firebase Login Instructions Section -->
+            <div class="firebase-login-box">
+                <div class="firebase-header">
+                    <div class="firebase-icon">🔐</div>
+                    <div class="firebase-title">Ready to Sign? Here's How to Access Your Agreement</div>
+                    <div class="firebase-subtitle">This is a real, working agreement system you can log into and sign right now</div>
+                </div>
+                
+                <div class="credentials-box">
+                    <div class="credentials-title">Your Firebase Login Credentials</div>
+                    <div class="credential-item">
+                        <span class="credential-label">Email:</span>
+                        <span class="credential-value">info@inexsystemsdesigns.com</span>
+                    </div>
+                    <div class="credential-item">
+                        <span class="credential-label">Password:</span>
+                        <span class="credential-value">InexSD2025</span>
+                    </div>
+                </div>
+                
+                <div class="login-steps">
+                    <div class="login-step">
+                        <div class="step-number">1</div>
+                        <div class="step-text">Click the "Sign Agreement" button below to access the INEX Portal</div>
+                    </div>
+                    <div class="login-step">
+                        <div class="step-number">2</div>
+                        <div class="step-text">Use the Firebase login credentials above to sign in</div>
+                    </div>
+                    <div class="login-step">
+                        <div class="step-number">3</div>
+                        <div class="step-text">Review the agreement terms and click "Sign Agreement" when ready</div>
+                    </div>
+                    <div class="login-step">
+                        <div class="step-number">4</div>
+                        <div class="step-text">Your signed agreement will be automatically processed and stored securely</div>
+                    </div>
+                </div>
+                
+                <div class="firebase-cta">
+                    <a href="https://inex.cochranfilms.com/INEX-Portal-Agreement.html" class="firebase-button">
+                        <span class="button-icon">✍️</span>
+                        <span class="button-text">
+                            <span class="primary-text">Sign Agreement Now</span>
+                            <span class="secondary-text">Access your secure portal and sign</span>
+                        </span>
+                    </a>
+                </div>
+            </div>
+            
+            <!-- Call-to-Action Section -->
+            <div class="cta-section">
+                <a href="https://inex.cochranfilms.com/INEX-Proposal.html" class="cta-button">📋 View Full Proposal</a>
+                <a href="https://inex.cochranfilms.com/INEX-Portal-Agreement.html" class="cta-button secondary-button">📄 Download Contract</a>
+            </div>
+            
+            <!-- Project Status Section -->
+            <div class="status-showcase">
+                <div class="status-header">
+                    <div class="status-icon">📊</div>
+                    <div class="status-title">Real-Time Project Transparency</div>
+                    <div class="status-subtitle">Track every step of your build with our live status dashboard</div>
+                </div>
+                
+                <div class="status-features">
+                    <div class="status-feature">
+                        <span class="feature-bullet">✓</span>
+                        <span>Live progress tracking with visual timeline</span>
+                    </div>
+                    <div class="status-feature">
+                        <span class="feature-bullet">✓</span>
+                        <span>Weekly updates and milestone completion</span>
+                    </div>
+                    <div class="status-feature">
+                        <span class="feature-bullet">✓</span>
+                        <span>Current phase indicators and ETA projections</span>
+                    </div>
+                    <div class="status-feature">
+                        <span class="feature-bullet">✓</span>
+                        <span>Interactive dashboard preview</span>
+                    </div>
+                </div>
+                
+                <div class="status-cta">
+                    <a href="https://inex.cochranfilms.com/status" class="status-button">
+                        <span class="button-icon">🚀</span>
+                        <span class="button-text">
+                            <span class="primary-text">View Live Project Status</span>
+                            <span class="secondary-text">See exactly where we are in your build</span>
+                        </span>
+                    </a>
+                </div>
+            </div>
+            
+            <!-- Features Grid -->
+            <div class="features-grid">
+                <div class="feature-item">
+                    <div class="feature-icon">🚀</div>
+                    <div class="feature-title">Custom Dashboard</div>
+                    <div class="feature-text">Tailored user management system designed specifically for your workflow and business needs</div>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-icon">⚡</div>
+                    <div class="feature-title">Scalable Architecture</div>
+                    <div class="feature-text">Built with modern technologies that grow with your business and user base</div>
+                </div>
+            </div>
+            
+            <div class="closing">
+                <strong>No rush at all</strong> – I want you to take your time reviewing this proposal thoroughly. I'm available whenever you're ready to discuss any questions, concerns, or modifications you'd like to make. When the time is right, we can schedule that team call to ensure this solution is the perfect fit for INEX Systems and Designs.
+            </div>
+            
+            <div class="footer-note">
+                <div class="footer-note-title">💡 A Note About This Project</div>
+                <div class="footer-note-text">
+                    While this proposal represents a fully conceptual, ground-up build specifically designed for your needs, it also serves as an excellent foundation framework for future projects. Even if you choose to go in a different direction, this comprehensive planning and architecture work could benefit other clients in similar industries. We'd love the opportunity to showcase this level of strategic thinking and technical planning.
+                </div>
+            </div>
+            
+            <!-- Contact Information -->
+            <div class="contact-info">
+                <div class="contact-text">Questions? Ideas? Let's talk!</div>
+                <a href="mailto:your-email@cochranfullstack.com" class="contact-email">your-email@cochranfullstack.com</a>
+            </div>
+            
+            <!-- Signature -->
+            <div class="signature">
+                <div class="signature-name">Cody Cochran</div>
+                <div class="signature-title">Founder & Lead Developer</div>
+                <div class="signature-company">Cochran Full Stack Solutions</div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

@@ -66,6 +66,8 @@
     .step .dot{position:absolute;top:-8px;left:12px;width:14px;height:14px;border-radius:50%;background:#444;border:2px solid var(--border)}
     .step.active{outline:2px solid rgba(255,178,0,.35);background:linear-gradient(180deg, rgba(166,46,63,.20), rgba(166,46,63,.08))}
     .step.active .dot{background:var(--accent);box-shadow:0 0 0 6px rgba(255,178,0,.12)}
+    .step.complete{outline:2px solid rgba(76,175,80,.35);background:linear-gradient(180deg, rgba(76,175,80,.20), rgba(76,175,80,.08))}
+    .step.complete .dot{background:#4CAF50;box-shadow:0 0 0 6px rgba(76,175,80,.12)}
     .step small{display:block;color:var(--muted);margin-top:6px}
     .bar{position:absolute;left:0;right:0;top:18px;height:3px;background:rgba(255,255,255,.08)}
     .bar > span{display:block;height:100%;width:var(--bar,0%);background:linear-gradient(90deg,#A62E3F,#FFB200)}
@@ -79,6 +81,22 @@
     /* Preview */
     .preview{border-radius:14px;border:1px solid var(--border);overflow:hidden;background:rgba(255,255,255,.02)}
     .preview iframe{width:100%;height:420px;border:0;background:#111}
+
+    /* Status indicators */
+    .status-indicator{display:inline-flex;align-items:center;gap:6px;padding:.25rem .5rem;border-radius:6px;font-size:11px;font-weight:700}
+    .status-pending{background:rgba(255,193,7,.15);color:#ffc107;border:1px solid rgba(255,193,7,.3)}
+    .status-progress{background:rgba(33,150,243,.15);color:#2196f3;border:1px solid rgba(33,150,243,.3)}
+    .status-complete{background:rgba(76,175,80,.15);color:#4caf50;border:1px solid rgba(76,175,80,.3)}
+    .status-blocked{background:rgba(244,67,54,.15);color:#f44336;border:1px solid rgba(244,67,54,.3)}
+
+    /* Development tracker */
+    .dev-tracker{background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:12px;padding:14px;margin-top:16px}
+    .dev-tracker h4{margin:0 0 12px 0;color:var(--accent);font-size:14px}
+    .dev-item{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.06)}
+    .dev-item:last-child{border-bottom:none}
+    .dev-checkbox{width:16px;height:16px;accent-color:var(--accent)}
+    .dev-label{flex:1;font-size:13px}
+    .dev-status{font-size:11px;opacity:.8}
   </style>
 </head>
 <body>
@@ -86,7 +104,7 @@
     <div class="brand">
       <img src="inex-logo.png" alt="INEX Systems & Designs" />
       <span>INEX Project Status</span>
-      <small style="opacity:.85;font-weight:700">· Dashboard Build</small>
+      <small style="opacity:.85;font-weight:700">· Phase 1: Discovery</small>
     </div>
     <div class="spacer"></div>
     <a class="btn primary" href="index.html#\/dashboard">Open Dashboard</a>
@@ -100,12 +118,12 @@
         <div class="head">Overview</div>
         <div class="body">
           <div class="progress-wrap">
-            <div class="ring" style="--p:64"><div class="ring-inner"><strong id="pct">64%</strong></div></div>
+            <div class="ring" style="--p:15"><div class="ring-inner"><strong id="pct">15%</strong></div></div>
             <div>
-              <div style="font-weight:900;font-size:18px">Current Phase: <span id="phaseLabel">Feature Build</span></div>
-              <div class="muted" id="eta">ETA: Sep 2025 · Weekly updates posted below</div>
+              <div style="font-weight:900;font-size:18px">Current Phase: <span id="phaseLabel">Discovery</span></div>
+              <div class="muted" id="eta">ETA: Dec 2024 · Weekly updates posted below</div>
               <div style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap">
-                <span class="pill" id="badgeScope">Scope v2.0</span>
+                <span class="pill" id="badgeScope">Scope v1.0</span>
                 <span class="pill" id="badgeOwner">Owner: Cochran Full Stack Solutions</span>
                 <span class="pill" id="badgeClient">Client: INEX</span>
               </div>
@@ -119,12 +137,12 @@
         <div class="head">Milestones</div>
         <div class="body">
           <ul class="list">
-            <li>Branding + tokens — <strong>Complete</strong> ✅</li>
-            <li>Dark/Light shell + router — <strong>Complete</strong> ✅</li>
-            <li>Dashboard KPIs + pulse chart — <strong>In Progress</strong> ⏳</li>
-            <li>Projects/Jobs/Inventory mock data — <strong>In Progress</strong> ⏳</li>
-            <li>Contracts + secure upload preview — <strong>Planned</strong> 📅</li>
-            <li>Auth shell & data links — <strong>Planned</strong> 📅</li>
+            <li>Project kickoff & requirements — <strong>Complete</strong> ✅</li>
+            <li>Branding & design tokens — <strong>In Progress</strong> ⏳</li>
+            <li>Basic shell & navigation — <strong>Planned</strong> 📅</li>
+            <li>Dashboard & KPIs — <strong>Planned</strong> 📅</li>
+            <li>Core features & views — <strong>Planned</strong> 📅</li>
+            <li>Testing & deployment — <strong>Planned</strong> 📅</li>
           </ul>
         </div>
       </article>
@@ -134,9 +152,9 @@
         <div class="head">Next Actions</div>
         <div class="body">
           <ul class="list" id="nextActions">
-            <li>Polish icon actions + KPI deltas</li>
-            <li>Wire mock API to dashboard tiles</li>
-            <li>Prepare press‑ready PDF export</li>
+            <li>Finalize brand guidelines & color palette</li>
+            <li>Create design system & component library</li>
+            <li>Build responsive navigation shell</li>
           </ul>
         </div>
       </article>
@@ -146,15 +164,52 @@
     <section class="card" style="margin-top:16px">
       <div class="head">Project Timeline</div>
       <div class="body timeline">
-        <div class="bar"><span id="barFill" style="--bar:64%"></span></div>
+        <div class="bar"><span id="barFill" style="--bar:15%"></span></div>
         <div class="steps" id="steps">
-          <div class="step" data-phase="Discovery"><span class="dot"></span><strong>Discovery</strong><small>Kickoff + scope</small></div>
+          <div class="step active" data-phase="Discovery"><span class="dot"></span><strong>Discovery</strong><small>Kickoff + scope</small></div>
           <div class="step" data-phase="Design"><span class="dot"></span><strong>Design</strong><small>Tokens & layout</small></div>
-          <div class="step" data-phase="V2 Shell"><span class="dot"></span><strong>V2 Shell</strong><small>Dark/Light + router</small></div>
-          <div class="step" data-phase="Feature Build"><span class="dot"></span><strong>Feature Build</strong><small>KPIs + views</small></div>
-          <div class="step" data-phase="Integrations"><span class="dot"></span><strong>Integrations</strong><small>Data connectors</small></div>
-          <div class="step" data-phase="QA & Polish"><span class="dot"></span><strong>QA &amp; Polish</strong><small>Perf + a11y</small></div>
-          <div class="step" data-phase="Launch"><span class="dot"></span><strong>Launch</strong><small>Stakeholder review</small></div>
+          <div class="step" data-phase="Shell"><span class="dot"></span><strong>Shell</strong><small>Nav + routing</small></div>
+          <div class="step" data-phase="Features"><span class="dot"></span><strong>Features</strong><small>Dashboard + views</small></div>
+          <div class="step" data-phase="Integration"><span class="dot"></span><strong>Integration</strong><small>Data + APIs</small></div>
+          <div class="step" data-phase="Testing"><span class="dot"></span><strong>Testing</strong><small>QA + polish</small></div>
+          <div class="step" data-phase="Launch"><span class="dot"></span><strong>Launch</strong><small>Deploy + handoff</small></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Development Tracker -->
+    <section class="card" style="margin-top:16px">
+      <div class="head">Development Tracker</div>
+      <div class="body">
+        <div class="dev-tracker">
+          <h4>🔄 Active Development Items</h4>
+          <div id="devItems">
+            <div class="dev-item">
+              <input type="checkbox" class="dev-checkbox" id="dev1" data-task="brand-guidelines">
+              <label for="dev1" class="dev-label">Brand guidelines & color palette</label>
+              <span class="dev-status status-progress">In Progress</span>
+            </div>
+            <div class="dev-item">
+              <input type="checkbox" class="dev-checkbox" id="dev2" data-task="design-system">
+              <label for="dev2" class="dev-label">Design system & components</label>
+              <span class="dev-status status-pending">Pending</span>
+            </div>
+            <div class="dev-item">
+              <input type="checkbox" class="dev-checkbox" id="dev3" data-task="navigation-shell">
+              <label for="dev3" class="dev-label">Navigation shell & routing</label>
+              <span class="dev-status status-pending">Pending</span>
+            </div>
+            <div class="dev-item">
+              <input type="checkbox" class="dev-checkbox" id="dev4" data-task="dashboard-kpis">
+              <label for="dev4" class="dev-label">Dashboard & KPI widgets</label>
+              <span class="dev-status status-pending">Pending</span>
+            </div>
+            <div class="dev-item">
+              <input type="checkbox" class="dev-checkbox" id="dev5" data-task="core-views">
+              <label for="dev5" class="dev-label">Core feature views</label>
+              <span class="dev-status status-pending">Pending</span>
+            </div>
+          </div>
         </div>
       </div>
     </section>
@@ -167,9 +222,9 @@
           <table>
             <thead><tr><th>Date</th><th>Update</th><th>Status</th></tr></thead>
             <tbody id="updates">
-              <tr><td>Aug 05</td><td>Dark/Light theme, nav, router laid in</td><td><span class="pill">Complete</span></td></tr>
-              <tr><td>Aug 08</td><td>KPIs + pulse chart (inline SVG)</td><td><span class="pill">In Progress</span></td></tr>
-              <tr><td>Aug 10</td><td>Icon‑first quick actions</td><td><span class="pill">In Progress</span></td></tr>
+              <tr><td>Dec 15</td><td>Project kickoff & requirements gathering</td><td><span class="pill">Complete</span></td></tr>
+              <tr><td>Dec 16</td><td>Brand research & initial concepts</td><td><span class="pill">In Progress</span></td></tr>
+              <tr><td>Dec 17</td><td>Design system planning</td><td><span class="pill">Planned</span></td></tr>
             </tbody>
           </table>
         </div>
@@ -182,10 +237,35 @@
       </article>
     </section>
 
-    <p class="muted" style="text-align:center;margin:20px 0">Shareable link • Add query params like <code>?progress=72&phase=Integrations</code> to reflect live status.</p>
+    <p class="muted" style="text-align:center;margin:20px 0">Shareable link • Add query params like <code>?progress=25&phase=Design</code> to reflect live status.</p>
   </main>
 
   <script>
+    // Project tracking data
+    const projectData = {
+      currentPhase: 'Discovery',
+      progress: 15,
+      phases: [
+        { name: 'Discovery', progress: 15, status: 'active', tasks: ['requirements', 'scope', 'timeline'] },
+        { name: 'Design', progress: 0, status: 'pending', tasks: ['branding', 'tokens', 'layout'] },
+        { name: 'Shell', progress: 0, status: 'pending', tasks: ['navigation', 'routing', 'themes'] },
+        { name: 'Features', progress: 0, status: 'pending', tasks: ['dashboard', 'kpis', 'views'] },
+        { name: 'Integration', progress: 0, status: 'pending', tasks: ['apis', 'data', 'auth'] },
+        { name: 'Testing', progress: 0, status: 'pending', tasks: ['qa', 'performance', 'accessibility'] },
+        { name: 'Launch', progress: 0, status: 'pending', tasks: ['deploy', 'handoff', 'training'] }
+      ],
+      updates: [
+        { date: 'Dec 15', update: 'Project kickoff & requirements gathering', status: 'Complete' },
+        { date: 'Dec 16', update: 'Brand research & initial concepts', status: 'In Progress' },
+        { date: 'Dec 17', update: 'Design system planning', status: 'Planned' }
+      ],
+      nextActions: [
+        'Finalize brand guidelines & color palette',
+        'Create design system & component library',
+        'Build responsive navigation shell'
+      ]
+    };
+
     // Theme persistence
     const root = document.documentElement;
     const btn = document.getElementById('themeToggle');
@@ -202,10 +282,10 @@
 
     // Query params: progress (0-100), phase, eta, scope, owner, client
     const params = new URLSearchParams(location.search);
-    const pct = Math.max(0, Math.min(100, parseInt(params.get('progress') || '64', 10)));
-    const phase = params.get('phase') || 'Feature Build';
-    const eta = params.get('eta') || 'ETA: Sep 2025 · Weekly updates posted below';
-    const scope = params.get('scope') || 'Scope v2.0';
+    const pct = Math.max(0, Math.min(100, parseInt(params.get('progress') || projectData.progress.toString(), 10)));
+    const phase = params.get('phase') || projectData.currentPhase;
+    const eta = params.get('eta') || 'ETA: Dec 2024 · Weekly updates posted below';
+    const scope = params.get('scope') || 'Scope v1.0';
     const owner = params.get('owner') || 'Cochran Full Stack Solutions';
     const client = params.get('client') || 'INEX';
 
@@ -221,7 +301,181 @@
 
     // Mark active step
     const steps = Array.from(document.querySelectorAll('.step'));
-    steps.forEach(s => s.classList.toggle('active', s.dataset.phase.toLowerCase() === phase.toLowerCase()));
+    steps.forEach(s => {
+      const stepPhase = s.dataset.phase.toLowerCase();
+      const currentPhase = phase.toLowerCase();
+      
+      s.classList.remove('active', 'complete');
+      
+      if (stepPhase === currentPhase) {
+        s.classList.add('active');
+      } else if (projectData.phases.find(p => p.name.toLowerCase() === stepPhase)?.status === 'complete') {
+        s.classList.add('complete');
+      }
+    });
+
+    // Development tracker functionality
+    const devCheckboxes = document.querySelectorAll('.dev-checkbox');
+    devCheckboxes.forEach(checkbox => {
+      checkbox.addEventListener('change', function() {
+        const task = this.dataset.task;
+        const status = this.checked ? 'complete' : 'pending';
+        
+        // Update progress based on completed tasks
+        updateProgress();
+        
+        // Save to localStorage
+        localStorage.setItem(`inex-dev-${task}`, status);
+      });
+      
+      // Load saved state
+      const savedStatus = localStorage.getItem(`inex-dev-${checkbox.dataset.task}`);
+      if (savedStatus === 'complete') {
+        checkbox.checked = true;
+      }
+    });
+
+    function updateProgress() {
+      const totalTasks = devCheckboxes.length;
+      const completedTasks = Array.from(devCheckboxes).filter(cb => cb.checked).length;
+      const newProgress = Math.round((completedTasks / totalTasks) * 100);
+      
+      // Update progress ring and bar
+      document.querySelector('.ring').style.setProperty('--p', newProgress);
+      document.getElementById('pct').textContent = newProgress + '%';
+      document.getElementById('barFill').style.setProperty('--bar', newProgress + '%');
+      
+      // Update project data
+      projectData.progress = newProgress;
+      
+      // Save progress to localStorage
+      localStorage.setItem('inex-project-progress', newProgress);
+    }
+
+    // Auto-save progress every 30 seconds
+    setInterval(() => {
+      localStorage.setItem('inex-project-data', JSON.stringify(projectData));
+    }, 30000);
+
+    // Load saved progress on page load
+    const savedProgress = localStorage.getItem('inex-project-progress');
+    if (savedProgress) {
+      const progress = parseInt(savedProgress);
+      document.querySelector('.ring').style.setProperty('--p', progress);
+      document.getElementById('pct').textContent = progress + '%';
+      document.getElementById('barFill').style.setProperty('--bar', progress + '%');
+      projectData.progress = progress;
+    }
+
+    // Add update functionality
+    function addUpdate(date, update, status) {
+      const updatesTable = document.getElementById('updates');
+      const newRow = document.createElement('tr');
+      newRow.innerHTML = `
+        <td>${date}</td>
+        <td>${update}</td>
+        <td><span class="pill">${status}</span></td>
+      `;
+      updatesTable.appendChild(newRow);
+      
+      // Save to project data
+      projectData.updates.push({ date, update, status });
+    }
+
+    // Auto-sync with development tracker
+    function syncWithDevTracker() {
+      // Check for updates from localStorage (set by dev-tracker.js)
+      const savedProgress = localStorage.getItem('inex-overall-progress');
+      const savedPhase = localStorage.getItem('inex-current-phase');
+      const savedUpdates = localStorage.getItem('inex-updates');
+      
+      if (savedProgress) {
+        const progress = parseInt(savedProgress);
+        document.querySelector('.ring').style.setProperty('--p', progress);
+        document.getElementById('pct').textContent = progress + '%';
+        document.getElementById('barFill').style.setProperty('--bar', progress + '%');
+        projectData.progress = progress;
+      }
+      
+      if (savedPhase) {
+        document.getElementById('phaseLabel').textContent = savedPhase;
+        projectData.currentPhase = savedPhase;
+        
+        // Update timeline steps
+        steps.forEach(s => {
+          const stepPhase = s.dataset.phase.toLowerCase();
+          const currentPhase = savedPhase.toLowerCase();
+          
+          s.classList.remove('active', 'complete');
+          
+          if (stepPhase === currentPhase) {
+            s.classList.add('active');
+          }
+        });
+      }
+      
+      if (savedUpdates) {
+        try {
+          const updates = JSON.parse(savedUpdates);
+          if (updates.length > 0) {
+            // Clear existing updates
+            const updatesTable = document.getElementById('updates');
+            updatesTable.innerHTML = '';
+            
+            // Add new updates (most recent first)
+            updates.slice(0, 10).forEach(update => {
+              const newRow = document.createElement('tr');
+              newRow.innerHTML = `
+                <td>${update.date}</td>
+                <td>${update.message}</td>
+                <td><span class="pill">${update.status}</span></td>
+              `;
+              updatesTable.appendChild(newRow);
+            });
+          }
+        } catch (error) {
+          console.error('Error parsing updates:', error);
+        }
+      }
+    }
+
+    // Listen for messages from development tracker
+    window.addEventListener('message', function(event) {
+      if (event.data.type === 'inex-status-update') {
+        const data = event.data.data;
+        
+        // Update progress
+        document.querySelector('.ring').style.setProperty('--p', data.overallProgress);
+        document.getElementById('pct').textContent = data.overallProgress + '%';
+        document.getElementById('barFill').style.setProperty('--bar', data.overallProgress + '%');
+        
+        // Update phase
+        document.getElementById('phaseLabel').textContent = data.currentPhase;
+        
+        // Update timeline
+        steps.forEach(s => {
+          const stepPhase = s.dataset.phase.toLowerCase();
+          const currentPhase = data.currentPhase.toLowerCase();
+          
+          s.classList.remove('active', 'complete');
+          
+          if (stepPhase === currentPhase) {
+            s.classList.add('active');
+          } else if (data.phases[stepPhase]?.status === 'complete') {
+            s.classList.add('complete');
+          }
+        });
+      }
+    });
+
+    // Auto-sync every 5 seconds
+    setInterval(syncWithDevTracker, 5000);
+    
+    // Initial sync
+    syncWithDevTracker();
+
+    // Example: Add a new update (you can call this from console or add a form)
+    // addUpdate('Dec 18', 'New feature implemented', 'Complete');
   </script>
 </body>
 </html>
