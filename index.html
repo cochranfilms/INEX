@@ -68,6 +68,79 @@
   .btn{display:inline-flex;align-items:center;justify-content:center;padding:.8rem 1rem;border-radius:12px;border:1px solid transparent;text-decoration:none;font-weight:800;cursor:pointer;transition:.15s transform ease}
   .btn:hover{transform:translateY(-1px);filter:brightness(.97)}
   .btn.primary{background:var(--maroon);color:#fff;border-color:var(--maroon-700)}
+  .btn.primary.message-submit{background:var(--maroon);color:#fff;border-color:var(--maroon-700);padding:12px 24px;font-size:14px;font-weight:700;border-radius:12px;box-shadow:0 4px 12px rgba(166,46,63,0.3);transition:all 0.2s ease}
+  
+  /* Message form specific styles */
+  .message-form input,
+  .message-form textarea {
+    padding: 12px 16px !important;
+    border: 2px solid var(--border) !important;
+    border-radius: 12px !important;
+    background: var(--panel) !important;
+    color: var(--panel-ink) !important;
+    font-size: 14px !important;
+    transition: all 0.2s ease !important;
+    outline: none !important;
+  }
+  
+  .message-form input:focus,
+  .message-form textarea:focus {
+    border-color: var(--accent) !important;
+    box-shadow: 0 0 0 3px rgba(255, 178, 0, 0.1) !important;
+  }
+  
+  .message-form label {
+    font-size: 12px !important;
+    font-weight: 600 !important;
+    color: var(--panel-ink) !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.5px !important;
+    margin-bottom: 8px !important;
+  }
+  
+  /* Message display styles */
+  .message-item {
+    padding: 20px !important;
+    border: 1px solid var(--border) !important;
+    border-radius: 16px !important;
+    margin-bottom: 16px !important;
+    background: rgba(255,255,255,.04) !important;
+    box-shadow: 0 4px 16px rgba(0,0,0,.08) !important;
+    transition: all 0.3s ease !important;
+    position: relative !important;
+    overflow: hidden !important;
+  }
+  
+  .message-item:hover {
+    transform: translateY(-2px) !important;
+    box-shadow: 0 8px 24px rgba(0,0,0,.12) !important;
+  }
+  
+  .message-avatar {
+    width: 40px !important;
+    height: 40px !important;
+    border-radius: 50% !important;
+    background: linear-gradient(135deg, var(--accent), var(--maroon)) !important;
+    display: grid !important;
+    place-items: center !important;
+    color: white !important;
+    font-weight: 700 !important;
+    font-size: 16px !important;
+    box-shadow: 0 2px 8px rgba(255,178,0,0.3) !important;
+  }
+  
+  .message-content {
+    font-size: 14px !important;
+    line-height: 1.6 !important;
+    color: var(--panel-ink) !important;
+    margin-bottom: 16px !important;
+    word-wrap: break-word !important;
+    overflow-wrap: break-word !important;
+    padding: 16px !important;
+    background: rgba(255,255,255,.02) !important;
+    border-radius: 12px !important;
+    border-left: 4px solid var(--accent) !important;
+  }
   .btn.secondary{background:var(--accent);color:var(--accent-ink);border-color:#e6a300}
   .btn.ghost{background:#fff;color:var(--maroon);border-color:#e9c6cc}
   html[data-theme="dark"] .btn.ghost{background:rgba(255,255,255,.06);color:#fff;border-color:var(--border)}
@@ -422,20 +495,20 @@
                 <small>This site automatically pushes messages to GitHub. When you send a message, it's immediately committed to the repository and visible to the development team.</small>
               </div>
               
-              <form id="messageForm" style="display:grid;gap:16px">
+              <form id="messageForm" class="message-form" style="display:grid;gap:16px">
                 <div style="display:grid;gap:8px">
-                  <label for="messageName" style="font-size:12px;font-weight:600;color:var(--panel-ink);text-transform:uppercase;letter-spacing:0.5px">Your Name</label>
-                  <input type="text" id="messageName" placeholder="Anonymous (optional)" style="padding:12px 16px;border:2px solid var(--border);border-radius:12px;background:var(--panel);color:var(--panel-ink);font-size:14px;transition:all 0.2s ease;outline:none" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'">
+                  <label for="messageName">Your Name</label>
+                  <input type="text" id="messageName" placeholder="Anonymous (optional)">
                 </div>
                 
                 <div style="display:grid;gap:8px">
-                  <label for="messageText" style="font-size:12px;font-weight:600;color:var(--panel-ink);text-transform:uppercase;letter-spacing:0.5px">Message</label>
-                  <textarea id="messageText" placeholder="Type your message here..." rows="4" style="padding:12px 16px;border:2px solid var(--border);border-radius:12px;background:var(--panel);color:var(--panel-ink);font-size:14px;resize:vertical;transition:all 0.2s ease;outline:none;line-height:1.5" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'"></textarea>
+                  <label for="messageText">Message</label>
+                  <textarea id="messageText" placeholder="Type your message here..." rows="4" style="resize:vertical;line-height:1.5"></textarea>
                 </div>
                 
                 <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0">
                   <small style="color:var(--muted);font-size:12px;font-weight:500" id="charCount">0 characters</small>
-                  <button type="submit" class="btn primary" style="padding:12px 24px;font-size:14px;font-weight:700;border-radius:12px;box-shadow:0 4px 12px rgba(166,46,63,0.3);transition:all 0.2s ease" onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 6px 20px rgba(166,46,63,0.4)'" onmouseout="this.style.transform='translateY(0)';this.style.boxShadow='0 4px 12px rgba(166,46,63,0.3)'">📤 Send Message</button>
+                  <button type="submit" class="btn primary message-submit" onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 6px 20px rgba(166,46,63,0.4)'" onmouseout="this.style.transform='translateY(0)';this.style.boxShadow='0 4px 12px rgba(166,46,63,0.3)'">📤 Send Message</button>
                 </div>
               </form>
             </div>
