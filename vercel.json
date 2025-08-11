@@ -1,26 +1,43 @@
 {
   "version": 2,
-  "builds": [
+  "functions": {
+    "api/messages.js": {
+      "runtime": "nodejs18.x"
+    },
+    "api/message-manager.js": {
+      "runtime": "nodejs18.x"
+    },
+    "api/status-update.js": {
+      "runtime": "nodejs18.x"
+    }
+  },
+  "routes": [
     {
-      "src": "vercel-build-hook.js",
-      "use": "@vercel/node"
+      "src": "/api/(.*)",
+      "dest": "/api/$1"
     },
     {
-      "src": "*.html",
-      "use": "@vercel/static"
-    },
-    {
-      "src": "api/**/*.js",
-      "use": "@vercel/node"
+      "src": "/(.*)",
+      "dest": "/$1"
     }
   ],
-  "buildCommand": "node vercel-build-hook.js",
-  "outputDirectory": ".",
-
   "env": {
     "NODE_ENV": "production"
   },
   "headers": [
+    {
+      "source": "/inex-messages.json",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "no-cache, no-store, must-revalidate"
+        },
+        {
+          "key": "Access-Control-Allow-Origin",
+          "value": "*"
+        }
+      ]
+    },
     {
       "source": "/inex-live-data.json",
       "headers": [
