@@ -515,9 +515,9 @@
   // Load saved status data when dashboard loads
   window.addEventListener('load', function() {
     // Wait a bit for the DOM to be fully ready
-    setTimeout(() => {
-      // Initialize status from localStorage
-      initializeStatus();
+    setTimeout(async () => {
+      // Initialize status from JSON files ONLY
+      await initializeStatus();
       
       // Update all progress displays to ensure consistency
       updateAllStatusDisplays();
@@ -571,7 +571,7 @@
   console.log('  API_STATUS_UPDATE:', API_STATUS_UPDATE);
   console.log('  API_MESSAGES:', API_MESSAGES);
 
-  // Centralized Status Management System
+  // Centralized Status Management System - JSON ONLY
   let currentStatus = {
     progress: 5,
     phase: 'Phase 1',
@@ -580,17 +580,24 @@
     lastUpdated: new Date().toISOString()
   };
 
-  // Initialize status from localStorage or defaults
-  function initializeStatus() {
-    const savedProgress = localStorage.getItem('inex-project-progress');
-    const savedPhase = localStorage.getItem('inex-project-phase');
-    const savedPhaseName = localStorage.getItem('inex-project-phase-name');
-    const savedStatus = localStorage.getItem('inex-project-status');
-    
-    if (savedProgress) currentStatus.progress = parseInt(savedProgress);
-    if (savedPhase) currentStatus.phase = savedPhase;
-    if (savedPhaseName) currentStatus.phaseName = savedPhaseName;
-    if (savedStatus) currentStatus.status = savedStatus;
+  // Initialize status from JSON files ONLY
+  async function initializeStatus() {
+    try {
+      // Load from live data JSON first
+      const response = await fetch('inex-live-data.json');
+      if (response.ok) {
+        const liveData = await response.json();
+        currentStatus.progress = liveData.progress || 5;
+        currentStatus.phase = liveData.phase || 'Phase 1';
+        currentStatus.status = liveData.status || 'Phase 1 (Prototype Polish) in progress. Working on INEX branding integration and basic UI framework. On track for Aug 22 completion.';
+        currentStatus.lastUpdated = liveData.lastUpdated || new Date().toISOString();
+        console.log('✅ Status loaded from JSON:', currentStatus);
+      } else {
+        console.log('⚠️ Could not load live data, using defaults');
+      }
+    } catch (error) {
+      console.log('⚠️ Error loading live data, using defaults:', error.message);
+    }
     
     // Update all displays
     updateAllStatusDisplays();
@@ -629,15 +636,29 @@
     }
   }
 
-  // Save status to localStorage and update displays
-  function saveStatus() {
-    localStorage.setItem('inex-project-progress', currentStatus.progress);
-    localStorage.setItem('inex-project-phase', currentStatus.phase);
-    localStorage.setItem('inex-project-phase-name', currentStatus.phaseName);
-    localStorage.setItem('inex-project-status', currentStatus.status);
-    localStorage.setItem('inex-project-last-updated', currentStatus.lastUpdated);
-    
-    updateAllStatusDisplays();
+  // Save status to JSON via API ONLY (no localStorage)
+  async function saveStatus() {
+    try {
+      // Update via API to JSON files
+      const response = await fetch(API_STATUS_UPDATE, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          progress: currentStatus.progress,
+          phase: currentStatus.phase,
+          status: currentStatus.status
+        })
+      });
+
+      if (response.ok) {
+        console.log('✅ Status saved to JSON via API');
+        updateAllStatusDisplays();
+      } else {
+        console.error('❌ Failed to save status to JSON');
+      }
+    } catch (error) {
+      console.error('❌ Error saving status:', error);
+    }
   }
 
   // Status Update Functions - Now work from any view
@@ -683,12 +704,8 @@
       if (update !== null) {
         const status = prompt('Enter status (e.g., In Progress, Complete, Planned):', 'In Progress');
         if (status !== null) {
-          // Save update to localStorage for status.html to read
-          const updates = JSON.parse(localStorage.getItem('inex-project-updates') || '[]');
-          updates.push({ date, update, status });
-          localStorage.setItem('inex-project-updates', JSON.stringify(updates));
-          
-          alert('Update added successfully!');
+          // Note: Updates are now managed through the JSON system
+          alert('Update functionality is now managed through the JSON system. Use the status update buttons above to make changes.');
         }
       }
     }
@@ -823,13 +840,13 @@
     }
   }
 
-  // Messaging System Functions - Automatic GitHub Integration
+  // Messaging System Functions - JSON ONLY
   async function loadDevMessages() {
     const messagesList = document.getElementById('messagesList');
     if (!messagesList) return;
     
     try {
-      // Always try the API endpoint first (both local and production)
+      // Always try the API endpoint first (JSON source)
       console.log('Loading messages from API endpoint:', API_MESSAGES);
       const response = await fetch(API_MESSAGES, { 
         cache: 'no-store',
@@ -840,38 +857,28 @@
         const data = await response.json();
         const messages = data.messages || [];
         displayDevMessages(messages);
-        
-        // Save to localStorage as backup
-        localStorage.setItem('inex-messages', JSON.stringify(messages));
-        console.log(`✅ Loaded ${messages.length} messages from API`);
+        console.log(`✅ Loaded ${messages.length} messages from JSON API`);
         return;
       }
       
-      // If API fails, try loading from JSON file as fallback
-      console.log('API failed, trying JSON file fallback');
+      // If API fails, try loading from JSON file directly
+      console.log('API failed, trying JSON file directly');
       const jsonResponse = await fetch('/inex-messages.json', { cache: 'no-store' });
       if (jsonResponse.ok) {
         const messages = await jsonResponse.json();
         displayDevMessages(messages);
-        localStorage.setItem('inex-messages', JSON.stringify(messages));
         console.log(`✅ Loaded ${messages.length} messages from JSON file`);
         return;
       }
       
-      // Final fallback to localStorage
-      console.log('All remote sources failed, using localStorage fallback');
-      loadMessagesFromLocalStorage();
+      // Show no messages if JSON sources fail
+      console.log('All JSON sources failed, showing empty state');
+      displayDevMessages([]);
       
     } catch (error) {
-      console.warn('Failed to load messages, using localStorage fallback:', error.message);
-      loadMessagesFromLocalStorage();
+      console.warn('Failed to load messages from JSON:', error.message);
+      displayDevMessages([]);
     }
-  }
-
-  function loadMessagesFromLocalStorage() {
-    const savedMessages = localStorage.getItem('inex-messages') || '[]';
-    const messages = JSON.parse(savedMessages);
-    displayDevMessages(messages);
   }
 
   function displayDevMessages(messages) {
@@ -887,17 +894,76 @@
       return;
     }
 
+    // Improved message formatting
     messagesList.innerHTML = messages.map(msg => `
-      <div style="padding:12px;border:1px solid var(--border);border-radius:8px;margin-bottom:8px;background:rgba(255,255,255,.02)">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
-          <strong style="font-size:13px;color:var(--accent)">${msg.name || 'Anonymous'}</strong>
-          <small style="color:var(--muted);font-size:11px">${formatTimestamp(msg.timestamp)}</small>
+      <div style="
+        padding: 16px;
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        margin-bottom: 12px;
+        background: rgba(255,255,255,.03);
+        box-shadow: 0 2px 8px rgba(0,0,0,.05);
+        transition: all 0.2s ease;
+      ">
+        <div style="
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          margin-bottom: 8px;
+          flex-wrap: wrap;
+          gap: 8px;
+        ">
+          <strong style="
+            font-size: 14px;
+            color: var(--accent);
+            font-weight: 700;
+          ">${msg.name || 'Anonymous'}</strong>
+          <small style="
+            color: var(--muted);
+            font-size: 11px;
+            background: rgba(255,255,255,.1);
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-weight: 500;
+          ">${formatTimestamp(msg.timestamp)}</small>
         </div>
-        <div style="font-size:13px;line-height:1.4">${msg.text}</div>
+        <div style="
+          font-size: 13px;
+          line-height: 1.5;
+          color: var(--panel-ink);
+          margin-bottom: 8px;
+          word-wrap: break-word;
+          overflow-wrap: break-word;
+        ">${msg.text}</div>
         ${msg.responses && msg.responses.length > 0 ? `
-          <div style="margin-top:8px;padding-top:8px;border-top:1px solid var(--border);font-size:12px;color:var(--muted)">
-            <strong>Response:</strong> ${msg.responses[msg.responses.length - 1].text}
+          <div style="
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px solid var(--border);
+            font-size: 12px;
+            color: var(--muted);
+            background: rgba(255,255,255,.02);
+            padding: 8px 12px;
+            border-radius: 8px;
+          ">
+            <strong style="color: var(--accent);">Response:</strong> 
+            <span style="margin-left: 4px;">${msg.responses[msg.responses.length - 1].text}</span>
           </div>
+        ` : ''}
+        ${msg.priority && msg.priority !== 'normal' ? `
+          <div style="
+            margin-top: 8px;
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            ${msg.priority === 'urgent' ? 'background: rgba(244,67,54,.2); color: #f44336; border: 1px solid rgba(244,67,54,.3);' : 
+              msg.priority === 'high' ? 'background: rgba(255,152,0,.2); color: #ff9800; border: 1px solid rgba(255,152,0,.3);' :
+              'background: rgba(76,175,80,.2); color: #4caf50; border: 1px solid rgba(76,175,80,.3);'}
+          ">${msg.priority}</div>
         ` : ''}
       </div>
     `).join('');
@@ -916,10 +982,9 @@
   }
 
   function clearMessages() {
-    if (confirm('Are you sure you want to clear all messages? This cannot be undone.')) {
-      localStorage.removeItem('inex-messages');
+    if (confirm('Are you sure you want to clear all messages? This will only clear the display - messages remain in the JSON file.')) {
       displayDevMessages([]);
-      alert('All messages cleared!');
+      alert('Message display cleared! Messages remain in the JSON file.');
     }
   }
 
@@ -947,33 +1012,8 @@
         throw new Error('API request failed');
       }
     } catch (error) {
-      console.warn('API failed, using localStorage fallback:', error.message);
-      
-      // Fallback to localStorage
-      const savedMessages = localStorage.getItem('inex-messages') || '[]';
-      const messages = JSON.parse(savedMessages);
-      
-      const messageIndex = messages.findIndex(msg => msg.id === messageId);
-      if (messageIndex !== -1) {
-        if (!messages[messageIndex].responses) {
-          messages[messageIndex].responses = [];
-        }
-        
-        messages[messageIndex].responses.push({
-          text: responseText.trim(),
-          timestamp: new Date().toISOString(),
-          responder: 'Development Team'
-        });
-        
-        messages[messageIndex].responded = true;
-        messages[messageIndex].status = 'responded';
-        
-        localStorage.setItem('inex-messages', JSON.stringify(messages));
-        displayDevMessages(messages);
-        alert('✅ Response added successfully! (Local mode)');
-      } else {
-        alert('❌ Message not found');
-      }
+      console.warn('API failed:', error.message);
+      alert('❌ Could not add response. Please try again later.');
     }
   }
 
@@ -1088,14 +1128,8 @@
           id: Date.now()
         };
 
-        const savedMessages = localStorage.getItem('inex-messages') || '[]';
-        const messages = JSON.parse(savedMessages);
-        messages.unshift(message);
-        
-        localStorage.setItem('inex-messages', JSON.stringify(messages));
-        displayDevMessages(messages);
-        
-        showMessageSuccess('Message saved locally (API unavailable). Please try again later.');
+        // Show error message - no localStorage fallback
+        showMessageSuccess('Message could not be sent. Please check your connection and try again.');
       }
 
       // Reset button
