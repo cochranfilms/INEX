@@ -1,0 +1,68 @@
+name: Status Update & Deploy
+
+on:
+  workflow_dispatch:
+    inputs:
+      progress:
+        description: 'Progress percentage'
+        required: true
+        default: '5'
+      phase:
+        description: 'Current phase'
+        required: true
+        default: 'Discovery'
+      status:
+        description: 'Status description'
+        required: true
+        default: 'Project kickoff initiated'
+      update:
+        description: 'Weekly update'
+        required: false
+      update_status:
+        description: 'Update status'
+        required: false
+        default: 'In Progress'
+
+jobs:
+  update-status:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        
+    - name: Update status files
+      run: |
+        # Update status.html with new progress
+        sed -i "s/id=\"pct\">.*%/id=\"pct\">${{ github.event.inputs.progress }}%/g" status.html
+        sed -i "s/id=\"phaseLabel\">.*</id=\"phaseLabel\">${{ github.event.inputs.phase }}</g" status.html
+        
+        # Update progress bar
+        sed -i "s/--bar:.*%/--bar:${{ github.event.inputs.progress }}%/g" status.html
+        
+        # Update ring progress
+        sed -i "s/--p:.*/--p:${{ github.event.inputs.progress }}/g" status.html
+        
+        # Update status text if provided
+        if [ -n "${{ github.event.inputs.status }}" ]; then
+          sed -i "s/Current Status:.*</Current Status: ${{ github.event.inputs.status }}</g" status.html
+        fi
+        
+    - name: Commit and push changes
+      run: |
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action"
+        git add status.html
+        git commit -m "Status Update: ${{ github.event.inputs.phase }} - ${{ github.event.inputs.progress }}% - ${{ github.event.inputs.status }}"
+        git push
+        
+    - name: Trigger Vercel deployment
+      run: |
+        if [ -n "${{ secrets.VERCEL_DEPLOY_HOOK }}" ]; then
+          curl -X POST ${{ secrets.VERCEL_DEPLOY_HOOK }}
+        fi

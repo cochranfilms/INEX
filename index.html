@@ -355,6 +355,14 @@
               <button class="btn primary" onclick="updateStatus()">Update Status</button>
               <a class="btn secondary" href="status.html" target="_blank">View Public Status</a>
             </div>
+            <div style="margin-top:1rem;padding:1rem;background:rgba(0,150,136,.1);border:1px solid rgba(0,150,136,.2);border-radius:8px">
+              <strong>🚀 Live Deployment Controls</strong><br>
+              <small>These buttons will update both local status AND deploy live to Zebediah's status page:</small>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-top:1rem">
+                <button class="btn primary" onclick="deployStatusUpdate()">🚀 Deploy Live Update</button>
+                <button class="btn secondary" onclick="deployPhaseChange()">🔄 Deploy Phase Change</button>
+              </div>
+            </div>
           </div>
         </article>
         <article class="card span-4">
@@ -501,6 +509,67 @@
           alert('Update added successfully!');
         }
       }
+    }
+  }
+
+  // Live Deployment Functions
+  async function deployStatusUpdate() {
+    const progress = document.getElementById('progressDisplay').textContent.replace('%', '');
+    const phase = document.getElementById('phaseDisplay').textContent;
+    const status = document.getElementById('statusText').textContent;
+    
+    try {
+      const response = await fetch('/api/status-update', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          progress: parseInt(progress),
+          phase,
+          status
+        })
+      });
+
+      const result = await response.json();
+      
+      if (result.success) {
+        alert('🚀 Status update deployed successfully! Zebediah will see the changes in a few minutes.');
+      } else {
+        alert('❌ Deployment failed: ' + result.error);
+      }
+    } catch (error) {
+      alert('❌ Deployment error: ' + error.message);
+    }
+  }
+
+  async function deployPhaseChange() {
+    const progress = document.getElementById('progressDisplay').textContent.replace('%', '');
+    const phase = document.getElementById('phaseDisplay').textContent;
+    const status = `Phase transition to ${phase} - ${progress}% complete`;
+    
+    try {
+      const response = await fetch('/api/status-update', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          progress: parseInt(progress),
+          phase,
+          status
+        })
+      });
+
+      const result = await response.json();
+      
+      if (result.success) {
+        alert('🔄 Phase change deployed successfully! Zebediah will see the new phase in a few minutes.');
+      } else {
+        alert('❌ Deployment failed: ' + result.error);
+      }
+    } catch (error) {
+      alert('❌ Deployment error: ' + error.message);
     }
   }
 
