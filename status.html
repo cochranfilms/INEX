@@ -331,7 +331,7 @@
     // Read from localStorage (updated by management dashboard) or fall back to query params
     const savedProgress = localStorage.getItem('inex-project-progress') || '5';
     const savedPhase = localStorage.getItem('inex-project-phase') || 'Phase 1';
-    const savedStatus = localStorage.getItem('inex-project-status') || 'Phase 1 (Prototype Polish) in progress. Working on INEX branding integration and basic UI framework. On track for Aug 22 completion.';
+    const savedStatusValue = localStorage.getItem('inex-project-status') || 'Phase 1 (Prototype Polish) in progress. Working on INEX branding integration and basic UI framework. On track for Aug 22 completion.';
     
     const pct = Math.max(0, Math.min(100, parseInt(params.get('progress') || savedProgress || '5', 10)));
     const phase = params.get('phase') || savedPhase || 'Phase 1';
@@ -502,12 +502,8 @@
       }
     }
 
-    // Load saved status from localStorage
-    const savedStatus = localStorage.getItem('inex-project-status');
-    if (savedStatus) {
-      // Could display this somewhere if needed
-      console.log('Loaded saved status:', savedStatus);
-    }
+    // Load saved status from localStorage (already loaded above)
+    // savedStatusValue is available from the earlier declaration
 
     // Add update functionality
     function addUpdate(date, update, status) {

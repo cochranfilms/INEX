@@ -260,6 +260,11 @@
     const API_BASE = window.location.origin;
     const MESSAGES_API = `${API_BASE}/api/messages`;
     const MESSAGE_MANAGER_API = `${API_BASE}/api/message-manager`;
+    
+    // Ensure we're using the correct protocol and port
+    console.log('API Base:', API_BASE);
+    console.log('Messages API:', MESSAGES_API);
+    console.log('Message Manager API:', MESSAGE_MANAGER_API);
 
     // Initialize dashboard
     document.addEventListener('DOMContentLoaded', function() {

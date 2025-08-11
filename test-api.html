@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API Test - INEX</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; }
+        .test-section { margin: 20px 0; padding: 20px; border: 1px solid #ccc; border-radius: 8px; }
+        .success { background: #d4edda; border-color: #c3e6cb; }
+        .error { background: #f8d7da; border-color: #f5c6cb; }
+        button { padding: 10px 20px; margin: 5px; cursor: pointer; }
+        pre { background: #f8f9fa; padding: 10px; border-radius: 4px; overflow-x: auto; }
+    </style>
+</head>
+<body>
+    <h1>🔧 INEX API Test Page</h1>
+    
+    <div class="test-section">
+        <h3>Test Messages API</h3>
+        <button onclick="testGetMessages()">Test GET /api/messages</button>
+        <button onclick="testPostMessage()">Test POST /api/messages</button>
+        <div id="messagesResult"></div>
+    </div>
+    
+    <div class="test-section">
+        <h3>Test Message Manager API</h3>
+        <button onclick="testGetMessageManager()">Test GET /api/message-manager</button>
+        <button onclick="testPutMessage()">Test PUT /api/message-manager</button>
+        <div id="managerResult"></div>
+    </div>
+    
+    <div class="test-section">
+        <h3>Test Status Update API</h3>
+        <button onclick="testStatusUpdate()">Test POST /api/status-update</button>
+        <div id="statusResult"></div>
+    </div>
+
+    <script>
+        const API_BASE = window.location.origin;
+        
+        async function testGetMessages() {
+            try {
+                const response = await fetch(`${API_BASE}/api/messages`);
+                const data = await response.json();
+                document.getElementById('messagesResult').innerHTML = `
+                    <div class="success">
+                        <h4>✅ GET /api/messages Success</h4>
+                        <pre>${JSON.stringify(data, null, 2)}</pre>
+                    </div>
+                `;
+            } catch (error) {
+                document.getElementById('messagesResult').innerHTML = `
+                    <div class="error">
+                        <h4>❌ GET /api/messages Failed</h4>
+                        <pre>${error.message}</pre>
+                    </div>
+                `;
+            }
+        }
+        
+        async function testPostMessage() {
+            try {
+                const response = await fetch(`${API_BASE}/api/messages`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        name: 'API Test',
+                        text: 'This is a test message from the API test page',
+                        email: 'test@example.com',
+                        priority: 'normal',
+                        category: 'test'
+                    })
+                });
+                const data = await response.json();
+                document.getElementById('messagesResult').innerHTML = `
+                    <div class="success">
+                        <h4>✅ POST /api/messages Success</h4>
+                        <pre>${JSON.stringify(data, null, 2)}</pre>
+                    </div>
+                `;
+            } catch (error) {
+                document.getElementById('messagesResult').innerHTML = `
+                    <div class="error">
+                        <h4>❌ POST /api/messages Failed</h4>
+                        <pre>${error.message}</pre>
+                    </div>
+                `;
+            }
+        }
+        
+        async function testGetMessageManager() {
+            try {
+                const response = await fetch(`${API_BASE}/api/message-manager`);
+                const data = await response.json();
+                document.getElementById('managerResult').innerHTML = `
+                    <div class="success">
+                        <h4>✅ GET /api/message-manager Success</h4>
+                        <pre>${JSON.stringify(data, null, 2)}</pre>
+                    </div>
+                `;
+            } catch (error) {
+                document.getElementById('managerResult').innerHTML = `
+                    <div class="error">
+                        <h4>❌ GET /api/message-manager Failed</h4>
+                        <pre>${error.message}</pre>
+                    </div>
+                `;
+            }
+        }
+        
+        async function testPutMessage() {
+            try {
+                // First get a message to update
+                const getResponse = await fetch(`${API_BASE}/api/messages`);
+                const getData = await getResponse.json();
+                
+                if (getData.messages && getData.messages.length > 0) {
+                    const messageId = getData.messages[0].id;
+                    const response = await fetch(`${API_BASE}/api/message-manager`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            id: messageId,
+                            read: true,
+                            status: 'read'
+                        })
+                    });
+                    const data = await response.json();
+                    document.getElementById('managerResult').innerHTML = `
+                        <div class="success">
+                            <h4>✅ PUT /api/message-manager Success</h4>
+                            <pre>${JSON.stringify(data, null, 2)}</pre>
+                        </div>
+                    `;
+                } else {
+                    document.getElementById('managerResult').innerHTML = `
+                        <div class="error">
+                            <h4>❌ No messages to update</h4>
+                            <p>Create a message first using the POST test above.</p>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                document.getElementById('managerResult').innerHTML = `
+                    <div class="error">
+                        <h4>❌ PUT /api/message-manager Failed</h4>
+                        <pre>${error.message}</pre>
+                    </div>
+                `;
+            }
+        }
+        
+        async function testStatusUpdate() {
+            try {
+                const response = await fetch(`${API_BASE}/api/status-update`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        progress: 25,
+                        phase: 'Phase 1',
+                        status: 'Phase 1 in progress - Testing API endpoints'
+                    })
+                });
+                const data = await response.json();
+                document.getElementById('statusResult').innerHTML = `
+                    <div class="success">
+                        <h4>✅ POST /api/status-update Success</h4>
+                        <pre>${JSON.stringify(data, null, 2)}</pre>
+                    </div>
+                `;
+            } catch (error) {
+                document.getElementById('statusResult').innerHTML = `
+                    <div class="error">
+                        <h4>❌ POST /api/status-update Failed</h4>
+                        <pre>${error.message}</pre>
+                    </div>
+                `;
+            }
+        }
+        
+        // Auto-test on page load
+        window.addEventListener('load', () => {
+            console.log('API Base URL:', API_BASE);
+            console.log('Testing API endpoints...');
+            testGetMessages();
+        });
+    </script>
+</body>
+</html>

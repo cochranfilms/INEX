@@ -77,7 +77,8 @@ const htmlFiles = [
   'inex-portal-agreement',
   'inex-proposal',
   'contract-reference',
-  'dev-dashboard'
+  'dev-dashboard',
+  'test-api'
 ];
 
 htmlFiles.forEach(file => {
