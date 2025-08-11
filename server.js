@@ -9,6 +9,19 @@ const __dirname = path.dirname(__filename);
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// CORS middleware for cross-origin requests
+app.use((req, res, next) => {
+  res.header('Access-Control-Allow-Origin', '*');
+  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
+  
+  if (req.method === 'OPTIONS') {
+    res.sendStatus(200);
+  } else {
+    next();
+  }
+});
+
 // Middleware for parsing JSON bodies
 app.use(express.json());
 
@@ -77,7 +90,6 @@ const htmlFiles = [
   'inex-portal-agreement',
   'inex-proposal',
   'contract-reference',
-  'dev-dashboard',
   'test-api'
 ];
 
@@ -119,6 +131,16 @@ htmlFiles.forEach(file => {
     } else {
       res.status(404).send('File not found');
     }
+  });
+});
+
+// Test endpoint to verify server is working
+app.get('/api/health', (req, res) => {
+  res.json({ 
+    success: true, 
+    message: 'INEX Portal API is running',
+    timestamp: new Date().toISOString(),
+    endpoints: ['/api/status-update', '/api/messages', '/api/health']
   });
 });
 

@@ -1,5 +1,17 @@
 [
   {
+    "id": "1754892665931",
+    "name": "Test User",
+    "text": "This is a test message",
+    "email": null,
+    "priority": "normal",
+    "category": "general",
+    "timestamp": "2025-08-11T06:11:05.931Z",
+    "status": "new",
+    "read": false,
+    "responded": false
+  },
+  {
     "id": "1754887660763",
     "name": "Urgent Client",
     "text": "We have an urgent request for additional features. Please respond ASAP.",
@@ -7,9 +19,17 @@
     "priority": "urgent",
     "category": "feature-request",
     "timestamp": "2025-08-11T04:47:40.763Z",
-    "status": "new",
-    "read": false,
-    "responded": false
+    "status": "responded",
+    "read": true,
+    "responded": true,
+    "lastUpdated": "2025-08-11T04:47:40.767Z",
+    "responses": [
+      {
+        "text": "Thank you for your message! We are working on your request.",
+        "timestamp": "2025-08-11T04:47:40.767Z",
+        "responder": "Development Team"
+      }
+    ]
   },
   {
     "id": "1754887660760",

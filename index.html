@@ -207,8 +207,8 @@
           <div class="head">Current Phase: Prototype Polish</div>
           <div class="body">
             <div style="display:flex;align-items:center;gap:1rem;margin-bottom:1rem">
-              <div style="width:80px;height:80px;border-radius:50%;background:conic-gradient(#A62E3F 5%, #e6e6e6 0);display:grid;place-items:center;border:3px solid #f0f0f0">
-                <strong style="font-size:16px">5%</strong>
+              <div style="width:80px;height:80px;border-radius:50%;background:conic-gradient(#A62E3F var(--progress,5%), #e6e6e6 0);display:grid;place-items:center;border:3px solid #f0f0f0" id="dashboardProgressRing">
+                <strong style="font-size:16px" id="dashboardProgressText">5%</strong>
               </div>
               <div>
                 <strong>Project Status: Phase 1 - Prototype Polish</strong><br>
@@ -467,24 +467,26 @@
   window.addEventListener('load', function() {
     // Wait a bit for the DOM to be fully ready
     setTimeout(() => {
-      const savedProgress = localStorage.getItem('inex-project-progress') || '5';
-      const savedPhase = localStorage.getItem('inex-project-phase') || 'Phase 1';
-      const savedStatus = localStorage.getItem('inex-project-status') || 'Phase 1 (Prototype Polish) in progress. Working on INEX branding integration and basic UI framework. On track for Aug 22 completion.';
-      
-      // Only update if elements exist (they only exist in the status view)
-      const progressElement = document.getElementById('progressDisplay');
-      const phaseElement = document.getElementById('phaseDisplay');
-      const statusElement = document.getElementById('statusText');
-      
-      if (progressElement) {
-        progressElement.textContent = savedProgress + '%';
-      }
-      if (phaseElement) {
-        phaseElement.textContent = savedPhase;
-      }
-      if (statusElement) {
-        statusElement.textContent = savedStatus;
-      }
+      // Load from live JSON first, then fallback to localStorage
+      loadLiveStatusFromJson().then(() => {
+        const savedProgress = localStorage.getItem('inex-project-progress') || '5';
+        const savedPhase = localStorage.getItem('inex-project-phase') || 'Phase 1';
+        const savedStatus = localStorage.getItem('inex-project-status') || 'Phase 1 (Prototype Polish) in progress. Working on INEX branding integration and basic UI framework. On track for Aug 22 completion.';
+        
+        // Update all progress displays to ensure consistency
+        updateDashboardProgress();
+        
+        // Only update if elements exist (they only exist in the status view)
+        const phaseElement = document.getElementById('phaseDisplay');
+        const statusElement = document.getElementById('statusText');
+        
+        if (phaseElement) {
+          phaseElement.textContent = savedPhase;
+        }
+        if (statusElement) {
+          statusElement.textContent = savedStatus;
+        }
+      });
       
       // Initialize default values if none exist
       if (!localStorage.getItem('inex-project-progress')) {
@@ -530,6 +532,7 @@
                 window.location.port !== '';
   let API_BASE = isDev ? 'http://localhost:3000' : window.location.origin;
   let API_STATUS_UPDATE = `${API_BASE}/api/status-update`;
+  let API_MESSAGES = `${API_BASE}/api/messages`;
 
   const candidateBases = isDev ? [API_BASE] : [
     window.location.origin,
@@ -563,23 +566,37 @@
       const progress = typeof data.progress === 'number' ? data.progress : parseInt((data?.current?.progress ?? '0'), 10) || 0;
       const phase = data.phase || data?.currentPhase || null;
       const status = data.status || data?.current?.status || null;
+      
+      // Update localStorage with live data
       if (!isNaN(progress)) {
-        const el = document.getElementById('progressDisplay');
-        if (el) el.textContent = `${progress}%`;
         localStorage.setItem('inex-project-progress', String(progress));
       }
       if (phase) {
-        const el = document.getElementById('phaseDisplay');
-        if (el) el.textContent = phase;
         localStorage.setItem('inex-project-phase', phase);
       }
       if (status) {
-        const el = document.getElementById('statusText');
-        if (el) el.textContent = status;
         localStorage.setItem('inex-project-status', status);
       }
-    } catch (_) {
-      // ignore; fallback to localStorage defaults
+      
+      // Update UI elements if they exist
+      const progressEl = document.getElementById('progressDisplay');
+      const phaseEl = document.getElementById('phaseDisplay');
+      const statusEl = document.getElementById('statusText');
+      
+      if (progressEl && !isNaN(progress)) {
+        progressEl.textContent = `${progress}%`;
+      }
+      if (phaseEl && phase) {
+        phaseEl.textContent = phase;
+      }
+      if (statusEl && status) {
+        statusEl.textContent = status;
+      }
+      
+      return true;
+    } catch (error) {
+      console.log('Could not load live status, using localStorage defaults');
+      return false;
     }
   }
   function updateStatus() {
@@ -974,12 +991,33 @@
     }
   }
 
+  // Function to update dashboard progress display
+  function updateDashboardProgress() {
+    const progress = localStorage.getItem('inex-project-progress') || '5';
+    const progressRing = document.getElementById('dashboardProgressRing');
+    const progressText = document.getElementById('dashboardProgressText');
+    
+    if (progressRing && progressText) {
+      progressRing.style.setProperty('--progress', progress + '%');
+      progressText.textContent = progress + '%';
+    }
+    
+    // Also update the status view if it's visible
+    const statusProgress = document.getElementById('progressDisplay');
+    if (statusProgress) {
+      statusProgress.textContent = progress + '%';
+    }
+  }
+
   // Call loadDevMessages when the status view is rendered
   const originalRender = render;
   render = function() {
     originalRender();
-    // Wait a bit for the DOM to be ready, then load messages
-    setTimeout(loadDevMessages, 100);
+    // Wait a bit for the DOM to be ready, then load messages and update progress
+    setTimeout(() => {
+      loadDevMessages();
+      updateDashboardProgress();
+    }, 100);
   };
 </script>
 </body>
