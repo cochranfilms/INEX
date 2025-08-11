@@ -3,6 +3,9 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate, max-age=0" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
 <title>INEX Systems Portal — Management Dashboard</title>
         <meta name="description" content="INEX Systems & Designs — Internal management dashboard for Phase 1: Prototype Polish phase. Project management and status updates." />
 <link rel="icon" type="image/svg+xml" href="vite.svg" />
@@ -658,7 +661,7 @@
   const API_MESSAGES = `${API_BASE}/api/messages`;
 
   // Debug logging
-  console.log('🔍 API Configuration Debug:');
+  console.log('🔍 API Configuration Debug (index.html v1.1):');
   console.log('  Hostname:', window.location.hostname);
   console.log('  Port:', window.location.port);
   console.log('  Protocol:', window.location.protocol);
@@ -667,6 +670,7 @@
   console.log('  API_BASE:', API_BASE);
   console.log('  API_STATUS_UPDATE:', API_STATUS_UPDATE);
   console.log('  API_MESSAGES:', API_MESSAGES);
+  console.log('  Build timestamp:', new Date().toISOString());
 
   // Centralized Status Management System - JSON ONLY
   let currentStatus = {
@@ -985,10 +989,10 @@
     
     if (messages.length === 0) {
       messagesList.innerHTML = `
-        <div style="text-align:center;padding:40px 20px;color:var(--muted);font-size:14px;background:rgba(255,255,255,0.02);border-radius:12px;border:2px dashed var(--border)">
+        <div class="message-item" style="text-align:center">
           <div style="font-size:24px;margin-bottom:8px">💬</div>
           <div style="font-weight:600;margin-bottom:4px">No messages yet</div>
-          <div>Send the first message to get started!</div>
+          <div class="muted">Send the first message to get started!</div>
         </div>
       `;
       return;
