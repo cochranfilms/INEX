@@ -241,7 +241,7 @@
   </main>
 
   <script>
-    // Project tracking data
+    // Project tracking data - now integrated with Git-based system
     const projectData = {
       currentPhase: 'Discovery',
       progress: 15,
@@ -265,6 +265,10 @@
         'Build responsive navigation shell'
       ]
     };
+
+    // Git-based progress integration
+    let gitProgressData = null;
+    let lastGitSync = null;
 
     // Theme persistence
     const root = document.documentElement;
@@ -473,6 +477,91 @@
     
     // Initial sync
     syncWithDevTracker();
+
+    // Git-based progress integration
+    async function syncWithGitProgress() {
+      try {
+        // Try to load live data from Vercel build
+        const response = await fetch('/inex-live-data.json');
+        if (response.ok) {
+          const liveData = await response.json();
+          gitProgressData = liveData;
+          lastGitSync = new Date();
+          
+          // Update UI with Git data
+          updateUIFromGitData(liveData);
+          console.log('✅ Git progress data synced:', liveData.currentPhase, liveData.overallProgress + '%');
+        }
+      } catch (error) {
+        // Fallback to localStorage if live data not available
+        const savedGitData = localStorage.getItem('inex-git-data');
+        if (savedGitData) {
+          try {
+            const gitData = JSON.parse(savedGitData);
+            gitProgressData = gitData;
+            updateUIFromGitData(gitData);
+            console.log('📱 Git progress loaded from localStorage');
+          } catch (e) {
+            console.warn('Could not parse saved Git data');
+          }
+        }
+      }
+    }
+
+    function updateUIFromGitData(gitData) {
+      if (!gitData) return;
+
+      // Update progress ring and bar
+      if (gitData.overallProgress !== undefined) {
+        document.querySelector('.ring').style.setProperty('--p', gitData.overallProgress);
+        document.getElementById('pct').textContent = gitData.overallProgress + '%';
+        document.getElementById('barFill').style.setProperty('--bar', gitData.overallProgress + '%');
+        projectData.progress = gitData.overallProgress;
+      }
+
+      // Update phase
+      if (gitData.currentPhase) {
+        document.getElementById('phaseLabel').textContent = gitData.currentPhase;
+        projectData.currentPhase = gitData.currentPhase;
+        
+        // Update timeline steps
+        const steps = Array.from(document.querySelectorAll('.step'));
+        steps.forEach(s => {
+          const stepPhase = s.dataset.phase.toLowerCase();
+          const currentPhase = gitData.currentPhase.toLowerCase();
+          
+          s.classList.remove('active', 'complete');
+          
+          if (stepPhase === currentPhase) {
+            s.classList.add('active');
+          } else if (gitData.phases && gitData.phases[stepPhase]?.status === 'complete') {
+            s.classList.add('complete');
+          }
+        });
+      }
+
+      // Update updates table if Git data has updates
+      if (gitData.updates && gitData.updates.length > 0) {
+        const updatesTable = document.getElementById('updates');
+        updatesTable.innerHTML = '';
+        
+        gitData.updates.slice(0, 10).forEach(update => {
+          const newRow = document.createElement('tr');
+          newRow.innerHTML = `
+            <td>${update.date}</td>
+            <td>${update.message} <small style="opacity:.7">(${update.commit})</small></td>
+            <td><span class="pill">${update.status}</span></td>
+          `;
+          updatesTable.appendChild(newRow);
+        });
+      }
+    }
+
+    // Sync with Git progress every 30 seconds
+    setInterval(syncWithGitProgress, 30000);
+    
+    // Initial Git sync
+    syncWithGitProgress();
 
     // Example: Add a new update (you can call this from console or add a form)
     // addUpdate('Dec 18', 'New feature implemented', 'Complete');

@@ -1,0 +1,127 @@
+name: INEX Progress Tracker
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  track-progress:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0  # Get full history for commit analysis
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+    
+    - name: Install dependencies
+      run: npm ci
+    
+    - name: Process commits for progress
+      id: process-commits
+      run: |
+        echo "🔍 Analyzing commits for INEX progress updates..."
+        
+        # Get commits since last deployment
+        LAST_DEPLOYMENT=$(date -d '1 hour ago' --iso-8601=seconds)
+        COMMITS=$(git log --since="$LAST_DEPLOYMENT" --pretty=format:"%H|%s|%an|%aI" --reverse)
+        
+        if [ -z "$COMMITS" ]; then
+          echo "No new commits found"
+          echo "progress=0" >> $GITHUB_OUTPUT
+          echo "phase=unchanged" >> $GITHUB_OUTPUT
+          echo "updates=[]" >> $GITHUB_OUTPUT
+          exit 0
+        fi
+        
+        # Process each commit
+        PROGRESS_UPDATES="[]"
+        PHASE_UPDATES="[]"
+        
+        while IFS='|' read -r hash message author timestamp; do
+          echo "Processing commit: $hash - $message"
+          
+          # Check for progress patterns
+          if [[ $message =~ Phase:\s*(\w+)\s*-\s*Progress:\s*(\d+)% ]]; then
+            PHASE="${BASH_REMATCH[1]}"
+            PROGRESS="${BASH_REMATCH[2]}"
+            echo "Found progress: Phase $PHASE, Progress $PROGRESS%"
+            
+            # Add to updates
+            UPDATE=$(echo "{\"hash\":\"$hash\",\"phase\":\"$PHASE\",\"progress\":$PROGRESS,\"message\":\"$message\",\"timestamp\":\"$timestamp\"}" | jq -c .)
+            PROGRESS_UPDATES=$(echo "$PROGRESS_UPDATES" | jq ". += [$UPDATE]")
+          elif [[ $message =~ \[Phase\s*(\w+)\].*Progress:\s*(\d+)% ]]; then
+            PHASE="${BASH_REMATCH[1]}"
+            PROGRESS="${BASH_REMATCH[2]}"
+            echo "Found progress: Phase $PHASE, Progress $PROGRESS%"
+            
+            UPDATE=$(echo "{\"hash\":\"$hash\",\"phase\":\"$PHASE\",\"progress\":$PROGRESS,\"message\":\"$message\",\"timestamp\":\"$timestamp\"}" | jq -c .)
+            PROGRESS_UPDATES=$(echo "$PROGRESS_UPDATES" | jq ". += [$UPDATE]")
+          elif [[ $message =~ Phase\s*(\w+):.*-\s*(\d+)% ]]; then
+            PHASE="${BASH_REMATCH[1]}"
+            PROGRESS="${BASH_REMATCH[2]}"
+            echo "Found progress: Phase $PHASE, Progress $PROGRESS%"
+            
+            UPDATE=$(echo "{\"hash\":\"$hash\",\"phase\":\"$PHASE\",\"progress\":$PROGRESS,\"message\":\"$message\",\"timestamp\":\"$timestamp\"}" | jq -c .)
+            PROGRESS_UPDATES=$(echo "$PROGRESS_UPDATES" | jq ". += [$UPDATE]")
+          fi
+        done <<< "$COMMITS"
+        
+        # Output results
+        echo "progress=$PROGRESS_UPDATES" >> $GITHUB_OUTPUT
+        echo "phase=$PHASE_UPDATES" >> $GITHUB_OUTPUT
+        echo "updates=$PROGRESS_UPDATES" >> $GITHUB_OUTPUT
+        
+        echo "✅ Commit processing complete"
+        echo "Found progress updates: $PROGRESS_UPDATES"
+    
+    - name: Update INEX Progress Data
+      if: steps.process-commits.outputs.progress != '[]'
+      run: |
+        echo "📊 Updating INEX progress data..."
+        
+        # Create progress data file
+        cat > inex-progress.json << EOF
+        {
+          "lastUpdate": "$(date -u --iso-8601=seconds)",
+          "commit": "${{ github.sha }}",
+          "progressUpdates": ${{ steps.process-commits.outputs.progress }},
+          "phaseUpdates": ${{ steps.process-commits.outputs.phase }},
+          "deployment": {
+            "environment": "${{ github.ref_name }}",
+            "triggeredBy": "${{ github.actor }}",
+            "timestamp": "$(date -u --iso-8601=seconds)"
+          }
+        }
+        EOF
+        
+        echo "Progress data saved to inex-progress.json"
+    
+    - name: Commit progress data
+      if: steps.process-commits.outputs.progress != '[]'
+      run: |
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action"
+        git add inex-progress.json
+        git commit -m "📊 Update INEX progress from commits [skip ci]" || echo "No changes to commit"
+        git push || echo "Could not push progress data"
+    
+    - name: Notify deployment
+      if: steps.process-commits.outputs.progress != '[]'
+      run: |
+        echo "🚀 Progress tracking complete for deployment"
+        echo "Commits processed: $(echo '${{ steps.process-commits.outputs.progress }}' | jq length)"
+        echo "Progress updates found: ${{ steps.process-commits.outputs.progress }}"
+    
+    - name: No updates found
+      if: steps.process-commits.outputs.progress == '[]'
+      run: |
+        echo "ℹ️ No progress updates found in recent commits"
+        echo "This is normal for documentation or minor changes"
