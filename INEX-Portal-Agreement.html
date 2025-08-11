@@ -635,12 +635,17 @@
       try {
         const now = new Date();
         
+        // Update loading screen progress
+        updateINEXProgress('Creating unique contract ID...', 25);
+        
         // Create contract ID and effective date
         const contractId = 'INEX-' + now.getFullYear() + (now.getMonth()+1).toString().padStart(2,'0') + '-' + Math.random().toString(36).slice(2,8).toUpperCase();
         const effectiveDate = now.toLocaleDateString(undefined,{year:'numeric',month:'long',day:'2-digit'});
         
         // Generate contract data with the new ID and date
         const contractData = buildContractData(contractId, effectiveDate);
+        
+        updateINEXProgress('Preparing contract data...', 35);
         
         // Send admin notification email
         if (typeof emailjs !== 'undefined') {
@@ -658,12 +663,14 @@
             portal_url: window.location.href
           };
           
+          updateINEXProgress('Sending admin notification...', 45);
           await emailjs.send(EMAILJS_CONFIG.serviceId, EMAILJS_CONFIG.templateId, adminEmailParams);
           console.log('✅ Admin notification email sent');
         }
         
         // Send user confirmation email
         if (typeof emailjs !== 'undefined' && payload.contactEmail) {
+          updateINEXProgress('Sending user confirmation...', 55);
           const userEmailParams = {
             to_email: payload.contactEmail,
             contract_id: contractId,
@@ -682,8 +689,17 @@
           console.log('✅ User confirmation email sent');
         }
         
+        updateINEXProgress('Finalizing contract...', 85);
+        
         // Contract PDF generated successfully - no upload needed
         console.log('✅ Contract PDF generated successfully');
+        
+        updateINEXProgress('Contract completed successfully!', 100);
+        
+        // Hide loading screen after a brief delay
+        setTimeout(() => {
+          hideINEXLoadingScreen();
+        }, 1000);
         
         // Return the generated contract data
         return {
@@ -703,6 +719,314 @@
     const finalizeBtn = document.getElementById('finalizeBtn');
     const downloadBtn = document.getElementById('downloadBtn');
     let lastDoc = null; let lastData = null;
+
+    // INEX Loading Screen Functions
+    function showINEXLoadingScreen() {
+      // Create background overlay
+      const overlay = document.createElement('div');
+      overlay.id = 'inex-loading-overlay';
+      overlay.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(135deg, rgba(166, 46, 63, 0.95) 0%, rgba(139, 26, 42, 0.95) 100%);
+        backdrop-filter: blur(10px);
+        z-index: 9999;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        animation: fadeIn 0.5s ease-out;
+      `;
+      
+      // Create loading container
+      const loadingContainer = document.createElement('div');
+      loadingContainer.id = 'inex-loading-container';
+      loadingContainer.style.cssText = `
+        position: relative;
+        background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+        border: 3px solid #FFB200;
+        border-radius: 20px;
+        padding: 3rem;
+        max-width: 600px;
+        width: 90%;
+        z-index: 10000;
+        box-shadow: 0 25px 80px rgba(0,0,0,0.9);
+        backdrop-filter: blur(25px);
+        color: white;
+        text-align: center;
+        font-family: 'Inter', sans-serif;
+        animation: slideUp 0.6s ease-out;
+      `;
+      
+      loadingContainer.innerHTML = `
+        <div style="margin-bottom: 2rem;">
+          <div style="display: flex; align-items: center; justify-content: center; margin-bottom: 1.5rem;">
+            <img src="inex-logo.png" alt="INEX" style="height: 60px; margin-right: 15px;">
+            <div style="text-align: left;">
+              <h1 style="color: #FFB200; font-family: 'Inter', sans-serif; font-size: 2.5rem; font-weight: 800; margin: 0; text-transform: uppercase;">INEX</h1>
+              <p style="color: rgba(255,255,255,0.8); margin: 0; font-size: 1.1rem;">Systems & Designs</p>
+            </div>
+          </div>
+          <h2 style="color: #FFB200; font-family: 'Inter', sans-serif; margin-bottom: 0.5rem; font-size: 1.8rem;">Contract Finalization in Progress</h2>
+          <p style="color: rgba(255,255,255,0.8); margin: 0; font-size: 1.1rem;">Please wait while we process your agreement...</p>
+        </div>
+        
+        <div id="inex-progress-container" style="margin-bottom: 2rem;">
+          <div style="background: rgba(255,255,255,0.1); height: 8px; border-radius: 4px; overflow: hidden; margin-bottom: 1rem;">
+            <div id="inex-progress-bar" style="background: linear-gradient(90deg, #FFB200, #FFD700); height: 100%; width: 0%; transition: width 0.8s ease; border-radius: 4px;"></div>
+          </div>
+          <p id="inex-progress-text" style="color: rgba(255,255,255,0.9); font-size: 1rem; margin: 0; font-weight: 500;">Initializing contract system...</p>
+        </div>
+        
+        <div style="background: rgba(255, 178, 0, 0.1); border: 1px solid rgba(255, 178, 0, 0.3); border-radius: 15px; padding: 1.5rem; margin-bottom: 1.5rem; text-align: left;">
+          <h3 style="color: #FFB200; margin-bottom: 1rem; font-size: 1.2rem; display: flex; align-items: center;">
+            <i class="fa-solid fa-shield-halved" style="margin-right: 10px;"></i>
+            What's happening now:
+          </h3>
+          <ul id="inex-progress-list" style="list-style: none; padding: 0; margin: 0; color: rgba(255,255,255,0.9);">
+            <li style="margin-bottom: 0.8rem; display: flex; align-items: center;">
+              <i class="fa-solid fa-circle-notch fa-spin" style="color: #FFB200; margin-right: 10px;"></i>
+              <span>Validating digital signatures</span>
+            </li>
+            <li style="margin-bottom: 0.8rem; display: flex; align-items: center;">
+              <i class="fa-solid fa-circle" style="color: rgba(255,255,255,0.3); margin-right: 10px;"></i>
+              <span>Generating contract ID</span>
+            </li>
+            <li style="margin-bottom: 0.8rem; display: flex; align-items: center;">
+              <i class="fa-solid fa-circle" style="color: rgba(255,255,255,0.3); margin-right: 10px;"></i>
+              <span>Creating PDF document</span>
+            </li>
+            <li style="margin-bottom: 0.8rem; display: flex; align-items: center;">
+              <i class="fa-solid fa-circle" style="color: rgba(255,255,255,0.3); margin-right: 10px;"></i>
+              <span>Sending confirmation emails</span>
+            </li>
+            <li style="display: flex; align-items: center;">
+              <i class="fa-solid fa-circle" style="color: rgba(255,255,255,0.3); margin-right: 10px;"></i>
+              <span>Finalizing agreement</span>
+            </li>
+          </ul>
+        </div>
+        
+        <div style="font-size: 0.9rem; color: rgba(255,255,255,0.6); font-style: italic;">
+          <i class="fa-solid fa-lock" style="margin-right: 5px;"></i>
+          This process is secure and encrypted
+        </div>
+      `;
+      
+      overlay.appendChild(loadingContainer);
+      document.body.appendChild(overlay);
+      
+      // Add CSS animations
+      const style = document.createElement('style');
+      style.textContent = `
+        @keyframes fadeIn {
+          from { opacity: 0; }
+          to { opacity: 1; }
+        }
+        @keyframes slideUp {
+          from { transform: translateY(30px); opacity: 0; }
+          to { transform: translateY(0); opacity: 1; }
+        }
+        @keyframes pulse {
+          0%, 100% { transform: scale(1); }
+          50% { transform: scale(1.05); }
+        }
+        @keyframes fadeOut {
+          from { opacity: 1; }
+          to { opacity: 0; }
+        }
+        #inex-loading-container {
+          animation: slideUp 0.6s ease-out, pulse 3s ease-in-out infinite;
+        }
+      `;
+      document.head.appendChild(style);
+      
+      // Start progress animation
+      startINEXProgress();
+    }
+    
+    function startINEXProgress() {
+      const progressSteps = [
+        { message: 'Validating digital signatures...', progress: 15, listItem: 0 },
+        { message: 'Generating unique contract ID...', progress: 30, listItem: 1 },
+        { message: 'Creating PDF document...', progress: 50, listItem: 2 },
+        { message: 'Sending confirmation emails...', progress: 75, listItem: 3 },
+        { message: 'Finalizing agreement...', progress: 90, listItem: 4 },
+        { message: 'Contract completed successfully!', progress: 100, listItem: 4 }
+      ];
+      
+      let currentStep = 0;
+      
+      const updateProgress = () => {
+        if (currentStep >= progressSteps.length) return;
+        
+        const step = progressSteps[currentStep];
+        const progressBar = document.getElementById('inex-progress-bar');
+        const progressText = document.getElementById('inex-progress-text');
+        const progressList = document.getElementById('inex-progress-list');
+        
+        if (progressBar && progressText && progressList) {
+          // Update progress bar
+          progressBar.style.width = step.progress + '%';
+          
+          // Update progress text
+          progressText.textContent = step.message;
+          
+          // Update list items
+          const listItems = progressList.querySelectorAll('li');
+          listItems.forEach((item, index) => {
+            const icon = item.querySelector('i');
+            if (icon && index <= step.listItem) {
+              if (index === step.listItem) {
+                icon.className = 'fa-solid fa-circle-notch fa-spin';
+                icon.style.color = '#FFB200';
+              } else {
+                icon.className = 'fa-solid fa-check';
+                icon.style.color = '#22c55e';
+              }
+            }
+          });
+        }
+        
+        currentStep++;
+        
+        if (currentStep < progressSteps.length) {
+          setTimeout(updateProgress, 800);
+        }
+      };
+      
+      // Start the progress sequence
+      setTimeout(updateProgress, 500);
+    }
+    
+    function updateINEXProgress(message, progress) {
+      const progressBar = document.getElementById('inex-progress-bar');
+      const progressText = document.getElementById('inex-progress-text');
+      
+      if (progressBar && progressText) {
+        progressBar.style.width = progress + '%';
+        progressText.textContent = message;
+      }
+    }
+    
+    function hideINEXLoadingScreen() {
+      const overlay = document.getElementById('inex-loading-overlay');
+      if (overlay) {
+        overlay.style.animation = 'fadeOut 0.5s ease-out';
+        setTimeout(() => overlay.remove(), 500);
+      }
+    }
+    
+    function showINEXSuccessNotification(contractData) {
+      // Create success overlay
+      const overlay = document.createElement('div');
+      overlay.id = 'inex-success-overlay';
+      overlay.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(135deg, rgba(34, 197, 94, 0.95) 0%, rgba(22, 163, 74, 0.95) 100%);
+        backdrop-filter: blur(10px);
+        z-index: 9999;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        animation: fadeIn 0.5s ease-out;
+      `;
+      
+      // Create success container
+      const successContainer = document.createElement('div');
+      successContainer.id = 'inex-success-container';
+      successContainer.style.cssText = `
+        position: relative;
+        background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+        border: 3px solid #22c55e;
+        border-radius: 20px;
+        padding: 3rem;
+        max-width: 600px;
+        width: 90%;
+        z-index: 10000;
+        box-shadow: 0 25px 80px rgba(0,0,0,0.9);
+        backdrop-filter: blur(25px);
+        color: white;
+        text-align: center;
+        font-family: 'Inter', sans-serif;
+        animation: slideUp 0.6s ease-out;
+      `;
+      
+      successContainer.innerHTML = `
+        <div style="margin-bottom: 2rem;">
+          <div style="display: flex; align-items: center; justify-content: center; margin-bottom: 1.5rem;">
+            <img src="inex-logo.png" alt="INEX" style="height: 60px; margin-right: 15px;">
+            <div style="text-align: left;">
+              <h1 style="color: #22c55e; font-family: 'Inter', sans-serif; font-size: 2.5rem; font-weight: 800; margin: 0; text-transform: uppercase;">INEX</h1>
+              <p style="color: rgba(255,255,255,0.8); margin: 0; font-size: 1.1rem;">Systems & Designs</p>
+            </div>
+          </div>
+          <div style="font-size: 4rem; margin-bottom: 1rem;">🎉</div>
+          <h2 style="color: #22c55e; font-family: 'Inter', sans-serif; margin-bottom: 0.5rem; font-size: 1.8rem;">Contract Finalized Successfully!</h2>
+          <p style="color: rgba(255,255,255,0.8); margin: 0; font-size: 1.1rem;">Your INEX agreement has been processed and is now active.</p>
+        </div>
+        
+        <div style="background: rgba(34, 197, 94, 0.1); border: 1px solid rgba(34, 197, 94, 0.3); border-radius: 15px; padding: 1.5rem; margin-bottom: 1.5rem; text-align: left;">
+          <h3 style="color: #22c55e; margin-bottom: 1rem; font-size: 1.2rem; display: flex; align-items: center;">
+            <i class="fa-solid fa-check-circle" style="margin-right: 10px;"></i>
+            What's been completed:
+          </h3>
+          <ul style="list-style: none; padding: 0; margin: 0; color: rgba(255,255,255,0.9);">
+            <li style="margin-bottom: 0.8rem; display: flex; align-items: center;">
+              <i class="fa-solid fa-check" style="color: #22c55e; margin-right: 10px;"></i>
+              <span>Contract ID: <strong>${contractData.contractId}</strong></span>
+            </li>
+            <li style="margin-bottom: 0.8rem; display: flex; align-items: center;">
+              <i class="fa-solid fa-check" style="color: #22c55e; margin-right: 10px;"></i>
+              <span>Effective Date: <strong>${contractData.effectiveDate}</strong></span>
+            </li>
+            <li style="margin-bottom: 0.8rem; display: flex; align-items: center;">
+              <i class="fa-solid fa-check" style="color: #22c55e; margin-right: 10px;"></i>
+              <span>Confirmation emails sent</span>
+            </li>
+            <li style="margin-bottom: 0.8rem; display: flex; align-items: center;">
+              <i class="fa-solid fa-check" style="color: #22c55e; margin-right: 10px;"></i>
+              <span>PDF contract generated</span>
+            </li>
+            <li style="display: flex; align-items: center;">
+              <i class="fa-solid fa-check" style="color: #22c55e; margin-right: 10px;"></i>
+              <span>Agreement now legally binding</span>
+            </li>
+          </ul>
+        </div>
+        
+        <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; margin-bottom: 1.5rem;">
+          <button onclick="document.getElementById('downloadBtn').click()" style="background: linear-gradient(135deg, #22c55e, #16a34a); color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 8px; font-weight: 700; cursor: pointer; transition: all 0.3s ease; font-size: 1rem;">
+            📄 Download Contract PDF
+          </button>
+          <button onclick="hideINEXSuccessNotification()" style="background: rgba(255,255,255,0.1); color: white; border: 1px solid rgba(255,255,255,0.3); padding: 0.75rem 1.5rem; border-radius: 8px; font-weight: 700; cursor: pointer; transition: all 0.3s ease; font-size: 1rem;">
+            🎯 Continue to Portal
+          </button>
+        </div>
+        
+        <div style="font-size: 0.9rem; color: rgba(255,255,255,0.6); font-style: italic;">
+          <i class="fa-solid fa-shield-check" style="margin-right: 5px;"></i>
+          Your contract is secure and has been recorded
+        </div>
+      `;
+      
+      overlay.appendChild(successContainer);
+      document.body.appendChild(overlay);
+    }
+    
+    function hideINEXSuccessNotification() {
+      const overlay = document.getElementById('inex-success-overlay');
+      if (overlay) {
+        overlay.style.animation = 'fadeOut 0.5s ease-out';
+        setTimeout(() => overlay.remove(), 500);
+      }
+    }
 
     // Live signature preview updates
     const clientInput = document.getElementById('clientSignatureInput');
@@ -802,6 +1126,9 @@
           finalizeBtn.disabled = false; finalizeBtn.innerHTML = '<i class="fa-solid fa-file-signature"></i> Sign & Send Contract';
           return;
         }
+        // Show INEX loading screen
+        showINEXLoadingScreen();
+        
         // Finalize contract and send emails via EmailJS
         const serverRes = await finalizeOnServer({
           clientSignature: lastData.clientSignature,
@@ -823,8 +1150,18 @@
         const downloadBtn = document.getElementById('downloadBtn');
         if (downloadBtn) downloadBtn.style.display = 'inline-flex';
         finalizeBtn.innerHTML = '<i class="fa-solid fa-check"></i> Contract Sent';
+        
+        // Show success notification after loading screen
+        setTimeout(() => {
+          showINEXSuccessNotification(serverRes);
+        }, 1500);
       }catch(err){
-        console.error(err); finalizeBtn.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i> Try Again'; finalizeBtn.disabled = false;
+        console.error(err); 
+        finalizeBtn.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i> Try Again'; 
+        finalizeBtn.disabled = false;
+        
+        // Hide loading screen on error
+        hideINEXLoadingScreen();
       }
     });
 
