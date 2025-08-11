@@ -17,23 +17,32 @@
   <!-- Firebase Client SDK (public) for login-gated access -->
   <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
-  <!-- Local Firebase configuration for development -->
-  <script src="firebase-config.js"></script>
-  <!-- Fallback Firebase config if external file fails -->
+  <!-- Firebase configuration with fallback -->
   <script>
-    // Fallback Firebase configuration if firebase-config.js is not available
-    if (!window.FIREBASE_CONFIG) {
-      window.FIREBASE_CONFIG = {
-        apiKey: "AIzaSyBW4HaQtl9Xce82dDByp_k0I1wVybgbCFQ",
-        authDomain: "inex-a4b30.firebaseapp.com",
-        projectId: "inex-a4b30",
-        storageBucket: "inex-a4b30.firebasestorage.app",
-        messagingSenderId: "111262904587",
-        appId: "1:111262904587:web:7368dc9a07c8bdc44db20e",
-        measurementId: "G-CL6M00YQJH"
-      };
-      console.log('Using fallback Firebase config from HTML');
-    }
+    // Firebase configuration - will try to load from external file, fallback to embedded config
+    window.FIREBASE_CONFIG = {
+      apiKey: "AIzaSyBW4HaQtl9Xce82dDByp_k0I1wVybgbCFQ",
+      authDomain: "inex-a4b30.firebaseapp.com",
+      projectId: "inex-a4b30",
+      storageBucket: "inex-a4b30.firebasestorage.app",
+      messagingSenderId: "111262904587",
+      appId: "1:111262904587:web:7368dc9a07c8bdc44db20e",
+      measurementId: "G-CL6M00YQJH"
+    };
+    
+    // Try to load external config if available (for development)
+    const script = document.createElement('script');
+    script.src = 'firebase-config.js';
+    script.onload = function() {
+      if (window.FIREBASE_CONFIG_EXTERNAL) {
+        window.FIREBASE_CONFIG = window.FIREBASE_CONFIG_EXTERNAL;
+        console.log('External Firebase config loaded successfully');
+      }
+    };
+    script.onerror = function() {
+      console.log('Using embedded Firebase config (external file not available)');
+    };
+    document.head.appendChild(script);
   </script>
   <!-- jsPDF -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -249,7 +258,7 @@
     const EMAILJS_CONFIG = {
       publicKey: 'p4pF3OWvh-DXtae4c', // Your EmailJS public key
       serviceId: 'service_t11yvru',    // Your EmailJS service ID
-      templateId: 'template_cktbnss',  // Admin notification template
+      templateId: 'template_7w3ptti',  // Admin notification template
       userTemplateId: 'template_n89b1e3' // User confirmation template - replace with your actual EmailJS template ID
     };
 
