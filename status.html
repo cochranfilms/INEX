@@ -1489,7 +1489,7 @@
         submitBtn.disabled = true;
         
         // Send reply via API
-        const response = await safeFetch('/api/message-manager', {
+        const response = await safeFetch(MESSAGES_API, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -1526,7 +1526,7 @@
     // Mark message as read
     async function markMessageAsRead(messageId) {
       try {
-        const response = await safeFetch('/api/message-manager', {
+        const response = await safeFetch(MESSAGES_API, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({

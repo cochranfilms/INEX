@@ -1170,7 +1170,7 @@
     
     try {
       // Try to update via API first
-      const response = await fetch('/api/message-manager', {
+      const response = await fetch(API_MESSAGES, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -1244,7 +1244,7 @@
       submitBtn.disabled = true;
       
       // Send reply via API
-      const response = await fetch('/api/message-manager', {
+      const response = await fetch(API_MESSAGES, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -1279,16 +1279,16 @@
   }
 
   // Mark message as read
-  async function markMessageAsRead(messageId) {
-    try {
-      const response = await fetch('/api/message-manager', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          id: messageId,
-          action: 'markRead'
-        })
-      });
+      async function markMessageAsRead(messageId) {
+      try {
+        const response = await fetch(API_MESSAGES, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            id: messageId,
+            action: 'markRead'
+          })
+        });
       
       if (response.ok) {
         // Reload messages to show updated status

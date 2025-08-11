@@ -454,6 +454,101 @@ app.post('/api/messages', (req, res) => {
   }
 });
 
+// Add PUT endpoint to /api/messages for message updates (delegates to same logic as /api/message-manager)
+app.put('/api/messages', (req, res) => {
+  try {
+    const { id, action, responseText, responder, status, read, responded, response, priority, category } = req.body;
+
+    if (!id) {
+      return res.status(400).json({
+        success: false,
+        error: 'Message ID is required'
+      });
+    }
+
+    const liveDataFile = 'inex-live-data.json';
+    const liveDataPath = path.join(__dirname, liveDataFile);
+
+    // Ensure consolidated data file exists
+    if (!fs.existsSync(liveDataPath)) {
+      fs.writeFileSync(liveDataPath, JSON.stringify({ messages: [] }, null, 2));
+    }
+
+    const fileContents = fs.readFileSync(liveDataPath, 'utf8');
+    const data = JSON.parse(fileContents || '{}');
+    const messages = Array.isArray(data.messages) ? data.messages : [];
+
+    const messageIndex = messages.findIndex(msg => msg.id === id);
+    if (messageIndex === -1) {
+      return res.status(404).json({
+        success: false,
+        error: 'Message not found'
+      });
+    }
+
+    // Handle different actions
+    if (action === 'markRead') {
+      messages[messageIndex].read = true;
+    } else if (action === 'addResponse') {
+      if (!responseText) {
+        return res.status(400).json({
+          success: false,
+          error: 'Response text is required for addResponse action'
+        });
+      }
+      
+      if (!messages[messageIndex].responses) messages[messageIndex].responses = [];
+      messages[messageIndex].responses.push({
+        text: responseText,
+        timestamp: new Date().toISOString(),
+        responder: responder || 'Development Team'
+      });
+      messages[messageIndex].responded = true;
+      messages[messageIndex].status = 'responded';
+    }
+
+    // Update message fields (for backward compatibility)
+    if (status !== undefined) messages[messageIndex].status = status;
+    if (read !== undefined) messages[messageIndex].read = read;
+    if (responded !== undefined) messages[messageIndex].responded = responded;
+    if (priority !== undefined) messages[messageIndex].priority = priority;
+    if (category !== undefined) messages[messageIndex].category = category;
+
+    // Add response if provided (for backward compatibility)
+    if (response) {
+      if (!messages[messageIndex].responses) messages[messageIndex].responses = [];
+      messages[messageIndex].responses.push({
+        text: response,
+        timestamp: new Date().toISOString(),
+        responder: 'Development Team'
+      });
+      messages[messageIndex].responded = true;
+      messages[messageIndex].status = 'responded';
+    }
+
+    // Update lastUpdated on message and consolidated data
+    messages[messageIndex].lastUpdated = new Date().toISOString();
+    data.messages = messages;
+    data.lastUpdated = new Date().toISOString();
+
+    // Save back to consolidated file
+    fs.writeFileSync(liveDataPath, JSON.stringify(data, null, 2));
+
+    res.json({
+      success: true,
+      message: 'Message updated successfully',
+      data: messages[messageIndex]
+    });
+
+  } catch (error) {
+    console.error('Error updating message:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Internal server error updating message'
+    });
+  }
+});
+
 app.get('/api/message-manager', (req, res) => {
   try {
     const { status, priority, category, limit = 50, offset = 0 } = req.query;
