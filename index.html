@@ -82,21 +82,6 @@
   .footer{color:#999;font-size:12px;text-align:center;padding:1.2rem}
   html[data-theme="dark"] .footer{color:var(--muted)}
 
-  /* Notification boxes */
-  .notification-box {
-    word-wrap: break-word;
-    white-space: normal;
-    overflow-wrap: break-word;
-  }
-  .notification-box strong {
-    display: inline;
-    white-space: normal;
-  }
-  .notification-box div {
-    white-space: normal;
-    word-break: normal;
-  }
-
   /* Pitch overlay */
   .overlay{position:fixed;inset:0;z-index:90;display:none;background:rgba(0,0,0,.55)}
   .overlay.show{display:block}
@@ -445,14 +430,43 @@
               </div>
             </div>
             
-            <div style="margin-top:1rem;padding:1rem;background:rgba(0,150,136,.1);border:1px solid rgba(0,150,136,.2);border-radius:8px" class="notification-box">
-              <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
-                <div style="font-size:20px">✅</div>
-                <strong style="font-size:14px;color:var(--panel-ink)">Automatic System Active</strong>
+            <div style="
+              margin-top:1rem;
+              padding:.8rem;
+              background:rgba(0,150,136,.1);
+              border:1px solid rgba(0,150,136,.2);
+              border-radius:8px;
+              font-size:12px;
+              word-wrap:break-word;
+              white-space:normal;
+              overflow-wrap:break-word;
+            ">
+              <div style="
+                display:flex;
+                align-items:center;
+                gap:6px;
+                margin-bottom:6px;
+                flex-wrap:wrap;
+              ">
+                <div style="font-size:16px;flex-shrink:0">🚀</div>
+                <strong style="
+                  font-size:12px;
+                  color:var(--panel-ink);
+                  white-space:normal;
+                  word-wrap:break-word;
+                  overflow-wrap:break-word;
+                ">Real-time Updates</strong>
               </div>
-              <div style="font-size:13px;color:var(--muted);line-height:1.4">
-                Messages are automatically pushed to GitHub when sent from the status page. No manual workflow runs needed!
-              </div>
+              <p style="
+                font-size:11px;
+                color:var(--muted);
+                line-height:1.3;
+                margin:0;
+                white-space:normal;
+                word-wrap:break-word;
+                overflow-wrap:break-word;
+                word-break:normal;
+              ">Messages update automatically via GitHub API integration.</p>
             </div>
           </div>
         </article>
@@ -465,14 +479,43 @@
               <button class="btn secondary" onclick="clearMessages()">Clear All</button>
               <button class="btn primary" onclick="refreshMessages()">🔄 Refresh</button>
             </div>
-            <div style="margin-top:1rem;padding:.8rem;background:rgba(0,150,136,.1);border:1px solid rgba(0,150,136,.2);border-radius:8px;font-size:12px" class="notification-box">
-              <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px">
-                <div style="font-size:16px">🚀</div>
-                <strong style="font-size:12px;color:var(--panel-ink)">Real-time Updates</strong>
+            <div style="
+              margin-top:1rem;
+              padding:.8rem;
+              background:rgba(0,150,136,.1);
+              border:1px solid rgba(0,150,136,.2);
+              border-radius:8px;
+              font-size:12px;
+              word-wrap:break-word;
+              white-space:normal;
+              overflow-wrap:break-word;
+            ">
+              <div style="
+                display:flex;
+                align-items:center;
+                gap:6px;
+                margin-bottom:6px;
+                flex-wrap:wrap;
+              ">
+                <div style="font-size:16px;flex-shrink:0">🚀</div>
+                <strong style="
+                  font-size:12px;
+                  color:var(--panel-ink);
+                  white-space:normal;
+                  word-wrap:break-word;
+                  overflow-wrap:break-word;
+                ">Real-time Updates</strong>
               </div>
-              <div style="font-size:11px;color:var(--muted);line-height:1.3">
-                Messages update automatically via GitHub API integration.
-              </div>
+              <p style="
+                font-size:11px;
+                color:var(--muted);
+                line-height:1.3;
+                margin:0;
+                white-space:normal;
+                word-wrap:break-word;
+                overflow-wrap:break-word;
+                word-break:normal;
+              ">Messages update automatically via GitHub API integration.</p>
             </div>
           </div>
         </article>
