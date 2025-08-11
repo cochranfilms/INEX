@@ -112,6 +112,29 @@
     border-radius: 12px !important;
     border-left: 4px solid var(--accent) !important;
   }
+
+  /* Message layout helpers (class-based; avoids inline styling conflicts) */
+  .message-header{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:16px}
+  .message-header .left{display:flex;align-items:center;gap:12px}
+  .message-time{color:var(--muted);font-size:12px;background:rgba(255,255,255,.08);padding:6px 10px;border-radius:8px;font-weight:500;white-space:nowrap}
+  .priority-tag{padding:4px 12px;border-radius:20px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;border:1px solid transparent}
+  .priority-urgent{background:rgba(244,67,54,.15);color:#f44336;border-color:rgba(244,67,54,.3)}
+  .priority-high{background:rgba(255,152,0,.15);color:#ff9800;border-color:rgba(255,152,0,.3)}
+  .priority-low{background:rgba(76,175,80,.15);color:#4caf50;border-color:rgba(76,175,80,.3)}
+  .priority-bar{position:absolute;top:0;left:0;right:0;height:4px}
+  .priority-bar.urgent{background:linear-gradient(90deg,#f44336,#ff5722)}
+  .priority-bar.high{background:linear-gradient(90deg,#ff9800,#ffc107)}
+  .priority-bar.low{background:linear-gradient(90deg,#4caf50,#8bc34a)}
+  .message-response{margin-top:16px;padding:16px;background:linear-gradient(135deg, rgba(166,46,63,.08), rgba(255,178,0,.08));border:1px solid rgba(166,46,63,.15);border-radius:12px;position:relative}
+  .message-response .label{position:absolute;top:-8px;left:16px;background:var(--panel);padding:0 8px;font-size:11px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:.5px}
+  .message-response .text{font-size:13px;line-height:1.5;color:var(--panel-ink);font-style:italic}
+  .message-response .meta{margin-top:8px;font-size:11px;color:var(--muted);display:flex;align-items:center;gap:6px}
+  .message-status{display:flex;align-items:center;gap:12px;margin-top:16px;padding-top:16px;border-top:1px solid var(--border)}
+  .status-chip{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted)}
+  .status-dot{width:8px;height:8px;border-radius:50%}
+  .status-dot.ok{background:#4caf50}
+  .status-dot.warn{background:#ff9800}
+  .status-dot.err{background:#f44336}
   
   /* Enhanced form container styling */
   .message-form {
@@ -971,193 +994,42 @@
       return;
     }
 
-    // Enhanced message formatting with better visual hierarchy
-    messagesList.innerHTML = messages.map(msg => `
-      <div style="
-        padding: 20px;
-        border: 1px solid var(--border);
-        border-radius: 16px;
-        margin-bottom: 16px;
-        background: rgba(255,255,255,.04);
-        box-shadow: 0 4px 16px rgba(0,0,0,.08);
-        transition: all 0.3s ease;
-        position: relative;
-        overflow: hidden;
-      " onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 8px 24px rgba(0,0,0,.12)'" onmouseout="this.style.transform='translateY(0)';this.style.boxShadow='0 4px 16px rgba(0,0,0,.08)'">
-        
-        <!-- Priority indicator bar -->
-        ${msg.priority && msg.priority !== 'normal' ? `
-          <div style="
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 4px;
-            background: ${msg.priority === 'urgent' ? 'linear-gradient(90deg, #f44336, #ff5722)' : 
-                         msg.priority === 'high' ? 'linear-gradient(90deg, #ff9800, #ffc107)' :
-                         'linear-gradient(90deg, #4caf50, #8bc34a)'};
-          "></div>
-        ` : ''}
-        
-        <!-- Message header -->
-        <div style="
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          margin-bottom: 16px;
-          flex-wrap: wrap;
-          gap: 12px;
-        ">
-          <div style="display: flex; align-items: center; gap: 12px;">
-            <div style="
-              width: 40px;
-              height: 40px;
-              border-radius: 50%;
-              background: linear-gradient(135deg, var(--accent), var(--maroon));
-              display: grid;
-              place-items: center;
-              color: white;
-              font-weight: 700;
-              font-size: 16px;
-              box-shadow: 0 2px 8px rgba(255,178,0,0.3);
-            ">${(msg.name || 'A').charAt(0).toUpperCase()}</div>
-            <div>
-              <strong style="
-                font-size: 16px;
-                color: var(--panel-ink);
-                font-weight: 700;
-                display: block;
-              ">${msg.name || 'Anonymous'}</strong>
-              ${msg.email ? `<small style="color: var(--muted); font-size: 12px;">${msg.email}</small>` : ''}
+    // Class-based markup so CSS controls the visuals consistently
+    messagesList.innerHTML = messages.map(msg => {
+      const priority = (msg.priority || 'normal').toLowerCase();
+      const priorityBarClass = priority === 'urgent' ? 'urgent' : priority === 'high' ? 'high' : priority === 'low' ? 'low' : '';
+      const priorityTagClass = priority === 'urgent' ? 'priority-urgent' : priority === 'high' ? 'priority-high' : priority === 'low' ? 'priority-low' : '';
+      return `
+        <div class="message-item">
+          ${priority !== 'normal' ? `<div class="priority-bar ${priorityBarClass}"></div>` : ''}
+          <div class="message-header">
+            <div class="left">
+              <div class="message-avatar">${(msg.name || 'A').charAt(0).toUpperCase()}</div>
+              <div>
+                <strong style="font-size:16px;display:block">${msg.name || 'Anonymous'}</strong>
+                ${msg.email ? `<small class="muted" style="font-size:12px">${msg.email}</small>` : ''}
+              </div>
+            </div>
+            <div class="right" style="display:flex;align-items:center;gap:8px">
+              ${priority !== 'normal' ? `<span class="priority-tag ${priorityTagClass}">${priority}</span>` : ''}
+              <small class="message-time">${formatTimestamp(msg.timestamp)}</small>
             </div>
           </div>
-          
-          <div style="display: flex; align-items: center; gap: 8px;">
-            ${msg.priority && msg.priority !== 'normal' ? `
-              <span style="
-                padding: 4px 12px;
-                border-radius: 20px;
-                font-size: 11px;
-                font-weight: 700;
-                text-transform: uppercase;
-                letter-spacing: 0.5px;
-                ${msg.priority === 'urgent' ? 'background: rgba(244,67,54,.15); color: #f44336; border: 1px solid rgba(244,67,54,.3);' : 
-                  msg.priority === 'high' ? 'background: rgba(255,152,0,.15); color: #ff9800; border: 1px solid rgba(255,152,0,.3);' :
-                  'background: rgba(76,175,80,.15); color: #4caf50; border: 1px solid rgba(76,175,80,.3);'}
-              ">${msg.priority}</span>
-            ` : ''}
-            <small style="
-              color: var(--muted);
-              font-size: 12px;
-              background: rgba(255,255,255,.08);
-              padding: 6px 10px;
-              border-radius: 8px;
-              font-weight: 500;
-              white-space: nowrap;
-            ">${formatTimestamp(msg.timestamp)}</small>
-          </div>
-        </div>
-        
-        <!-- Message content -->
-        <div style="
-          font-size: 14px;
-          line-height: 1.6;
-          color: var(--panel-ink);
-          margin-bottom: 16px;
-          word-wrap: break-word;
-          overflow-wrap: break-word;
-          padding: 16px;
-          background: rgba(255,255,255,.02);
-          border-radius: 12px;
-          border-left: 4px solid var(--accent);
-        ">${msg.text}</div>
-        
-        <!-- Responses -->
-        ${msg.responses && msg.responses.length > 0 ? `
-          <div style="
-            margin-top: 16px;
-            padding: 16px;
-            background: linear-gradient(135deg, rgba(166,46,63,.08), rgba(255,178,0,.08));
-            border: 1px solid rgba(166,46,63,.15);
-            border-radius: 12px;
-            position: relative;
-          ">
-            <div style="
-              position: absolute;
-              top: -8px;
-              left: 16px;
-              background: var(--panel);
-              padding: 0 8px;
-              font-size: 11px;
-              font-weight: 700;
-              color: var(--accent);
-              text-transform: uppercase;
-              letter-spacing: 0.5px;
-            ">Response</div>
-            <div style="
-              font-size: 13px;
-              line-height: 1.5;
-              color: var(--panel-ink);
-              font-style: italic;
-            ">${msg.responses[msg.responses.length - 1].text}</div>
-            <div style="
-              margin-top: 8px;
-              font-size: 11px;
-              color: var(--muted);
-              display: flex;
-              align-items: center;
-              gap: 6px;
-            ">
-              <span>👤</span>
-              <span>${msg.responses[msg.responses.length - 1].responder || 'Development Team'}</span>
-              <span>•</span>
-              <span>${formatTimestamp(msg.responses[msg.responses.length - 1].timestamp)}</span>
+          <div class="message-content">${msg.text}</div>
+          ${msg.responses && msg.responses.length > 0 ? `
+            <div class="message-response">
+              <div class="label">Response</div>
+              <div class="text">${msg.responses[msg.responses.length - 1].text}</div>
+              <div class="meta"><span>👤</span><span>${msg.responses[msg.responses.length - 1].responder || 'Development Team'}</span><span>•</span><span>${formatTimestamp(msg.responses[msg.responses.length - 1].timestamp)}</span></div>
             </div>
+          ` : ''}
+          <div class="message-status">
+            <span class="status-chip"><span class="status-dot ${msg.read ? 'ok' : 'warn'}"></span>${msg.read ? 'Read' : 'Unread'}</span>
+            <span class="status-chip"><span class="status-dot ${msg.responded ? 'ok' : 'err'}"></span>${msg.responded ? 'Responded' : 'No Response'}</span>
           </div>
-        ` : ''}
-        
-        <!-- Status indicators -->
-        <div style="
-          display: flex;
-          align-items: center;
-          gap: 12px;
-          margin-top: 16px;
-          padding-top: 16px;
-          border-top: 1px solid var(--border);
-        ">
-          <span style="
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            font-size: 12px;
-            color: var(--muted);
-          ">
-            <span style="
-              width: 8px;
-              height: 8px;
-              border-radius: 50%;
-              background: ${msg.read ? '#4caf50' : '#ff9800'};
-            "></span>
-            ${msg.read ? 'Read' : 'Unread'}
-          </span>
-          <span style="
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            font-size: 12px;
-            color: var(--muted);
-          ">
-            <span style="
-              width: 8px;
-              height: 8px;
-              border-radius: 50%;
-              background: ${msg.responded ? '#4caf50' : '#f44336'};
-            "></span>
-            ${msg.responded ? 'Responded' : 'No Response'}
-          </span>
         </div>
-      </div>
-    `).join('');
+      `;
+    }).join('');
   }
 
 
