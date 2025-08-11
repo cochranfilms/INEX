@@ -2,8 +2,24 @@
   "version": 2,
   "buildCommand": "node vercel-build-hook.js",
   "outputDirectory": ".",
+  "functions": {
+    "api/messages.js": {
+      "maxDuration": 30
+    },
+    "api/status-update.js": {
+      "maxDuration": 30
+    },
+    "api/message-manager.js": {
+      "maxDuration": 30
+    }
+  },
+
   "env": {
     "NODE_ENV": "production"
+  },
+  "github": {
+    "enabled": true,
+    "silent": false
   },
   "headers": [
     {
@@ -29,6 +45,23 @@
         {
           "key": "Access-Control-Allow-Origin",
           "value": "*"
+        }
+      ]
+    },
+    {
+      "source": "/api/(.*)",
+      "headers": [
+        {
+          "key": "Access-Control-Allow-Origin",
+          "value": "*"
+        },
+        {
+          "key": "Access-Control-Allow-Methods",
+          "value": "GET, POST, PUT, DELETE, OPTIONS"
+        },
+        {
+          "key": "Access-Control-Allow-Headers",
+          "value": "Content-Type, Authorization"
         }
       ]
     }

@@ -563,6 +563,7 @@
               <button class="btn secondary" onclick="markMessageRead()">Mark as Read</button>
               <button class="btn secondary" onclick="clearMessages()">Clear All</button>
               <button class="btn primary" onclick="refreshMessages()">🔄 Refresh</button>
+              <button class="btn primary" onclick="syncMessagesToGitHub()" style="background: var(--accent); color: var(--accent-ink);">🚀 Sync to GitHub</button>
             </div>
             
             <div style="margin-top:1rem;padding:.8rem;background:rgba(0,150,136,.1);border:1px solid rgba(0,150,136,.2);border-radius:8px;font-size:12px;">
@@ -640,7 +641,7 @@
                 window.location.protocol === 'file:';
   
   // API endpoints for automatic GitHub integration
-  const API_BASE = isDev ? 'http://localhost:3000' : window.location.origin;
+  const API_BASE = isDev ? 'http://localhost:3000' : 'https://inex.cochranfilms.com';
   const API_STATUS_UPDATE = `${API_BASE}/api/status-update`;
   const API_MESSAGES = `${API_BASE}/api/messages`;
   
@@ -672,15 +673,79 @@
     client: 'INEX'
   };
 
-  // Initialize status from consolidated JSON file ONLY
+  // Initialize status from API endpoints
   async function initializeStatus() {
     try {
-      console.log('🔄 Initializing status from JSON...');
-      // Load from consolidated live data JSON
+      console.log('🔄 Initializing status from API...');
+      
+      // Try to load from API first
+      if (!isDev) {
+        try {
+          console.log('🌐 Loading from live API:', API_STATUS_UPDATE);
+          const apiResponse = await fetch(API_STATUS_UPDATE, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              progress: currentStatus.progress,
+              phase: currentStatus.phase,
+              status: currentStatus.status,
+              update: 'Status check from live site',
+              update_status: 'Complete'
+            })
+          });
+          
+          if (apiResponse.ok) {
+            const apiData = await apiResponse.json();
+            console.log('📡 API response:', apiData);
+            
+            if (apiData.success && apiData.data) {
+              // Update current status with API data
+              currentStatus.progress = apiData.data.progress || currentStatus.progress;
+              currentStatus.phase = apiData.data.phase || currentStatus.phase;
+              currentStatus.phaseName = apiData.data.phaseName || currentStatus.phaseName;
+              currentStatus.status = apiData.data.status || currentStatus.status;
+              currentStatus.lastUpdated = apiData.data.lastUpdated || currentStatus.lastUpdated;
+              currentStatus.eta = apiData.data.eta || currentStatus.eta;
+              currentStatus.scope = apiData.data.scope || currentStatus.scope;
+              currentStatus.owner = apiData.data.owner || currentStatus.owner;
+              currentStatus.client = apiData.data.client || currentStatus.client;
+              
+              console.log('✅ Status loaded from API:', currentStatus);
+            } else {
+              console.log('⚠️ API response not successful, falling back to JSON');
+              await loadFromFallbackJSON();
+            }
+          } else {
+            console.log('⚠️ API request failed, falling back to JSON');
+            await loadFromFallbackJSON();
+          }
+        } catch (apiError) {
+          console.log('⚠️ API error, falling back to JSON:', apiError.message);
+          await loadFromFallbackJSON();
+        }
+      } else {
+        // In development, load from local JSON
+        await loadFromFallbackJSON();
+      }
+    } catch (error) {
+      console.log('⚠️ Error in initializeStatus, using defaults:', error.message);
+    }
+    
+    // Update all displays
+    console.log('🔄 Calling updateAllStatusDisplays...');
+    updateAllStatusDisplays();
+  }
+
+  // Fallback function to load from JSON file
+  async function loadFromFallbackJSON() {
+    try {
+      console.log('📄 Loading from fallback JSON...');
       const response = await fetch('inex-live-data.json');
       if (response.ok) {
         const liveData = await response.json();
-        console.log('📄 Loaded live data:', liveData);
+        console.log('📄 Loaded fallback data:', liveData);
         
         // Load all available parameters from JSON
         currentStatus.progress = liveData.progress || 5;
@@ -693,17 +758,13 @@
         currentStatus.owner = liveData.owner || 'Cochran Full Stack Solutions';
         currentStatus.client = liveData.client || 'INEX';
         
-        console.log('✅ Status loaded from consolidated JSON:', currentStatus);
+        console.log('✅ Status loaded from fallback JSON:', currentStatus);
       } else {
-        console.log('⚠️ Could not load consolidated data, using defaults');
+        console.log('⚠️ Could not load fallback data, using defaults');
       }
     } catch (error) {
-      console.log('⚠️ Error loading consolidated data, using defaults:', error.message);
+      console.log('⚠️ Error loading fallback data, using defaults:', error.message);
     }
-    
-    // Update all displays
-    console.log('🔄 Calling updateAllStatusDisplays...');
-    updateAllStatusDisplays();
   }
 
   // Update all status displays across all views
@@ -946,10 +1007,49 @@
     }
   }
 
-  // Manual Sync Function
+  // Manual Sync Function - Use API endpoints
   async function syncWithStatusPage() {
     try {
-      // Load current live status
+      console.log('🔄 Syncing with live API...');
+      
+      // Try API first
+      if (!isDev) {
+        try {
+          const apiResponse = await fetch(API_STATUS_UPDATE, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              progress: currentStatus.progress,
+              phase: currentStatus.phase,
+              status: currentStatus.status,
+              update: 'Manual sync from live site',
+              update_status: 'Complete'
+            })
+          });
+          
+          if (apiResponse.ok) {
+            const apiData = await apiResponse.json();
+            if (apiData.success && apiData.data) {
+              // Update local status to match API data
+              currentStatus.progress = apiData.data.progress || currentStatus.progress;
+              currentStatus.phase = apiData.data.phase || currentStatus.phase;
+              currentStatus.status = apiData.data.status || currentStatus.status;
+              currentStatus.lastUpdated = apiData.data.lastUpdated || currentStatus.lastUpdated;
+              
+              saveStatus();
+              alert('✅ Status synchronized with live API!');
+              return;
+            }
+          }
+        } catch (apiError) {
+          console.log('⚠️ API sync failed, trying JSON fallback:', apiError.message);
+        }
+      }
+      
+      // Fallback to JSON file
+      console.log('📄 Falling back to JSON file for sync...');
       const response = await fetch('inex-live-data.json');
       if (response.ok) {
         const liveData = await response.json();
@@ -961,7 +1061,7 @@
         currentStatus.lastUpdated = liveData.lastUpdated || currentStatus.lastUpdated;
         
         saveStatus();
-        alert('✅ Status synchronized with live data!');
+        alert('✅ Status synchronized with JSON fallback!');
       } else {
         alert('⚠️ Could not load live status data');
       }
@@ -971,7 +1071,7 @@
     }
   }
 
-  // Messaging System Functions - Consolidated JSON ONLY
+  // Messaging System Functions - Use API endpoints
   async function loadDevMessages() {
     const messagesList = document.getElementById('messagesList');
     if (!messagesList) {
@@ -980,52 +1080,40 @@
     }
     
     try {
-      if (isLiveSite) {
-        // For live site, load from JSON file directly (no API calls)
-        console.log('Live site detected, loading messages from JSON file');
-        const jsonResponse = await fetch('/inex-live-data.json', { cache: 'no-store' });
-        if (jsonResponse.ok) {
-          const liveData = await jsonResponse.json();
-          const messages = liveData.messages || [];
-          displayDevMessages(messages);
-          console.log(`✅ Loaded ${messages.length} messages from JSON file on live site`);
-          return;
-        }
+      // Always try API first for both dev and live
+      console.log('📡 Loading messages from API endpoint:', API_MESSAGES);
+      const response = await fetch(API_MESSAGES, { 
+        cache: 'no-store',
+        headers: { 'Content-Type': 'application/json' }
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        const messages = data.messages || [];
+        displayDevMessages(messages);
+        console.log(`✅ Loaded ${messages.length} messages from API`);
+        return;
       } else {
-        // For development, try the API endpoint first
-        console.log('Loading messages from API endpoint:', API_MESSAGES);
-        const response = await fetch(API_MESSAGES, { 
-          cache: 'no-store',
-          headers: { 'Content-Type': 'application/json' }
-        });
-        
-        if (response.ok) {
-          const data = await response.json();
-          const messages = data.messages || [];
-          displayDevMessages(messages);
-          console.log(`✅ Loaded ${messages.length} messages from JSON API`);
-          return;
-        }
+        console.log('⚠️ API request failed, falling back to JSON file');
       }
       
-      // If primary source fails, try loading from consolidated JSON file directly
-      console.log('Primary source failed, trying consolidated JSON file directly');
+      // Fallback to JSON file if API fails
+      console.log('📄 Trying fallback JSON file...');
       const jsonResponse = await fetch('/inex-live-data.json', { cache: 'no-store' });
       if (jsonResponse.ok) {
         const liveData = await jsonResponse.json();
         const messages = liveData.messages || [];
         displayDevMessages(messages);
-        console.log(`✅ Loaded ${messages.length} messages from consolidated JSON file`);
+        console.log(`✅ Loaded ${messages.length} messages from fallback JSON file`);
         return;
       }
       
-      // For live sites, try localStorage as final fallback
-      if (isLiveSite) {
-        console.log('JSON failed on live site, trying localStorage fallback');
-        const savedMessages = localStorage.getItem('inex-messages');
-        if (savedMessages) {
-          try {
-            const messages = JSON.parse(savedMessages);
+      // Final fallback to localStorage
+      console.log('💾 Trying localStorage fallback...');
+      const savedMessages = localStorage.getItem('inex-messages');
+      if (savedMessages) {
+        try {
+          const messages = JSON.parse(savedMessages);
             if (messages.length > 0) {
               displayDevMessages(messages);
               console.log(`✅ Loaded ${messages.length} messages from localStorage fallback`);
@@ -1230,8 +1318,46 @@
 
       try {
         if (isLiveSite) {
-          console.log('🌐 Live site detected, saving message locally');
-          // For live site, save message locally and show it immediately
+          console.log('🌐 Live site detected, attempting API call first, then fallback to local');
+          
+          try {
+            // Try API call first for live site GitHub integration
+            console.log('🚀 Attempting API call for live site GitHub integration');
+            const response = await fetch(API_MESSAGES, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                name: name,
+                text: text,
+                priority: 'normal',
+                category: 'client-feedback'
+              })
+            });
+
+            if (response.ok) {
+              // API success - message automatically pushed to GitHub
+              const result = await response.json();
+              console.log('✅ Message sent successfully via API on live site:', result);
+              
+              // Reload messages to show the new one
+              await loadDevMessages();
+              
+              // Show success message
+              showMessageSuccess('Message sent successfully! It has been automatically pushed to GitHub and will appear on this page immediately.');
+              
+              // Reset form
+              textInput.value = '';
+              charCount.textContent = '0 characters';
+              return; // Exit early on success
+            } else {
+              console.log('⚠️ API call failed on live site, falling back to local storage');
+            }
+          } catch (error) {
+            console.log('⚠️ API call error on live site, falling back to local storage:', error.message);
+          }
+          
+          // Fallback to local storage if API fails
+          console.log('💾 Falling back to localStorage for live site');
           const message = {
             name: name,
             text: text,
@@ -1258,7 +1384,7 @@
           displayDevMessages(messages);
           
           // Show success message
-          showMessageSuccess('Message saved locally! For live site integration, messages are automatically synced via GitHub. Your message will appear on this page immediately.');
+          showMessageSuccess('Message saved locally (API unavailable). For live site integration, messages are automatically synced via GitHub when available.');
           
           // Reset form
           textInput.value = '';
@@ -1387,6 +1513,53 @@
         notification.remove();
       }
     }, 8000);
+  }
+
+  // Manual GitHub sync function for live sites
+  async function syncMessagesToGitHub() {
+    try {
+      console.log('🚀 Attempting to sync local messages to GitHub...');
+      
+      // Get local messages
+      const savedMessages = localStorage.getItem('inex-messages');
+      if (!savedMessages) {
+        alert('No local messages to sync');
+        return;
+      }
+      
+      const messages = JSON.parse(savedMessages);
+      if (messages.length === 0) {
+        alert('No messages to sync');
+        return;
+      }
+      
+      console.log(`📤 Syncing ${messages.length} messages to GitHub...`);
+      
+      // Try to sync via API
+      const response = await fetch(API_MESSAGES, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'sync',
+          messages: messages
+        })
+      });
+      
+      if (response.ok) {
+        const result = await response.json();
+        console.log('✅ Messages synced to GitHub successfully:', result);
+        alert(`✅ Successfully synced ${messages.length} messages to GitHub!`);
+        
+        // Reload messages to show updated state
+        await loadDevMessages();
+      } else {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+      
+    } catch (error) {
+      console.error('❌ Failed to sync messages to GitHub:', error);
+      alert(`❌ Failed to sync to GitHub: ${error.message}\n\nThis usually means the API server is not running. Messages are still saved locally.`);
+    }
   }
 
   // Note: loadDevMessages is now called only when the status view is rendered
