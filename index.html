@@ -530,7 +530,8 @@
   // Determine API base for both messages and status updates
   const isDev = window.location.hostname === 'localhost' || 
                 window.location.hostname === '127.0.0.1' ||
-                window.location.port !== '';
+                window.location.port !== '' ||
+                window.location.protocol === 'file:';
   
   // For GitHub Pages deployment, we'll use GitHub Actions workflows instead of API endpoints
   let API_BASE = isDev ? 'http://localhost:3000' : window.location.origin;
@@ -547,6 +548,7 @@
   console.log('🔍 API Configuration Debug:');
   console.log('  Hostname:', window.location.hostname);
   console.log('  Port:', window.location.port);
+  console.log('  Protocol:', window.location.protocol);
   console.log('  Origin:', window.location.origin);
   console.log('  isDev:', isDev);
   console.log('  API_BASE:', API_BASE);
@@ -930,7 +932,30 @@ The workflow will update inex-live-data.json and deploy the changes.`);
   }
 
   function refreshMessages() {
-    // Load messages from the JSON file instead of localStorage
+    // On GitHub Pages, always load from JSON file
+    if (!isDev) {
+      console.log('🔄 Refreshing messages from JSON file (GitHub Pages mode)');
+      fetch('/inex-messages.json', { cache: 'no-store' })
+        .then(response => response.json())
+        .then(messages => {
+          displayDevMessages(messages);
+          // Also save to localStorage for offline access
+          localStorage.setItem('inex-messages', JSON.stringify(messages));
+          alert(`Messages refreshed! Loaded ${messages.length} messages from live JSON file.`);
+        })
+        .catch(error => {
+          console.error('Error loading messages from JSON:', error);
+          // Fallback to localStorage if JSON file fails
+          const savedMessages = localStorage.getItem('inex-messages') || '[]';
+          const messages = JSON.parse(savedMessages);
+          displayDevMessages(messages);
+          alert('⚠️ Could not load fresh messages. Showing cached version.');
+        });
+      return;
+    }
+    
+    // Local development - try API endpoint first, then fallback to JSON
+    console.log('🔄 Refreshing messages from API (local development mode)');
     fetch('/inex-messages.json', { cache: 'no-store' })
       .then(response => response.json())
       .then(messages => {
@@ -1041,7 +1066,28 @@ The workflow will update inex-live-data.json and deploy the changes.`);
   function loadDevMessages() {
     const messagesList = document.getElementById('devMessagesList');
     if (messagesList) {
-      // Load messages from the JSON file
+      // On GitHub Pages, load directly from JSON file
+      if (!isDev) {
+        console.log('🔄 Loading messages from JSON file (GitHub Pages mode)');
+        fetch('/inex-messages.json', { cache: 'no-store' })
+          .then(response => response.json())
+          .then(messages => {
+            displayDevMessages(messages);
+            // Also save to localStorage for offline access
+            localStorage.setItem('inex-messages', JSON.stringify(messages));
+          })
+          .catch(error => {
+            console.error('Error loading messages from JSON:', error);
+            // Fallback to localStorage if JSON file fails
+            const savedMessages = localStorage.getItem('inex-messages') || '[]';
+            const messages = JSON.parse(savedMessages);
+            displayDevMessages(messages);
+          });
+        return;
+      }
+      
+      // Local development - try API endpoint
+      console.log('🔄 Loading messages from API (local development mode)');
       fetch('/inex-messages.json', { cache: 'no-store' })
         .then(response => response.json())
         .then(messages => {
