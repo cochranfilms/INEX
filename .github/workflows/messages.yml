@@ -37,6 +37,11 @@ jobs:
       with:
         token: ${{ secrets.GITHUB_TOKEN }}
       
+    - name: Verify jq is available
+      run: |
+        jq --version
+        echo "jq is available for JSON manipulation"
+      
     - name: Add new message
       run: |
         # Read existing messages or create empty array
@@ -46,35 +51,53 @@ jobs:
           messages="[]"
         fi
         
-        # Create new message object
-        new_message=$(cat << EOF
-        {
-          "id": "$(date +%s)000",
-          "name": "${{ inputs.name }}",
-          "text": "${{ inputs.text }}",
-          "email": "${{ inputs.email || '' }}",
-          "priority": "${{ inputs.priority }}",
-          "category": "${{ inputs.category }}",
-          "timestamp": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
-          "status": "new",
-          "read": false,
-          "responded": false
-        }
-        EOF
-        )
+        # Create new message object with proper escaping
+        new_message=$(jq -n \
+          --arg name "${{ inputs.name }}" \
+          --arg text "${{ inputs.text }}" \
+          --arg email "${{ inputs.email || '' }}" \
+          --arg priority "${{ inputs.priority }}" \
+          --arg category "${{ inputs.category }}" \
+          --arg timestamp "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+          '{
+            id: ($now | tostring),
+            name: $name,
+            text: $text,
+            email: $email,
+            priority: $priority,
+            category: $category,
+            timestamp: $timestamp,
+            status: "new",
+            read: false,
+            responded: false
+          }' --arg now "$(date +%s)000")
         
-        # Add new message to beginning of array (newest first)
+        # Add new message to beginning of array (newest first) using jq for safe JSON manipulation
         if [ "$messages" = "[]" ]; then
-          # First message
+          # First message - create new array
           echo "[$new_message]" > inex-messages.json
         else
-          # Insert at beginning
-          sed -i "s/^\[/[$new_message,/" inex-messages.json
+          # Insert at beginning of existing array using jq
+          echo "$messages" | jq --argjson msg "$new_message" '. |= [$msg] + .' > inex-messages.json
         fi
         
-        # Display the updated content
-        echo "Updated inex-messages.json:"
-        cat inex-messages.json
+        # Validate the JSON file was created correctly
+        if [ -f "inex-messages.json" ]; then
+          echo "✅ inex-messages.json created successfully"
+          echo "📝 Message count: $(jq 'length' inex-messages.json)"
+          echo "📄 File size: $(wc -c < inex-messages.json) bytes"
+          
+          # Validate JSON syntax
+          if jq empty inex-messages.json 2>/dev/null; then
+            echo "✅ JSON syntax is valid"
+          else
+            echo "❌ JSON syntax error detected"
+            exit 1
+          fi
+        else
+          echo "❌ Failed to create inex-messages.json"
+          exit 1
+        fi
         
     - name: Commit and push changes
       run: |
