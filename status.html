@@ -109,6 +109,37 @@
       to { transform: translateX(0); opacity: 1; }
     }
   </style>
+  
+  <!-- Firebase Client SDK (public) for login-gated access -->
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+  <!-- Firebase configuration with fallback -->
+  <script>
+    // Firebase configuration - will try to load from external file, fallback to embedded config
+    window.FIREBASE_CONFIG = {
+      apiKey: "AIzaSyBW4HaQtl9Xce82dDByp_k0I1wVybgbCFQ",
+      authDomain: "inex-a4b30.firebaseapp.com",
+      projectId: "inex-a4b30",
+      storageBucket: "inex-a4b30.firebasestorage.app",
+      messagingSenderId: "111262904587",
+      appId: "1:111262904587:web:7368dc9a07c8c44db20e",
+      measurementId: "G-CL6M00YQJH"
+    };
+    
+    // Try to load external config if available (for development)
+    const script = document.createElement('script');
+    script.src = 'firebase-config.js';
+    script.onload = function() {
+      if (window.FIREBASE_CONFIG_EXTERNAL) {
+        window.FIREBASE_CONFIG = window.FIREBASE_CONFIG_EXTERNAL;
+        console.log('External Firebase config loaded successfully');
+      }
+    };
+    script.onerror = function() {
+      console.log('Using embedded Firebase config (external file not available)');
+    };
+    document.head.appendChild(script);
+  </script>
 </head>
 <body>
   <header class="topbar">
@@ -123,6 +154,19 @@
   </header>
 
   <main>
+    <!-- Firebase Authentication Banner -->
+    <div id="authBanner" style="text-align:center;margin-bottom:20px;padding:1rem;background:linear-gradient(135deg, rgba(166,46,63,.1), rgba(255,178,0,.1));border:1px solid rgba(166,46,63,.2);border-radius:12px;max-width:800px;margin-left:auto;margin-right:auto;display:none">
+      <strong>🔐 Authentication Required</strong><br>
+      <small>Please sign in to send messages and track your communications with the development team.</small>
+      <div style="margin-top:12px;display:flex;gap:8px;justify-content:center;flex-wrap:wrap">
+        <input id="authEmail" type="email" placeholder="Your email" style="padding:8px 12px;border:1px solid var(--border);border-radius:8px;background:var(--panel);color:var(--panel-ink);font-size:14px;min-width:200px">
+        <input id="authPassword" type="password" placeholder="Password" style="padding:8px 12px;border:1px solid var(--border);border-radius:8px;background:var(--panel);color:var(--panel-ink);font-size:14px;min-width:150px">
+        <button id="authLoginBtn" class="btn primary" style="padding:8px 16px;font-size:14px">🔐 Sign In</button>
+        <button id="authSignupBtn" class="btn secondary" style="padding:8px 16px;font-size:14px">📝 Create Account</button>
+      </div>
+      <div id="authStatus" style="margin-top:8px;font-size:12px;color:var(--muted)"></div>
+    </div>
+
     <!-- Client Notice -->
     <div style="text-align:center;margin-bottom:20px;padding:1rem;background:linear-gradient(135deg, rgba(166,46,63,.1), rgba(255,178,0,.1));border:1px solid rgba(166,46,63,.2);border-radius:12px;max-width:800px;margin-left:auto;margin-right:auto">
       <strong>🎯 Welcome to INEX Project Status</strong><br>
@@ -267,6 +311,13 @@
               <small>Messages are automatically saved via Vercel API to inex-live-data.json. Both client and developer can respond to messages in real-time.</small>
             </div>
             
+            <!-- User Info Display (shown when logged in) -->
+            <div id="userInfoDisplay" style="display:none;margin-bottom:16px;padding:12px;background:rgba(34,197,94,.1);border:1px solid rgba(34,197,94,.2);border-radius:8px;font-size:12px">
+              <strong>👤 Signed in as: <span id="userEmail"></span></strong><br>
+              <small>Your messages will be automatically attributed to your account.</small>
+              <button id="signOutBtn" class="btn secondary" style="padding:4px 8px;font-size:11px;margin-left:8px">Sign Out</button>
+            </div>
+
             <form id="messageForm" style="display:grid;gap:16px">
               <div style="display:grid;gap:8px">
                 <label for="messageName" style="font-size:12px;font-weight:600;color:var(--panel-ink);text-transform:uppercase;letter-spacing:0.5px">Your Name</label>
@@ -339,6 +390,123 @@
       autoRefreshInterval: 30000,
       maxRetries: 3
     };
+
+    // Firebase Authentication System
+    let firebaseAuth = null;
+    let currentUser = null;
+
+    // Initialize Firebase
+    async function initFirebase() {
+      try {
+        if (typeof firebase === 'undefined') {
+          console.log('Firebase not loaded yet, retrying...');
+          setTimeout(initFirebase, 1000);
+          return;
+        }
+
+        firebase.initializeApp(window.FIREBASE_CONFIG);
+        firebaseAuth = firebase.auth();
+        
+        // Listen for auth state changes
+        firebaseAuth.onAuthStateChanged((user) => {
+          currentUser = user;
+          updateAuthUI();
+          if (user) {
+            console.log('User signed in:', user.email);
+            // Auto-populate name field with user's display name or email
+            const nameInput = document.getElementById('messageName');
+            if (nameInput) {
+              nameInput.value = user.displayName || user.email.split('@')[0] || '';
+            }
+          } else {
+            console.log('User signed out');
+          }
+        });
+
+        console.log('Firebase initialized successfully');
+      } catch (error) {
+        console.error('Firebase initialization failed:', error);
+      }
+    }
+
+    // Update authentication UI based on user state
+    function updateAuthUI() {
+      const authBanner = document.getElementById('authBanner');
+      const userInfoDisplay = document.getElementById('userInfoDisplay');
+      const messageForm = document.getElementById('messageForm');
+
+      if (currentUser) {
+        // User is signed in
+        if (authBanner) authBanner.style.display = 'none';
+        if (userInfoDisplay) {
+          userInfoDisplay.style.display = 'block';
+          document.getElementById('userEmail').textContent = currentUser.email;
+        }
+        if (messageForm) messageForm.style.display = 'grid';
+      } else {
+        // User is signed out
+        if (authBanner) authBanner.style.display = 'block';
+        if (userInfoDisplay) userInfoDisplay.style.display = 'none';
+        if (messageForm) messageForm.style.display = 'none';
+      }
+    }
+
+    // Handle sign in
+    async function handleSignIn() {
+      const email = document.getElementById('authEmail').value.trim();
+      const password = document.getElementById('authPassword').value;
+      const status = document.getElementById('authStatus');
+
+      if (!email || !password) {
+        status.textContent = 'Please enter both email and password';
+        return;
+      }
+
+      try {
+        status.textContent = 'Signing in...';
+        await firebaseAuth.signInWithEmailAndPassword(email, password);
+        status.textContent = 'Signed in successfully!';
+      } catch (error) {
+        console.error('Sign in error:', error);
+        status.textContent = 'Sign in failed: ' + error.message;
+      }
+    }
+
+    // Handle sign up
+    async function handleSignUp() {
+      const email = document.getElementById('authEmail').value.trim();
+      const password = document.getElementById('authPassword').value;
+      const status = document.getElementById('authStatus');
+
+      if (!email || !password) {
+        status.textContent = 'Please enter both email and password';
+        return;
+      }
+
+      if (password.length < 6) {
+        status.textContent = 'Password must be at least 6 characters';
+        return;
+      }
+
+      try {
+        status.textContent = 'Creating account...';
+        await firebaseAuth.createUserWithEmailAndPassword(email, password);
+        status.textContent = 'Account created successfully!';
+      } catch (error) {
+        console.error('Sign up error:', error);
+        status.textContent = 'Account creation failed: ' + error.message;
+      }
+    }
+
+    // Handle sign out
+    async function handleSignOut() {
+      try {
+        await firebaseAuth.signOut();
+        console.log('User signed out');
+      } catch (error) {
+        console.error('Sign out error:', error);
+      }
+    }
 
     // Safe console logging
     const safeLog = (level, ...args) => {
@@ -1064,10 +1232,20 @@
     messageForm.addEventListener('submit', async function(e) {
       e.preventDefault();
       
+      // Check if user is authenticated
+      if (!currentUser) {
+        alert('Please sign in to send messages');
+        return;
+      }
+      
       const nameInput = document.getElementById('messageName');
       const textInput = document.getElementById('messageText');
       
-      const name = nameInput.value.trim() || 'Anonymous';
+      // Use Firebase user info if available, fallback to input
+      const name = currentUser.displayName || 
+                   currentUser.email.split('@')[0] || 
+                   nameInput.value.trim() || 
+                   'Anonymous';
       const text = textInput.value.trim();
       
       if (!text) {
@@ -1091,6 +1269,7 @@
             body: JSON.stringify({
               name: name,
               text: text,
+              email: currentUser.email, // Include user's email from Firebase
               priority: 'normal',
               category: 'client-feedback'
             })
@@ -1132,6 +1311,7 @@
             body: JSON.stringify({
               name: name,
               text: text,
+              email: currentUser.email, // Include user's email from Firebase
               priority: 'normal',
               category: 'client-feedback'
             })
@@ -1173,6 +1353,7 @@
         const message = {
           name: name,
           text: text,
+          email: currentUser.email, // Include user's email from Firebase
           timestamp: new Date().toISOString(),
           id: Date.now(),
           priority: 'normal',
@@ -1388,6 +1569,47 @@
 
     window.addEventListener('unhandledrejection', (event) => {
       safeLog('error', 'Unhandled promise rejection:', event.reason);
+    });
+
+    // Add event listeners for authentication
+    document.addEventListener('DOMContentLoaded', function() {
+      // Initialize Firebase
+      initFirebase();
+      
+      // Add event listeners for auth buttons
+      const authLoginBtn = document.getElementById('authLoginBtn');
+      const authSignupBtn = document.getElementById('authSignupBtn');
+      const signOutBtn = document.getElementById('signOutBtn');
+      
+      if (authLoginBtn) {
+        authLoginBtn.addEventListener('click', handleSignIn);
+      }
+      
+      if (authSignupBtn) {
+        authSignupBtn.addEventListener('click', handleSignUp);
+      }
+      
+      if (signOutBtn) {
+        signOutBtn.addEventListener('click', handleSignOut);
+      }
+      
+      // Add enter key support for auth form
+      const authEmail = document.getElementById('authEmail');
+      const authPassword = document.getElementById('authPassword');
+      
+      if (authEmail && authPassword) {
+        authEmail.addEventListener('keypress', function(e) {
+          if (e.key === 'Enter') {
+            authPassword.focus();
+          }
+        });
+        
+        authPassword.addEventListener('keypress', function(e) {
+          if (e.key === 'Enter') {
+            handleSignIn();
+          }
+        });
+      }
     });
   </script>
 </body>

@@ -1,6 +1,5 @@
-// Vercel API function for message management - Single writer to inex-live-data.json
-import { promises as fs } from 'fs';
-import path from 'path';
+// Vercel API function for message management - Using Firestore for data persistence
+import { adminDb } from './_utils/firebaseAdmin.js';
 
 export default async function handler(req, res) {
   // Enable CORS for global access
@@ -15,17 +14,24 @@ export default async function handler(req, res) {
 
   if (req.method === 'GET') {
     try {
-      const jsonPath = path.join(process.cwd(), 'inex-live-data.json');
-      const jsonData = await fs.readFile(jsonPath, 'utf8');
-      const data = JSON.parse(jsonData);
+      const messagesSnapshot = await adminDb.collection('messages').orderBy('timestamp', 'desc').get();
+      const messages = [];
+      
+      messagesSnapshot.forEach(doc => {
+        messages.push({
+          id: doc.id,
+          ...doc.data()
+        });
+      });
       
       return res.status(200).json({
         success: true,
-        messages: data.messages || [],
-        count: (data.messages || []).length,
-        lastUpdated: data.lastUpdated || new Date().toISOString()
+        messages: messages,
+        count: messages.length,
+        lastUpdated: new Date().toISOString()
       });
     } catch (error) {
+      console.error('Error fetching messages:', error);
       return res.status(200).json({
         success: true,
         messages: [],
@@ -59,35 +65,25 @@ export default async function handler(req, res) {
     };
 
     try {
-      const jsonPath = path.join(process.cwd(), 'inex-live-data.json');
-      let existingData = {};
+      // Add new message to Firestore
+      const docRef = await adminDb.collection('messages').add(newMessage);
       
-      try {
-        const jsonData = await fs.readFile(jsonPath, 'utf8');
-        existingData = JSON.parse(jsonData);
-      } catch (fileError) {
-        console.log('No existing file, starting fresh');
-      }
+      // Get all messages for response
+      const messagesSnapshot = await adminDb.collection('messages').orderBy('timestamp', 'desc').get();
+      const allMessages = [];
       
-      // Add new message to beginning of messages array
-      const existingMessages = existingData.messages || [];
-      const updatedMessages = [newMessage, ...existingMessages];
-      
-      // Update the data
-      const updatedData = {
-        ...existingData,
-        messages: updatedMessages,
-        lastUpdated: new Date().toISOString()
-      };
-      
-      // Write back to file (single write)
-      await fs.writeFile(jsonPath, JSON.stringify(updatedData, null, 2));
+      messagesSnapshot.forEach(doc => {
+        allMessages.push({
+          id: doc.id,
+          ...doc.data()
+        });
+      });
       
       return res.status(201).json({
         success: true,
         message: 'Message created successfully',
-        data: newMessage,
-        allMessages: updatedMessages
+        data: { ...newMessage, id: docRef.id },
+        allMessages: allMessages
       });
     } catch (error) {
       console.error('Error creating message:', error);
@@ -109,50 +105,41 @@ export default async function handler(req, res) {
     }
 
     try {
-      const jsonPath = path.join(process.cwd(), 'inex-live-data.json');
-      const jsonData = await fs.readFile(jsonPath, 'utf8');
-      const existingData = JSON.parse(jsonData);
+      // Get the message document from Firestore
+      const messageDoc = await adminDb.collection('messages').doc(id).get();
       
-      // Find and update the message
-      const messages = existingData.messages || [];
-      const messageIndex = messages.findIndex(msg => msg.id === id);
-      
-      if (messageIndex === -1) {
+      if (!messageDoc.exists) {
         return res.status(404).json({
           success: false,
           error: 'Message not found'
         });
       }
       
+      const messageData = messageDoc.data();
+      const updateData = {};
+      
       // Update the message based on action
       if (action === 'markRead') {
-        messages[messageIndex].read = true;
+        updateData.read = true;
       } else if (action === 'addResponse') {
-        messages[messageIndex].responded = true;
-        if (!messages[messageIndex].responses) {
-          messages[messageIndex].responses = [];
-        }
-        messages[messageIndex].responses.push({
+        updateData.responded = true;
+        updateData.responses = adminDb.FieldValue.arrayUnion({
           text: responseText,
           responder: responder || 'Development Team',
           timestamp: new Date().toISOString()
         });
       }
       
-      // Update lastUpdated
-      const updatedData = {
-        ...existingData,
-        messages: messages,
-        lastUpdated: new Date().toISOString()
-      };
+      // Update the document in Firestore
+      await adminDb.collection('messages').doc(id).update(updateData);
       
-      // Write back to file (single write)
-      await fs.writeFile(jsonPath, JSON.stringify(updatedData, null, 2));
+      // Get the updated message
+      const updatedDoc = await adminDb.collection('messages').doc(id).get();
       
       return res.status(200).json({
         success: true,
         message: 'Message updated successfully',
-        data: messages[messageIndex]
+        data: { id: updatedDoc.id, ...updatedDoc.data() }
       });
     } catch (error) {
       console.error('Error updating message:', error);
@@ -174,15 +161,10 @@ export default async function handler(req, res) {
     }
 
     try {
-      const jsonPath = path.join(process.cwd(), 'inex-live-data.json');
-      const jsonData = await fs.readFile(jsonPath, 'utf8');
-      const existingData = JSON.parse(jsonData);
+      // Get the message document from Firestore
+      const messageDoc = await adminDb.collection('messages').doc(id).get();
       
-      // Find and soft delete the message
-      const messages = existingData.messages || [];
-      const messageIndex = messages.findIndex(msg => msg.id === id);
-      
-      if (messageIndex === -1) {
+      if (!messageDoc.exists) {
         return res.status(404).json({
           success: false,
           error: 'Message not found'
@@ -190,18 +172,10 @@ export default async function handler(req, res) {
       }
       
       // Soft delete by marking as archived
-      messages[messageIndex].status = 'archived';
-      messages[messageIndex].archivedAt = new Date().toISOString();
-      
-      // Update lastUpdated
-      const updatedData = {
-        ...existingData,
-        messages: messages,
-        lastUpdated: new Date().toISOString()
-      };
-      
-      // Write back to file (single write)
-      await fs.writeFile(jsonPath, JSON.stringify(updatedData, null, 2));
+      await adminDb.collection('messages').doc(id).update({
+        status: 'archived',
+        archivedAt: new Date().toISOString()
+      });
       
       return res.status(200).json({
         success: true,
