@@ -553,6 +553,24 @@
                 </div>
               </div>
             </div>
+            
+            <!-- Reply Form Container -->
+            <div id="replyFormContainer" style="display:none;margin-top:20px;padding:20px;background:rgba(255,178,0,.05);border:1px solid rgba(255,178,0,.2);border-radius:12px;">
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+                <h5 style="margin:0;color:var(--accent);font-size:14px;font-weight:600">💬 Reply to: <span id="replyToName"></span></h5>
+                <button class="btn secondary" style="padding:4px 8px;font-size:11px" onclick="hideReplyForm()">✕ Close</button>
+              </div>
+              <div style="display:grid;gap:12px">
+                <div>
+                  <label style="font-size:12px;font-weight:600;color:var(--panel-ink);text-transform:uppercase;letter-spacing:0.5px">YOUR RESPONSE</label>
+                  <textarea id="replyText" placeholder="Type your response here..." rows="3" style="width:100%;padding:12px 16px;border:2px solid var(--border);border-radius:12px;background:var(--panel);color:var(--panel-ink);font-size:14px;resize:vertical;transition:all 0.2s ease;outline:none;line-height:1.5" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'"></textarea>
+                </div>
+                <div style="display:flex;justify-content:space-between;align-items:center">
+                  <small style="color:var(--muted);font-size:12px" id="replyCharCount">0 characters</small>
+                  <button class="btn primary" style="padding:8px 16px;font-size:13px;font-weight:600" onclick="submitReply()">📤 Send Response</button>
+                </div>
+              </div>
+            </div>
           </div>
         </article>
 
@@ -1111,9 +1129,15 @@
               <div class="meta"><span>👤</span><span>${msg.responses[msg.responses.length - 1].responder || 'Development Team'}</span><span>•</span><span>${formatTimestamp(msg.responses[msg.responses.length - 1].timestamp)}</span></div>
             </div>
           ` : ''}
-          <div class="message-status">
-            <span class="status-chip"><span class="status-dot ${msg.read ? 'ok' : 'warn'}"></span>${msg.read ? 'Read' : 'Unread'}</span>
-            <span class="status-chip"><span class="status-dot ${msg.responded ? 'ok' : 'err'}"></span>${msg.responded ? 'Responded' : 'No Response'}</span>
+          <div class="message-actions" style="display:flex;gap:8px;margin-top:16px;padding-top:16px;border-top:1px solid var(--border);justify-content:space-between;align-items:center">
+            <div class="message-status">
+              <span class="status-chip"><span class="status-dot ${msg.read ? 'ok' : 'warn'}"></span>${msg.read ? 'Read' : 'Unread'}</span>
+              <span class="status-chip"><span class="status-dot ${msg.responded ? 'ok' : 'err'}"></span>${msg.responded ? 'Responded' : 'No Response'}</span>
+            </div>
+            <div class="action-buttons" style="display:flex;gap:8px">
+              ${!msg.read ? `<button class="btn secondary" style="padding:6px 12px;font-size:12px" onclick="markMessageAsRead('${msg.id}')">✓ Mark Read</button>` : ''}
+              ${!msg.responded ? `<button class="btn primary" style="padding:6px 12px;font-size:12px" onclick="showReplyForm('${msg.id}', '${msg.name}')">💬 Reply</button>` : ''}
+            </div>
           </div>
         </div>
       `;
@@ -1165,6 +1189,117 @@
     } catch (error) {
       console.warn('API failed:', error.message);
       alert('❌ Could not add response. Please try again later.');
+    }
+  }
+
+  // Show reply form for a specific message
+  function showReplyForm(messageId, recipientName) {
+    document.getElementById('replyFormContainer').style.display = 'block';
+    document.getElementById('replyToName').textContent = recipientName;
+    document.getElementById('replyText').value = '';
+    document.getElementById('replyCharCount').textContent = '0 characters';
+    
+    // Store the message ID for the reply
+    window.currentReplyMessageId = messageId;
+    
+    // Focus on the reply textarea
+    document.getElementById('replyText').focus();
+    
+    // Add character count functionality
+    const replyText = document.getElementById('replyText');
+    const replyCharCount = document.getElementById('replyCharCount');
+    
+    replyText.addEventListener('input', function() {
+      const textLength = this.value.length;
+      replyCharCount.textContent = `${textLength} characters`;
+    });
+  }
+
+  // Hide reply form
+  function hideReplyForm() {
+    document.getElementById('replyFormContainer').style.display = 'none';
+    window.currentReplyMessageId = null;
+  }
+
+  // Submit reply to a message
+  async function submitReply() {
+    const messageId = window.currentReplyMessageId;
+    const responseText = document.getElementById('replyText').value.trim();
+    
+    if (!responseText) {
+      alert('Please enter a response');
+      return;
+    }
+    
+    if (!messageId) {
+      alert('No message selected for reply');
+      return;
+    }
+    
+    try {
+      // Show loading state
+      const submitBtn = document.querySelector('#replyFormContainer button[onclick="submitReply()"]');
+      const originalText = submitBtn.innerHTML;
+      submitBtn.innerHTML = '📤 Sending...';
+      submitBtn.disabled = true;
+      
+      // Send reply via API
+      const response = await fetch('/api/message-manager', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          id: messageId,
+          action: 'addResponse',
+          responseText: responseText,
+          responder: 'Development Team'
+        })
+      });
+      
+      if (response.ok) {
+        // Hide reply form
+        hideReplyForm();
+        
+        // Reload messages to show the response
+        await loadDevMessages();
+        
+        // Show success message
+        alert('✅ Response sent successfully!');
+      } else {
+        throw new Error('API request failed');
+      }
+    } catch (error) {
+      console.warn('API failed:', error.message);
+      alert('❌ Could not send response. Please try again later.');
+    } finally {
+      // Reset button state
+      const submitBtn = document.querySelector('#replyFormContainer button[onclick="submitReply()"]');
+      submitBtn.innerHTML = '📤 Send Response';
+      submitBtn.disabled = false;
+    }
+  }
+
+  // Mark message as read
+  async function markMessageAsRead(messageId) {
+    try {
+      const response = await fetch('/api/message-manager', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          id: messageId,
+          action: 'markRead'
+        })
+      });
+      
+      if (response.ok) {
+        // Reload messages to show updated status
+        await loadDevMessages();
+        console.log('✅ Message marked as read');
+      } else {
+        throw new Error('API request failed');
+      }
+    } catch (error) {
+      console.warn('API failed:', error.message);
+      alert('❌ Could not mark message as read. Please try again later.');
     }
   }
 
