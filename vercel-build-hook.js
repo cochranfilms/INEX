@@ -2,6 +2,8 @@
  * INEX Vercel Build Hook Integration
  * Reads progress data from GitHub Actions and updates live system
  * Runs during Vercel build/deployment process
+ * 
+ * TRIGGER: Adding comment to force Vercel API redeploy
  */
 
 import fs from 'fs';
