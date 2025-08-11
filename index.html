@@ -417,9 +417,16 @@
               </p>
             </div>
             
-            <div id="devMessagesList" style="max-height:400px;overflow-y:auto;border:1px solid var(--border);border-radius:8px;padding:1rem;background:rgba(255,255,255,.02)">
-              <div style="text-align:center;padding:20px;color:var(--muted);font-size:13px">
-                Loading messages...
+            <div id="devMessagesList" style="max-height:400px;overflow-y:auto;border:1px solid var(--border);border-radius:8px;padding:1rem;background:var(--panel)">
+              <div style="
+                text-align:center;
+                padding:40px 20px;
+                color:var(--muted);
+                font-size:14px;
+              ">
+                <div style="font-size:24px;margin-bottom:16px;opacity:0.5">⏳</div>
+                <div style="font-weight:600;margin-bottom:8px;color:var(--panel-ink)">Loading Messages...</div>
+                <div>Fetching latest messages from GitHub...</div>
               </div>
             </div>
             
@@ -936,25 +943,121 @@
     
     if (messages.length === 0) {
       messagesList.innerHTML = `
-        <div style="text-align:center;padding:20px;color:var(--muted);font-size:13px">
-          No messages from client yet. Messages will appear here when Zebediah sends them.
+        <div style="
+          text-align:center;
+          padding:40px 20px;
+          color:var(--muted);
+          font-size:14px;
+          background:var(--panel);
+          border:2px dashed var(--border);
+          border-radius:12px;
+        ">
+          <div style="font-size:48px;margin-bottom:16px;opacity:0.5">💬</div>
+          <div style="font-weight:600;margin-bottom:8px;color:var(--panel-ink)">No Messages Yet</div>
+          <div>Messages from Zebediah (INEX) will appear here automatically when sent from the status page.</div>
         </div>
       `;
       return;
     }
 
     messagesList.innerHTML = messages.map(msg => `
-      <div style="padding:12px;border:1px solid var(--border);border-radius:8px;margin-bottom:8px;background:rgba(255,255,255,.02)">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
-          <strong style="font-size:13px;color:var(--maroon)">${msg.name || 'Anonymous'}</strong>
-          <small style="color:var(--muted);font-size:11px">${formatTimestamp(msg.timestamp)}</small>
+      <div style="
+        padding:16px;
+        border:1px solid var(--border);
+        border-radius:12px;
+        margin-bottom:12px;
+        background:var(--panel);
+        box-shadow:0 2px 8px rgba(0,0,0,.05);
+        transition:all 0.2s ease;
+      ">
+        <div style="
+          display:flex;
+          justify-content:space-between;
+          align-items:center;
+          margin-bottom:8px;
+          padding-bottom:8px;
+          border-bottom:1px solid var(--border);
+        ">
+          <div style="display:flex;align-items:center;gap:8px;">
+            <div style="
+              width:32px;
+              height:32px;
+              border-radius:50%;
+              background:var(--maroon);
+              display:flex;
+              align-items:center;
+              justify-content:center;
+              color:white;
+              font-weight:700;
+              font-size:14px;
+            ">${(msg.name || 'A').charAt(0).toUpperCase()}</div>
+            <div>
+              <strong style="font-size:14px;color:var(--panel-ink);font-weight:700">${msg.name || 'Anonymous'}</strong>
+              <div style="font-size:11px;color:var(--muted);margin-top:2px">${formatTimestamp(msg.timestamp)}</div>
+            </div>
+          </div>
+          <div style="
+            padding:4px 8px;
+            background:rgba(166,46,63,.1);
+            border:1px solid rgba(166,46,63,.2);
+            border-radius:6px;
+            font-size:11px;
+            color:var(--maroon);
+            font-weight:600;
+          ">${msg.priority || 'normal'}</div>
         </div>
-        <div style="font-size:13px;line-height:1.4;color:var(--panel-ink)">${msg.text}</div>
+        
+        <div style="
+          font-size:14px;
+          line-height:1.5;
+          color:var(--panel-ink);
+          margin-bottom:8px;
+        ">${msg.text}</div>
+        
         ${msg.responses && msg.responses.length > 0 ? `
-          <div style="margin-top:8px;padding-top:8px;border-top:1px solid var(--border);font-size:12px;color:var(--muted)">
-            <strong>Response:</strong> ${msg.responses[msg.responses.length - 1].text}
+          <div style="
+            margin-top:12px;
+            padding:12px;
+            background:rgba(255,178,0,.08);
+            border:1px solid rgba(255,178,0,.2);
+            border-radius:8px;
+            border-left:4px solid var(--accent);
+          ">
+            <div style="font-size:12px;color:var(--accent);font-weight:700;margin-bottom:4px">💬 Response from Development Team</div>
+            <div style="font-size:13px;color:var(--panel-ink);line-height:1.4">${msg.responses[msg.responses.length - 1].text}</div>
+            <div style="font-size:11px;color:var(--muted);margin-top:6px">${formatTimestamp(msg.responses[msg.responses.length - 1].timestamp)}</div>
           </div>
         ` : ''}
+        
+        <div style="
+          margin-top:12px;
+          padding-top:8px;
+          border-top:1px solid var(--border);
+          display:flex;
+          gap:8px;
+          justify-content:flex-end;
+        ">
+          <button onclick="markMessageRead()" style="
+            padding:6px 12px;
+            border:1px solid var(--border);
+            border-radius:6px;
+            background:var(--panel);
+            color:var(--muted);
+            font-size:11px;
+            cursor:pointer;
+            transition:all 0.2s ease;
+          ">Mark Read</button>
+          <button onclick="addResponse('${msg.id}')" style="
+            padding:6px 12px;
+            border:1px solid var(--maroon);
+            border-radius:6px;
+            background:var(--maroon);
+            color:white;
+            font-size:11px;
+            cursor:pointer;
+            transition:all 0.2s ease;
+          ">Respond</button>
+        </div>
       </div>
     `).join('');
   }
@@ -991,6 +1094,60 @@
       localStorage.removeItem('inex-messages');
       displayDevMessages([]);
       alert('All messages cleared!');
+    }
+  }
+
+  // Add response to a message
+  async function addResponse(messageId) {
+    const responseText = prompt('Enter your response to this message:');
+    if (!responseText || !responseText.trim()) return;
+    
+    try {
+      // Try to update via API first
+      const response = await fetch('/api/message-manager', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          id: messageId,
+          response: responseText.trim()
+        })
+      });
+      
+      if (response.ok) {
+        // Reload messages to show the response
+        await loadDevMessages();
+        alert('✅ Response added successfully!');
+      } else {
+        throw new Error('API request failed');
+      }
+    } catch (error) {
+      console.warn('API failed, using localStorage fallback:', error.message);
+      
+      // Fallback to localStorage
+      const savedMessages = localStorage.getItem('inex-messages') || '[]';
+      const messages = JSON.parse(savedMessages);
+      
+      const messageIndex = messages.findIndex(msg => msg.id === messageId);
+      if (messageIndex !== -1) {
+        if (!messages[messageIndex].responses) {
+          messages[messageIndex].responses = [];
+        }
+        
+        messages[messageIndex].responses.push({
+          text: responseText.trim(),
+          timestamp: new Date().toISOString(),
+          responder: 'Development Team'
+        });
+        
+        messages[messageIndex].responded = true;
+        messages[messageIndex].status = 'responded';
+        
+        localStorage.setItem('inex-messages', JSON.stringify(messages));
+        displayDevMessages(messages);
+        alert('✅ Response added successfully! (Local mode)');
+      } else {
+        alert('❌ Message not found');
+      }
     }
   }
 
