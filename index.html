@@ -618,103 +618,114 @@
     }
   }
 
-  // Status Management Functions
-  // Load live status from JSON so the status view reflects deploy-time updates
-  async function loadLiveStatusFromJson() {
-    try {
-      const response = await fetch('/inex-live-data.json', { cache: 'no-store' });
-      if (!response.ok) return;
-      const data = await response.json();
-      const progress = typeof data.progress === 'number' ? data.progress : parseInt((data?.current?.progress ?? '0'), 10) || 0;
-      const phase = data.phase || data?.currentPhase || null;
-      const status = data.status || data?.current?.status || null;
-      
-      // Update localStorage with live data
-      if (!isNaN(progress)) {
-        localStorage.setItem('inex-project-progress', String(progress));
-      }
-      if (phase) {
-        localStorage.setItem('inex-project-phase', phase);
-      }
-      if (status) {
-        localStorage.setItem('inex-project-status', status);
-      }
-      
-      // Update UI elements if they exist
-      const progressEl = document.getElementById('progressDisplay');
-      const phaseEl = document.getElementById('phaseDisplay');
-      const statusEl = document.getElementById('statusText');
-      
-      if (progressEl && !isNaN(progress)) {
-        progressEl.textContent = `${progress}%`;
-      }
-      if (phaseEl && phase) {
-        phaseEl.textContent = phase;
-      }
-      if (statusEl && status) {
-        statusEl.textContent = status;
-      }
-      
-      return true;
-    } catch (error) {
-      console.log('Could not load live status, using localStorage defaults');
-      return false;
-    }
+  // Centralized Status Management System
+  let currentStatus = {
+    progress: 5,
+    phase: 'Phase 1',
+    phaseName: 'Prototype Polish',
+    status: 'Phase 1 (Prototype Polish) in progress. Working on INEX branding integration and basic UI framework. On track for Aug 22 completion.',
+    lastUpdated: new Date().toISOString()
+  };
+
+  // Initialize status from localStorage or defaults
+  function initializeStatus() {
+    const savedProgress = localStorage.getItem('inex-project-progress');
+    const savedPhase = localStorage.getItem('inex-project-phase');
+    const savedPhaseName = localStorage.getItem('inex-project-phase-name');
+    const savedStatus = localStorage.getItem('inex-project-status');
+    
+    if (savedProgress) currentStatus.progress = parseInt(savedProgress);
+    if (savedPhase) currentStatus.phase = savedPhase;
+    if (savedPhaseName) currentStatus.phaseName = savedPhaseName;
+    if (savedStatus) currentStatus.status = savedStatus;
+    
+    // Update all displays
+    updateAllStatusDisplays();
   }
-  function updateStatus() {
-    const newProgress = prompt('Enter new progress percentage (0-100):', '5');
-    if (newProgress !== null && !isNaN(newProgress)) {
-      const progress = Math.max(0, Math.min(100, parseInt(newProgress)));
-      document.getElementById('progressDisplay').textContent = progress + '%';
-      
-      // Save to localStorage for status.html to read
-      localStorage.setItem('inex-project-progress', progress);
-      
-      // Update status text
-      const newStatus = prompt('Enter new status description:', document.getElementById('statusText').textContent);
-      if (newStatus !== null) {
-        document.getElementById('statusText').textContent = newStatus;
-        localStorage.setItem('inex-project-status', newStatus);
+
+  // Update all status displays across all views
+  function updateAllStatusDisplays() {
+    // Update progress displays
+    const progressElements = document.querySelectorAll('#progressDisplay, #dashboardProgressRing, #statusProgress');
+    progressElements.forEach(el => {
+      if (el.id === 'dashboardProgressRing') {
+        el.style.setProperty('--progress', currentStatus.progress + '%');
+      } else {
+        el.textContent = currentStatus.progress + '%';
       }
-      
-      // Trigger storage event for real-time updates
-      window.dispatchEvent(new StorageEvent('storage', {
-        key: 'inex-project-progress',
-        newValue: progress.toString()
-      }));
+    });
+
+    // Update phase displays
+    const phaseElements = document.querySelectorAll('#phaseDisplay');
+    phaseElements.forEach(el => {
+      el.textContent = currentStatus.phase;
+    });
+
+    // Update status text
+    const statusElements = document.querySelectorAll('#statusText');
+    statusElements.forEach(el => {
+      el.textContent = currentStatus.status;
+    });
+
+    // Update dashboard progress ring
+    const progressRing = document.getElementById('dashboardProgressRing');
+    const progressText = document.getElementById('dashboardProgressText');
+    if (progressRing && progressText) {
+      progressRing.style.setProperty('--progress', currentStatus.progress + '%');
+      progressText.textContent = currentStatus.progress + '%';
     }
   }
 
-  function incrementProgress() {
-    const current = parseInt(document.getElementById('progressDisplay').textContent);
-    const newProgress = Math.min(100, current + 10);
-    document.getElementById('progressDisplay').textContent = newProgress + '%';
-    localStorage.setItem('inex-project-progress', newProgress);
+  // Save status to localStorage and update displays
+  function saveStatus() {
+    localStorage.setItem('inex-project-progress', currentStatus.progress);
+    localStorage.setItem('inex-project-phase', currentStatus.phase);
+    localStorage.setItem('inex-project-phase-name', currentStatus.phaseName);
+    localStorage.setItem('inex-project-status', currentStatus.status);
+    localStorage.setItem('inex-project-last-updated', currentStatus.lastUpdated);
+    
+    updateAllStatusDisplays();
     
     // Trigger storage event for real-time updates
     window.dispatchEvent(new StorageEvent('storage', {
       key: 'inex-project-progress',
-      newValue: newProgress.toString()
+      newValue: currentStatus.progress.toString()
     }));
+  }
+
+  // Status Update Functions - Now work from any view
+  function updateStatus() {
+    const newProgress = prompt('Enter new progress percentage (0-100):', currentStatus.progress);
+    if (newProgress !== null && !isNaN(newProgress)) {
+      currentStatus.progress = Math.max(0, Math.min(100, parseInt(newProgress)));
+      
+      const newStatus = prompt('Enter new status description:', currentStatus.status);
+      if (newStatus !== null) {
+        currentStatus.status = newStatus;
+      }
+      
+      currentStatus.lastUpdated = new Date().toISOString();
+      saveStatus();
+    }
+  }
+
+  function incrementProgress() {
+    currentStatus.progress = Math.min(100, currentStatus.progress + 10);
+    currentStatus.lastUpdated = new Date().toISOString();
+    saveStatus();
   }
 
   function nextPhase() {
     const phases = ['Phase 1', 'Phase 2', 'Phase 3'];
     const phaseNames = ['Prototype Polish', 'Auth + Connectors', 'Client Portal & Reports'];
-    const currentPhase = document.getElementById('phaseDisplay').textContent;
-    const currentIndex = phases.indexOf(currentPhase);
+    const currentIndex = phases.indexOf(currentStatus.phase);
+    
     if (currentIndex < phases.length - 1) {
-      const nextPhase = phases[currentIndex + 1];
-      const nextPhaseName = phaseNames[currentIndex + 1];
-      document.getElementById('phaseDisplay').textContent = nextPhase;
-      localStorage.setItem('inex-project-phase', nextPhase);
-      localStorage.setItem('inex-project-phase-name', nextPhaseName);
-      
-      // Trigger storage event for real-time updates
-      window.dispatchEvent(new StorageEvent('storage', {
-        key: 'inex-project-phase',
-        newValue: nextPhase
-      }));
+      currentStatus.phase = phases[currentIndex + 1];
+      currentStatus.phaseName = phaseNames[currentIndex + 1];
+      currentStatus.status = `Phase transition to ${currentStatus.phase} - ${currentStatus.progress}% complete`;
+      currentStatus.lastUpdated = new Date().toISOString();
+      saveStatus();
     }
   }
 
@@ -742,49 +753,29 @@
     }
   }
 
-  // Live Deployment Functions
+  // Live Deployment Functions - Now work from any view
   async function deployStatusUpdate() {
-    const progressElement = document.getElementById('progressDisplay');
-    const phaseElement = document.getElementById('phaseDisplay');
-    const statusElement = document.getElementById('statusText');
-    
-    // Check if elements exist (only available in status view)
-    if (!progressElement || !phaseElement || !statusElement) {
-      alert('⚠️ Please navigate to the Status Management section first to use this feature.');
-      return;
-    }
-    
-    const progress = progressElement.textContent.replace('%', '');
-    const phase = phaseElement.textContent;
-    const status = statusElement.textContent;
-    
     try {
-      console.log('Deploying status update:', { progress, phase, status });
+      console.log('Deploying status update:', currentStatus);
       console.log('🔍 Using automatic API for status update');
-      console.log('🔍 Request payload:', { progress: parseInt(progress), phase, status });
+      console.log('🔍 Request payload:', { 
+        progress: currentStatus.progress, 
+        phase: currentStatus.phase, 
+        status: currentStatus.status 
+      });
       
-      // Use API endpoint for automatic GitHub integration (both local and production)
-      let response = await fetch(API_STATUS_UPDATE, {
+      // Use API endpoint for automatic GitHub integration
+      const response = await fetch(API_STATUS_UPDATE, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          progress: parseInt(progress),
-          phase,
-          status
+          progress: currentStatus.progress,
+          phase: currentStatus.phase,
+          status: currentStatus.status
         })
       });
-      
-      // If first attempt fails, try to detect correct API base
-      if ((response.status === 404 || response.status === 405) && !isDev) {
-        await detectApiBaseForStatus();
-        response = await fetch(API_STATUS_UPDATE, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ progress: parseInt(progress), phase, status })
-        });
-      }
 
       console.log('Response status:', response.status);
       
@@ -819,49 +810,28 @@
   }
 
   async function deployPhaseChange() {
-    const progressElement = document.getElementById('progressDisplay');
-    const phaseElement = document.getElementById('phaseDisplay');
-    
-    // Check if elements exist (only available in status view)
-    if (!progressElement || !phaseElement) {
-      alert('⚠️ Please navigate to the Status Management section first to use this feature.');
-      return;
-    }
-    
-    const progress = progressElement.textContent.replace('%', '');
-    const phase = phaseElement.textContent;
-    const status = `Phase transition to ${phase} - ${progress}% complete`;
-    
     try {
-      console.log('Deploying phase change:', { progress, phase, status });
+      console.log('Deploying phase change:', currentStatus);
       
-      let response = await fetch(API_STATUS_UPDATE, {
+      const status = `Phase transition to ${currentStatus.phase} - ${currentStatus.progress}% complete`;
+      
+      const response = await fetch(API_STATUS_UPDATE, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          progress: parseInt(progress),
-          phase,
+          progress: currentStatus.progress,
+          phase: currentStatus.phase,
           status
         })
       });
-      if ((response.status === 404 || response.status === 405) && !isDev) {
-        await detectApiBaseForStatus();
-        response = await fetch(API_STATUS_UPDATE, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ progress: parseInt(progress), phase, status })
-        });
-      }
 
-      console.log('Response status:', response.status);
-      
       if (!response.ok) {
         const errorText = await response.text();
         console.error('API Error Response:', errorText);
         
-        let errorMessage = 'Deployment failed';
+        let errorMessage = 'Phase change deployment failed';
         try {
           const errorJson = JSON.parse(errorText);
           errorMessage = errorJson.error || errorMessage;
@@ -877,55 +847,39 @@
       console.log('API Success Response:', result);
       
       if (result.success) {
-        alert('🔄 Phase change deployed successfully! Zebediah will see the new phase in a few minutes.');
+        alert('🔄 Phase change deployed successfully! Changes automatically pushed to GitHub.');
       } else {
-        alert('❌ Deployment failed: ' + (result.error || 'Unknown error'));
+        alert('❌ Phase change failed: ' + (result.error || 'Unknown error'));
       }
     } catch (error) {
-      console.error('Deployment error:', error);
-      alert('❌ Deployment error: ' + error.message);
+      console.error('Phase change error:', error);
+      alert('❌ Phase change error: ' + error.message);
     }
   }
 
   // Manual Sync Function
-  function syncWithStatusPage() {
-    const progressElement = document.getElementById('progressDisplay');
-    const phaseElement = document.getElementById('phaseDisplay');
-    const statusElement = document.getElementById('statusText');
-
-    if (!progressElement || !phaseElement || !statusElement) {
-      alert('⚠️ Please navigate to the Status Management section first to use this feature.');
-      return;
+  async function syncWithStatusPage() {
+    try {
+      // Load current live status
+      const response = await fetch('inex-live-data.json');
+      if (response.ok) {
+        const liveData = await response.json();
+        
+        // Update local status to match live data
+        currentStatus.progress = liveData.progress || currentStatus.progress;
+        currentStatus.phase = liveData.phase || currentStatus.phase;
+        currentStatus.status = liveData.status || currentStatus.status;
+        currentStatus.lastUpdated = liveData.lastUpdated || currentStatus.lastUpdated;
+        
+        saveStatus();
+        alert('✅ Status synchronized with live data!');
+      } else {
+        alert('⚠️ Could not load live status data');
+      }
+    } catch (error) {
+      console.error('Sync error:', error);
+      alert('❌ Sync failed: ' + error.message);
     }
-
-    const progress = progressElement.textContent.replace('%', '');
-    const phase = phaseElement.textContent;
-    const status = statusElement.textContent;
-
-    console.log('Syncing with status page:', { progress, phase, status });
-
-    // Update localStorage
-    localStorage.setItem('inex-project-progress', progress);
-    localStorage.setItem('inex-project-phase', phase);
-    localStorage.setItem('inex-project-status', status);
-
-    // Trigger storage events for real-time updates
-    window.dispatchEvent(new StorageEvent('storage', {
-      key: 'inex-project-progress',
-      newValue: progress
-    }));
-    
-    window.dispatchEvent(new StorageEvent('storage', {
-      key: 'inex-project-phase',
-      newValue: phase
-    }));
-    
-    window.dispatchEvent(new StorageEvent('storage', {
-      key: 'inex-project-status',
-      newValue: status
-    }));
-
-    alert('✅ Status page synced successfully! The status page should update automatically.');
   }
 
   // Messaging System Functions - Automatic GitHub Integration
@@ -935,7 +889,7 @@
     
     try {
       // Always try the API endpoint first (both local and production)
-      console.log('Loading messages from API endpoint');
+      console.log('Loading messages from API endpoint:', API_MESSAGES);
       const response = await fetch(API_MESSAGES, { 
         cache: 'no-store',
         headers: { 'Content-Type': 'application/json' }
@@ -1163,20 +1117,7 @@
 
   // Function to update dashboard progress display
   function updateDashboardProgress() {
-    const progress = localStorage.getItem('inex-project-progress') || '5';
-    const progressRing = document.getElementById('dashboardProgressRing');
-    const progressText = document.getElementById('dashboardProgressText');
-    
-    if (progressRing && progressText) {
-      progressRing.style.setProperty('--progress', progress + '%');
-      progressText.textContent = progress + '%';
-    }
-    
-    // Also update the status view if it's visible
-    const statusProgress = document.getElementById('progressDisplay');
-    if (statusProgress) {
-      statusProgress.textContent = progress + '%';
-    }
+    updateAllStatusDisplays();
   }
 
   // Message Form Functionality - Copy from working status page
@@ -1185,12 +1126,14 @@
   const charCount = document.getElementById('charCount');
   const githubPagesNotice = document.getElementById('githubPagesNotice');
 
-  // Use existing API configuration from above
-  const MESSAGES_API = `${API_BASE}/api/messages`;
+  // Use the existing API configuration from above (no duplicate definition)
+  // const MESSAGES_API = `${API_BASE}/api/messages`; // This is already defined above
 
   // Debug logging for API configuration
   console.log('🔍 Index Page API Configuration:');
-  console.log('  MESSAGES_API:', MESSAGES_API);
+  console.log('  API_BASE:', API_BASE);
+  console.log('  API_MESSAGES:', API_MESSAGES);
+  console.log('  API_STATUS_UPDATE:', API_STATUS_UPDATE);
 
   // Update character count
   if (messageText) {
@@ -1225,7 +1168,7 @@
       try {
         // Always try the API endpoint first for automatic GitHub push
         console.log('Sending message via API for automatic GitHub push');
-        const response = await fetch(MESSAGES_API, {
+        const response = await fetch(API_MESSAGES, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -1364,7 +1307,7 @@
     // Wait a bit for the DOM to be ready, then load messages and update progress
     setTimeout(() => {
       loadDevMessages();
-      updateDashboardProgress();
+      updateAllStatusDisplays();
     }, 100);
   };
 </script>
