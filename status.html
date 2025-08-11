@@ -529,8 +529,13 @@
     const messageText = document.getElementById('messageText');
     const charCount = document.getElementById('charCount');
 
-    // API endpoint for messages
-    const MESSAGES_API = `${window.location.origin}/api/messages`;
+    // API endpoint for messages - detect development vs production
+    const isDev = window.location.hostname === 'localhost' || 
+                  window.location.hostname === '127.0.0.1' ||
+                  window.location.port !== '';
+    
+    const API_BASE = isDev ? 'http://localhost:3000' : window.location.origin;
+    const MESSAGES_API = `${API_BASE}/api/messages`;
 
     // Update character count
     messageText.addEventListener('input', function() {

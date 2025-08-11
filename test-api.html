@@ -37,7 +37,12 @@
     </div>
 
     <script>
-        const API_BASE = window.location.origin;
+        // API base - detect development vs production
+        const isDev = window.location.hostname === 'localhost' || 
+                      window.location.hostname === '127.0.0.1' ||
+                      window.location.port !== '';
+        
+        const API_BASE = isDev ? 'http://localhost:3000' : window.location.origin;
         
         async function testGetMessages() {
             try {

@@ -256,12 +256,17 @@
     let selectedMessageId = null;
     let filters = { status: '', priority: '' };
 
-    // API endpoints
-    const API_BASE = window.location.origin;
+    // API endpoints - detect development vs production
+    const isDev = window.location.hostname === 'localhost' || 
+                  window.location.hostname === '127.0.0.1' ||
+                  window.location.port !== '';
+    
+    const API_BASE = isDev ? 'http://localhost:3000' : window.location.origin;
     const MESSAGES_API = `${API_BASE}/api/messages`;
     const MESSAGE_MANAGER_API = `${API_BASE}/api/message-manager`;
     
     // Ensure we're using the correct protocol and port
+    console.log('Development mode:', isDev);
     console.log('API Base:', API_BASE);
     console.log('Messages API:', MESSAGES_API);
     console.log('Message Manager API:', MESSAGE_MANAGER_API);
