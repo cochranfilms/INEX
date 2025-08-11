@@ -379,18 +379,17 @@
             </div>
             <div style="margin-top:1rem;padding:1rem;background:rgba(0,150,136,.1);border:1px solid rgba(0,150,136,.2);border-radius:8px">
               <strong>🚀 Live Deployment Controls</strong><br>
-              <small>These buttons will update both local status AND deploy live to Zebediah's status page:</small>
+              <small>These buttons will automatically update both local status AND deploy live to Zebediah's status page via GitHub API:</small>
               <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-top:1rem">
                 <button class="btn primary" onclick="deployStatusUpdate()">🚀 Deploy Status Update</button>
                 <button class="btn secondary" onclick="deployPhaseChange()">🔄 Deploy Phase Change</button>
-                <button class="btn ghost" onclick="testGitHubWorkflow()">🧪 Test Workflow</button>
               </div>
             </div>
             <div style="margin-top:1rem;padding:1rem;background:rgba(255,178,0,.1);border:1px solid rgba(255,178,0,.2);border-radius:8px">
-              <strong>🔄 Manual Sync</strong><br>
-              <small>Use this button to manually sync data between the dashboard and status page:</small>
+              <strong>🔄 Automatic Sync</strong><br>
+              <small>The system now automatically syncs data between the dashboard and status page via GitHub API:</small>
               <div style="margin-top:1rem">
-                <button class="btn secondary" onclick="syncWithStatusPage()">🔄 Sync Status Page</button>
+                <button class="btn secondary" onclick="syncWithStatusPage()">🔄 Manual Sync (Backup)</button>
               </div>
             </div>
           </div>
@@ -414,19 +413,19 @@
           <div class="body">
             <div style="margin-bottom:1rem">
               <p style="margin:0 0 12px 0;font-size:13px;color:var(--muted)">
-                Messages from Zebediah (INEX) will appear here. You can respond by adding updates to the status.
+                Messages from Zebediah (INEX) will appear here automatically. The system now pushes messages to GitHub in real-time via API.
               </p>
             </div>
             
-            <div id="devMessagesList" style="max-height:400px;overflow-y:auto;border:1px solid var(--border);border-radius:8px;padding:1rem;background:#f8f8f8">
+            <div id="devMessagesList" style="max-height:400px;overflow-y:auto;border:1px solid var(--border);border-radius:8px;padding:1rem;background:rgba(255,255,255,.02)">
               <div style="text-align:center;padding:20px;color:var(--muted);font-size:13px">
-                No messages from client yet. Messages will appear here when Zebediah sends them.
+                Loading messages...
               </div>
             </div>
             
             <div style="margin-top:1rem;padding:1rem;background:rgba(0,150,136,.1);border:1px solid rgba(0,150,136,.2);border-radius:8px">
-              <strong>💡 How to respond:</strong><br>
-              <small>When you receive a message, use the "Add Update" button above to respond with project updates, or use the "Update Status" button to modify the current status.</small>
+              <strong>✅ Automatic System Active</strong><br>
+              <small>Messages are automatically pushed to GitHub when sent from the status page. No manual workflow runs needed!</small>
             </div>
           </div>
         </article>
@@ -439,8 +438,8 @@
               <button class="btn secondary" onclick="clearMessages()">Clear All</button>
               <button class="btn primary" onclick="refreshMessages()">🔄 Refresh</button>
             </div>
-            <div style="margin-top:1rem;padding:.8rem;background:rgba(166,46,63,.1);border:1px solid rgba(166,46,63,.2);border-radius:8px;font-size:12px">
-              <strong>📱 Real-time:</strong> Messages update automatically when Zebediah sends them from the status page.
+            <div style="margin-top:1rem;padding:.8rem;background:rgba(0,150,136,.1);border:1px solid rgba(0,150,136,.2);border-radius:8px;font-size:12px">
+              <strong>🚀 Real-time Updates</strong> Messages update automatically via GitHub API integration.
             </div>
           </div>
         </article>
@@ -533,16 +532,10 @@
                 window.location.port !== '' ||
                 window.location.protocol === 'file:';
   
-  // For GitHub Pages deployment, we'll use GitHub Actions workflows instead of API endpoints
+  // API endpoints for automatic GitHub integration
   let API_BASE = isDev ? 'http://localhost:3000' : window.location.origin;
   let API_STATUS_UPDATE = `${API_BASE}/api/status-update`;
   let API_MESSAGES = `${API_BASE}/api/messages`;
-
-  // GitHub Actions workflow URLs for GitHub Pages deployment
-  const GITHUB_WORKFLOW_URLS = {
-    statusUpdate: 'https://api.github.com/repos/cochranfilms/INEX/actions/workflows/status-update.yml/dispatches',
-    messages: 'https://api.github.com/repos/cochranfilms/INEX/actions/workflows/messages.yml/dispatches'
-  };
 
   // Debug logging
   console.log('🔍 API Configuration Debug:');
@@ -719,31 +712,10 @@
     
     try {
       console.log('Deploying status update:', { progress, phase, status });
-      console.log('🔍 Using GitHub Actions workflow for status update');
+      console.log('🔍 Using automatic API for status update');
       console.log('🔍 Request payload:', { progress: parseInt(progress), phase, status });
       
-      // For GitHub Pages deployment, trigger GitHub Actions workflow
-      if (!isDev) {
-        // This would require a GitHub token and proper authentication
-        // For now, we'll show instructions
-        alert(`🚀 Status Update Ready for GitHub Actions!
-
-Progress: ${progress}%
-Phase: ${phase}
-Status: ${status}
-
-To deploy this update:
-1. Go to your GitHub repository: https://github.com/cochranfilms/INEX
-2. Click "Actions" tab
-3. Select "Status Update Workflow"
-4. Click "Run workflow"
-5. Fill in the details and run
-
-The workflow will update inex-live-data.json and deploy the changes.`);
-        return;
-      }
-      
-      // Local development - use API endpoint
+      // Use API endpoint for automatic GitHub integration (both local and production)
       let response = await fetch(API_STATUS_UPDATE, {
         method: 'POST',
         headers: {
@@ -755,6 +727,8 @@ The workflow will update inex-live-data.json and deploy the changes.`);
           status
         })
       });
+      
+      // If first attempt fails, try to detect correct API base
       if ((response.status === 404 || response.status === 405) && !isDev) {
         await detectApiBaseForStatus();
         response = await fetch(API_STATUS_UPDATE, {
@@ -786,7 +760,7 @@ The workflow will update inex-live-data.json and deploy the changes.`);
       console.log('API Success Response:', result);
       
       if (result.success) {
-        alert('🚀 Status update deployed successfully! Zebediah will see the changes in a few minutes.');
+        alert('🚀 Status update deployed successfully! Changes automatically pushed to GitHub. Zebediah will see the changes immediately.');
       } else {
         alert('❌ Deployment failed: ' + (result.error || 'Unknown error'));
       }
@@ -906,10 +880,59 @@ The workflow will update inex-live-data.json and deploy the changes.`);
     alert('✅ Status page synced successfully! The status page should update automatically.');
   }
 
-  // Messaging System Functions
+  // Messaging System Functions - Automatic GitHub Integration
+  async function loadDevMessages() {
+    const messagesList = document.getElementById('devMessagesList');
+    if (!messagesList) return;
+    
+    try {
+      // Try API endpoint first (both local and production)
+      const response = await fetch('/api/messages', { 
+        cache: 'no-store',
+        headers: { 'Content-Type': 'application/json' }
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        const messages = data.messages || [];
+        displayDevMessages(messages);
+        
+        // Save to localStorage as backup
+        localStorage.setItem('inex-messages', JSON.stringify(messages));
+        console.log(`✅ Loaded ${messages.length} messages from API`);
+        return;
+      }
+      
+      // If API fails, try loading from JSON file as fallback
+      console.log('API failed, trying JSON file fallback');
+      const jsonResponse = await fetch('/inex-messages.json', { cache: 'no-store' });
+      if (jsonResponse.ok) {
+        const messages = await jsonResponse.json();
+        displayDevMessages(messages);
+        localStorage.setItem('inex-messages', JSON.stringify(messages));
+        console.log(`✅ Loaded ${messages.length} messages from JSON file`);
+        return;
+      }
+      
+      // Final fallback to localStorage
+      console.log('All remote sources failed, using localStorage fallback');
+      loadMessagesFromLocalStorage();
+      
+    } catch (error) {
+      console.warn('Failed to load messages, using localStorage fallback:', error.message);
+      loadMessagesFromLocalStorage();
+    }
+  }
+
+  function loadMessagesFromLocalStorage() {
+    const savedMessages = localStorage.getItem('inex-messages') || '[]';
+    const messages = JSON.parse(savedMessages);
+    displayDevMessages(messages);
+  }
+
   function displayDevMessages(messages) {
     const messagesList = document.getElementById('devMessagesList');
-    if (!messagesList) return; // Only available in status view
+    if (!messagesList) return;
     
     if (messages.length === 0) {
       messagesList.innerHTML = `
@@ -924,54 +947,38 @@ The workflow will update inex-live-data.json and deploy the changes.`);
       <div style="padding:12px;border:1px solid var(--border);border-radius:8px;margin-bottom:8px;background:rgba(255,255,255,.02)">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
           <strong style="font-size:13px;color:var(--maroon)">${msg.name || 'Anonymous'}</strong>
-          <small style="color:var(--muted);font-size:11px">${msg.timestamp}</small>
+          <small style="color:var(--muted);font-size:11px">${formatTimestamp(msg.timestamp)}</small>
         </div>
-        <div style="font-size:13px;line-height:1.4">${msg.text}</div>
+        <div style="font-size:13px;line-height:1.4;color:var(--panel-ink)">${msg.text}</div>
+        ${msg.responses && msg.responses.length > 0 ? `
+          <div style="margin-top:8px;padding-top:8px;border-top:1px solid var(--border);font-size:12px;color:var(--muted)">
+            <strong>Response:</strong> ${msg.responses[msg.responses.length - 1].text}
+          </div>
+        ` : ''}
       </div>
     `).join('');
   }
 
-  function refreshMessages() {
-    // On GitHub Pages, always load from JSON file
-    if (!isDev) {
-      console.log('🔄 Refreshing messages from JSON file (GitHub Pages mode)');
-      fetch('/inex-messages.json', { cache: 'no-store' })
-        .then(response => response.json())
-        .then(messages => {
-          displayDevMessages(messages);
-          // Also save to localStorage for offline access
-          localStorage.setItem('inex-messages', JSON.stringify(messages));
-          alert(`Messages refreshed! Loaded ${messages.length} messages from live JSON file.`);
-        })
-        .catch(error => {
-          console.error('Error loading messages from JSON:', error);
-          // Fallback to localStorage if JSON file fails
-          const savedMessages = localStorage.getItem('inex-messages') || '[]';
-          const messages = JSON.parse(savedMessages);
-          displayDevMessages(messages);
-          alert('⚠️ Could not load fresh messages. Showing cached version.');
-        });
-      return;
-    }
+  function formatTimestamp(timestamp) {
+    if (!timestamp) return 'Just now';
     
-    // Local development - try API endpoint first, then fallback to JSON
-    console.log('🔄 Refreshing messages from API (local development mode)');
-    fetch('/inex-messages.json', { cache: 'no-store' })
-      .then(response => response.json())
-      .then(messages => {
-        displayDevMessages(messages);
-        // Also save to localStorage for offline access
-        localStorage.setItem('inex-messages', JSON.stringify(messages));
-        alert(`Messages refreshed! Loaded ${messages.length} messages.`);
-      })
-      .catch(error => {
-        console.error('Error loading messages:', error);
-        // Fallback to localStorage if JSON file fails
-        const savedMessages = localStorage.getItem('inex-messages') || '[]';
-        const messages = JSON.parse(savedMessages);
-        displayDevMessages(messages);
-        alert('⚠️ Could not load fresh messages. Showing cached version.');
-      });
+    try {
+      const date = new Date(timestamp);
+      const now = new Date();
+      const diff = now - date;
+      
+      if (diff < 60000) return 'Just now';
+      if (diff < 3600000) return `${Math.floor(diff / 60000)}m ago`;
+      if (diff < 86400000) return `${Math.floor(diff / 3600000)}h ago`;
+      return date.toLocaleDateString();
+    } catch (e) {
+      return timestamp;
+    }
+  }
+
+  function refreshMessages() {
+    console.log('🔄 Refreshing messages...');
+    loadDevMessages();
   }
 
   function markMessageRead() {
@@ -987,6 +994,14 @@ The workflow will update inex-live-data.json and deploy the changes.`);
     }
   }
 
+  // Auto-load messages when dashboard loads
+  window.addEventListener('load', function() {
+    // Wait a bit for the DOM to be fully ready
+    setTimeout(() => {
+      loadDevMessages();
+    }, 500);
+  });
+
   // Listen for new messages from client
   window.addEventListener('storage', function(e) {
     if (e.key === 'inex-messages') {
@@ -998,18 +1013,14 @@ The workflow will update inex-live-data.json and deploy the changes.`);
         if (messages.length > 0) {
           const latestMessage = messages[0];
           if (latestMessage.timestamp) {
-            const messageTime = new Date(latestMessage.timestamp);
-            const now = new Date();
-            const timeDiff = now - messageTime;
-            
-            // Only show notification if message is less than 5 minutes old
-            if (timeDiff < 300000) { // 5 minutes in milliseconds
-              showMessageNotification(latestMessage);
+            const messageAge = Date.now() - new Date(latestMessage.timestamp).getTime();
+            if (messageAge < 300000) { // 5 minutes
+              console.log('📨 New message received:', latestMessage);
             }
           }
         }
       } catch (e) {
-        console.log('Error parsing messages');
+        console.warn('Error parsing messages from storage');
       }
     }
   });
@@ -1062,49 +1073,6 @@ The workflow will update inex-live-data.json and deploy the changes.`);
     }, 8000);
   }
 
-  // Load messages when status view is rendered
-  function loadDevMessages() {
-    const messagesList = document.getElementById('devMessagesList');
-    if (messagesList) {
-      // On GitHub Pages, load directly from JSON file
-      if (!isDev) {
-        console.log('🔄 Loading messages from JSON file (GitHub Pages mode)');
-        fetch('/inex-messages.json', { cache: 'no-store' })
-          .then(response => response.json())
-          .then(messages => {
-            displayDevMessages(messages);
-            // Also save to localStorage for offline access
-            localStorage.setItem('inex-messages', JSON.stringify(messages));
-          })
-          .catch(error => {
-            console.error('Error loading messages from JSON:', error);
-            // Fallback to localStorage if JSON file fails
-            const savedMessages = localStorage.getItem('inex-messages') || '[]';
-            const messages = JSON.parse(savedMessages);
-            displayDevMessages(messages);
-          });
-        return;
-      }
-      
-      // Local development - try API endpoint
-      console.log('🔄 Loading messages from API (local development mode)');
-      fetch('/inex-messages.json', { cache: 'no-store' })
-        .then(response => response.json())
-        .then(messages => {
-          displayDevMessages(messages);
-          // Also save to localStorage for offline access
-          localStorage.setItem('inex-messages', JSON.stringify(messages));
-        })
-        .catch(error => {
-          console.error('Error loading messages:', error);
-          // Fallback to localStorage if JSON file fails
-          const savedMessages = localStorage.getItem('inex-messages') || '[]';
-          const messages = JSON.parse(savedMessages);
-          displayDevMessages(messages);
-        });
-    }
-  }
-
   // Function to update dashboard progress display
   function updateDashboardProgress() {
     const progress = localStorage.getItem('inex-project-progress') || '5';
@@ -1133,36 +1101,6 @@ The workflow will update inex-live-data.json and deploy the changes.`);
       updateDashboardProgress();
     }, 100);
   };
-
-  // Test GitHub Actions workflow dispatch (for development/testing)
-  async function testGitHubWorkflow() {
-    if (isDev) {
-      alert('This function is for testing GitHub Actions workflows on the live site.');
-      return;
-    }
-    
-    const testData = {
-      progress: 75,
-      phase: 'Testing',
-      status: 'GitHub Actions workflow test'
-    };
-    
-    alert(`🧪 GitHub Actions Workflow Test
-
-This will test the status update workflow with:
-Progress: ${testData.progress}%
-Phase: ${testData.phase}
-Status: ${testData.status}
-
-To test:
-1. Go to: https://github.com/cochranfilms/INEX/actions
-2. Click "Status Update Workflow"
-3. Click "Run workflow"
-4. Fill in the test data above
-5. Click "Run workflow"
-
-The workflow will update inex-live-data.json and deploy changes.`);
-  }
 </script>
 </body>
 </html>
