@@ -225,11 +225,6 @@ app.put('/api/live-data', (req, res) => {
     try {
       fs.writeFileSync(liveDataPath, JSON.stringify(updatedData, null, 2));
       console.log('Live data updated in inex-live-data.json');
-      
-      // Also create a backup with timestamp
-      const backupFile = `inex-live-data-backup-${new Date().toISOString().split('T')[0]}.json`;
-      fs.writeFileSync(backupFile, JSON.stringify(updatedData, null, 2));
-      console.log('Backup created:', backupFile);
     } catch (writeError) {
       console.error('Error saving live data:', writeError);
       return res.status(500).json({
@@ -306,11 +301,6 @@ app.post('/api/status-update', (req, res) => {
     try {
       fs.writeFileSync('inex-live-data.json', JSON.stringify(statusData, null, 2));
       console.log('Status data updated in inex-live-data.json');
-      
-      // Also create a backup with timestamp
-      const backupFile = `inex-live-data-backup-${new Date().toISOString().split('T')[0]}.json`;
-      fs.writeFileSync(backupFile, JSON.stringify(statusData, null, 2));
-      console.log('Backup created:', backupFile);
     } catch (writeError) {
       console.error('Error saving status data:', writeError);
       // Continue anyway - this is not critical
@@ -438,18 +428,8 @@ app.post('/api/messages', (req, res) => {
     data.messages = messages;
     data.lastUpdated = new Date().toISOString();
     
-    // Save back to consolidated file
+    // Save back to consolidated file (single write)
     fs.writeFileSync(liveDataPath, JSON.stringify(data, null, 2));
-    
-    // Create comprehensive backup with timestamp
-    const backupFile = `inex-live-data-backup-${new Date().toISOString().split('T')[0]}.json`;
-    const backupPath = path.join(__dirname, backupFile);
-    fs.writeFileSync(backupPath, JSON.stringify(data, null, 2));
-    
-    // Also save messages-only backup
-    const messagesBackupFile = `inex-messages-backup-${new Date().toISOString().split('T')[0]}.json`;
-    const messagesBackupPath = path.join(__dirname, messagesBackupFile);
-    fs.writeFileSync(messagesBackupPath, JSON.stringify(messages, null, 2));
     
     console.log('Message saved and backups created:', {
       liveData: liveDataFile,
@@ -476,46 +456,43 @@ app.post('/api/messages', (req, res) => {
 app.get('/api/message-manager', (req, res) => {
   try {
     const { status, priority, category, limit = 50, offset = 0 } = req.query;
-    
-    const messagesFile = 'inex-messages.json';
-    const messagesPath = path.join(__dirname, messagesFile);
-    
-    // Ensure messages file exists
-    if (!fs.existsSync(messagesPath)) {
-      fs.writeFileSync(messagesPath, JSON.stringify([], null, 2));
+
+    const liveDataFile = 'inex-live-data.json';
+    const liveDataPath = path.join(__dirname, liveDataFile);
+
+    // Ensure consolidated data file exists
+    if (!fs.existsSync(liveDataPath)) {
+      fs.writeFileSync(liveDataPath, JSON.stringify({ messages: [] }, null, 2));
     }
-    
-    const messagesData = fs.readFileSync(messagesPath, 'utf8');
-    let messages = JSON.parse(messagesData);
-    
+
+    const fileContents = fs.readFileSync(liveDataPath, 'utf8');
+    const data = JSON.parse(fileContents || '{}');
+    let messages = Array.isArray(data.messages) ? data.messages : [];
+
     // Apply filters
-    if (status) {
-      messages = messages.filter(msg => msg.status === status);
-    }
-    if (priority) {
-      messages = messages.filter(msg => msg.priority === priority);
-    }
-    if (category) {
-      messages = messages.filter(msg => msg.category === category);
-    }
-    
+    if (status) messages = messages.filter(msg => msg.status === status);
+    if (priority) messages = messages.filter(msg => msg.priority === priority);
+    if (category) messages = messages.filter(msg => msg.category === category);
+
     // Apply pagination
     const totalCount = messages.length;
-    messages = messages.slice(parseInt(offset), parseInt(offset) + parseInt(limit));
-    
+    const start = parseInt(offset);
+    const end = start + parseInt(limit);
+    const paged = messages.slice(start, end);
+
     res.json({
       success: true,
-      messages: messages,
+      messages: paged,
       pagination: {
         total: totalCount,
         limit: parseInt(limit),
         offset: parseInt(offset),
-        hasMore: parseInt(offset) + parseInt(limit) < totalCount
+        hasMore: end < totalCount
       },
       filters: { status, priority, category },
-      lastUpdated: new Date().toISOString()
+      lastUpdated: data.lastUpdated || new Date().toISOString()
     });
-    
+
   } catch (error) {
     console.error('Error reading messages for manager:', error);
     res.status(500).json({
@@ -528,25 +505,26 @@ app.get('/api/message-manager', (req, res) => {
 app.put('/api/message-manager', (req, res) => {
   try {
     const { id, status, read, responded, response, priority, category } = req.body;
-    
+
     if (!id) {
       return res.status(400).json({
         success: false,
         error: 'Message ID is required'
       });
     }
-    
-    const messagesFile = 'inex-messages.json';
-    const messagesPath = path.join(__dirname, messagesFile);
-    
-    // Ensure messages file exists
-    if (!fs.existsSync(messagesPath)) {
-      fs.writeFileSync(messagesPath, JSON.stringify([], null, 2));
+
+    const liveDataFile = 'inex-live-data.json';
+    const liveDataPath = path.join(__dirname, liveDataFile);
+
+    // Ensure consolidated data file exists
+    if (!fs.existsSync(liveDataPath)) {
+      fs.writeFileSync(liveDataPath, JSON.stringify({ messages: [] }, null, 2));
     }
-    
-    const messagesData = fs.readFileSync(messagesPath, 'utf8');
-    const messages = JSON.parse(messagesData);
-    
+
+    const fileContents = fs.readFileSync(liveDataPath, 'utf8');
+    const data = JSON.parse(fileContents || '{}');
+    const messages = Array.isArray(data.messages) ? data.messages : [];
+
     const messageIndex = messages.findIndex(msg => msg.id === id);
     if (messageIndex === -1) {
       return res.status(404).json({
@@ -554,19 +532,17 @@ app.put('/api/message-manager', (req, res) => {
         error: 'Message not found'
       });
     }
-    
+
     // Update message fields
     if (status !== undefined) messages[messageIndex].status = status;
     if (read !== undefined) messages[messageIndex].read = read;
     if (responded !== undefined) messages[messageIndex].responded = responded;
     if (priority !== undefined) messages[messageIndex].priority = priority;
     if (category !== undefined) messages[messageIndex].category = category;
-    
+
     // Add response if provided
     if (response) {
-      if (!messages[messageIndex].responses) {
-        messages[messageIndex].responses = [];
-      }
+      if (!messages[messageIndex].responses) messages[messageIndex].responses = [];
       messages[messageIndex].responses.push({
         text: response,
         timestamp: new Date().toISOString(),
@@ -575,19 +551,21 @@ app.put('/api/message-manager', (req, res) => {
       messages[messageIndex].responded = true;
       messages[messageIndex].status = 'responded';
     }
-    
-    // Update timestamp
+
+    // Update lastUpdated on message and consolidated data
     messages[messageIndex].lastUpdated = new Date().toISOString();
-    
-    // Save back to file
-    fs.writeFileSync(messagesPath, JSON.stringify(messages, null, 2));
-    
+    data.messages = messages;
+    data.lastUpdated = new Date().toISOString();
+
+    // Save back to consolidated file
+    fs.writeFileSync(liveDataPath, JSON.stringify(data, null, 2));
+
     res.json({
       success: true,
       message: 'Message updated successfully',
       data: messages[messageIndex]
     });
-    
+
   } catch (error) {
     console.error('Error updating message:', error);
     res.status(500).json({
@@ -600,25 +578,26 @@ app.put('/api/message-manager', (req, res) => {
 app.delete('/api/message-manager', (req, res) => {
   try {
     const { id } = req.body;
-    
+
     if (!id) {
       return res.status(400).json({
         success: false,
         error: 'Message ID is required'
       });
     }
-    
-    const messagesFile = 'inex-messages.json';
-    const messagesPath = path.join(__dirname, messagesFile);
-    
-    // Ensure messages file exists
-    if (!fs.existsSync(messagesPath)) {
-      fs.writeFileSync(messagesPath, JSON.stringify([], null, 2));
+
+    const liveDataFile = 'inex-live-data.json';
+    const liveDataPath = path.join(__dirname, liveDataFile);
+
+    // Ensure consolidated data file exists
+    if (!fs.existsSync(liveDataPath)) {
+      fs.writeFileSync(liveDataPath, JSON.stringify({ messages: [] }, null, 2));
     }
-    
-    const messagesData = fs.readFileSync(messagesPath, 'utf8');
-    const messages = JSON.parse(messagesData);
-    
+
+    const fileContents = fs.readFileSync(liveDataPath, 'utf8');
+    const data = JSON.parse(fileContents || '{}');
+    const messages = Array.isArray(data.messages) ? data.messages : [];
+
     const messageIndex = messages.findIndex(msg => msg.id === id);
     if (messageIndex === -1) {
       return res.status(404).json({
@@ -626,19 +605,21 @@ app.delete('/api/message-manager', (req, res) => {
         error: 'Message not found'
       });
     }
-    
+
     // Soft delete by marking as archived
     messages[messageIndex].status = 'archived';
     messages[messageIndex].archivedAt = new Date().toISOString();
-    
-    // Save back to file
-    fs.writeFileSync(messagesPath, JSON.stringify(messages, null, 2));
-    
+
+    // Save back to consolidated file
+    data.messages = messages;
+    data.lastUpdated = new Date().toISOString();
+    fs.writeFileSync(liveDataPath, JSON.stringify(data, null, 2));
+
     res.json({
       success: true,
       message: 'Message archived successfully'
     });
-    
+
   } catch (error) {
     console.error('Error archiving message:', error);
     res.status(500).json({

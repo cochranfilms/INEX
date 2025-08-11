@@ -673,62 +673,11 @@
     client: 'INEX'
   };
 
-  // Initialize status from API endpoints
+  // Initialize status from JSON only; do not write on load
   async function initializeStatus() {
     try {
-      console.log('🔄 Initializing status from API...');
-      
-      // Try to load from API first
-      if (!isDev) {
-        try {
-          console.log('🌐 Loading from live API:', API_STATUS_UPDATE);
-          const apiResponse = await fetch(API_STATUS_UPDATE, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              progress: currentStatus.progress,
-              phase: currentStatus.phase,
-              status: currentStatus.status,
-              update: 'Status check from live site',
-              update_status: 'Complete'
-            })
-          });
-          
-          if (apiResponse.ok) {
-            const apiData = await apiResponse.json();
-            console.log('📡 API response:', apiData);
-            
-            if (apiData.success && apiData.data) {
-              // Update current status with API data
-              currentStatus.progress = apiData.data.progress || currentStatus.progress;
-              currentStatus.phase = apiData.data.phase || currentStatus.phase;
-              currentStatus.phaseName = apiData.data.phaseName || currentStatus.phaseName;
-              currentStatus.status = apiData.data.status || currentStatus.status;
-              currentStatus.lastUpdated = apiData.data.lastUpdated || currentStatus.lastUpdated;
-              currentStatus.eta = apiData.data.eta || currentStatus.eta;
-              currentStatus.scope = apiData.data.scope || currentStatus.scope;
-              currentStatus.owner = apiData.data.owner || currentStatus.owner;
-              currentStatus.client = apiData.data.client || currentStatus.client;
-              
-              console.log('✅ Status loaded from API:', currentStatus);
-            } else {
-              console.log('⚠️ API response not successful, falling back to JSON');
-              await loadFromFallbackJSON();
-            }
-          } else {
-            console.log('⚠️ API request failed, falling back to JSON');
-            await loadFromFallbackJSON();
-          }
-        } catch (apiError) {
-          console.log('⚠️ API error, falling back to JSON:', apiError.message);
-          await loadFromFallbackJSON();
-        }
-      } else {
-        // In development, load from local JSON
-        await loadFromFallbackJSON();
-      }
+      console.log('🔄 Initializing status from JSON...');
+      await loadFromFallbackJSON();
     } catch (error) {
       console.log('⚠️ Error in initializeStatus, using defaults:', error.message);
     }
@@ -813,7 +762,7 @@
     console.log('✅ All status displays updated');
   }
 
-  // Save status to JSON via API ONLY (no localStorage)
+  // Save status to JSON via API when explicitly invoked
   async function saveStatus() {
     try {
       // Update via API to JSON files with all available parameters
@@ -1007,49 +956,10 @@
     }
   }
 
-  // Manual Sync Function - Use API endpoints
+  // Manual Sync Function - Prefer JSON read; optionally ping API
   async function syncWithStatusPage() {
     try {
-      console.log('🔄 Syncing with live API...');
-      
-      // Try API first
-      if (!isDev) {
-        try {
-          const apiResponse = await fetch(API_STATUS_UPDATE, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              progress: currentStatus.progress,
-              phase: currentStatus.phase,
-              status: currentStatus.status,
-              update: 'Manual sync from live site',
-              update_status: 'Complete'
-            })
-          });
-          
-          if (apiResponse.ok) {
-            const apiData = await apiResponse.json();
-            if (apiData.success && apiData.data) {
-              // Update local status to match API data
-              currentStatus.progress = apiData.data.progress || currentStatus.progress;
-              currentStatus.phase = apiData.data.phase || currentStatus.phase;
-              currentStatus.status = apiData.data.status || currentStatus.status;
-              currentStatus.lastUpdated = apiData.data.lastUpdated || currentStatus.lastUpdated;
-              
-              saveStatus();
-              alert('✅ Status synchronized with live API!');
-              return;
-            }
-          }
-        } catch (apiError) {
-          console.log('⚠️ API sync failed, trying JSON fallback:', apiError.message);
-        }
-      }
-      
-      // Fallback to JSON file
-      console.log('📄 Falling back to JSON file for sync...');
+      console.log('🔄 Syncing from JSON...');
       const response = await fetch('inex-live-data.json');
       if (response.ok) {
         const liveData = await response.json();
@@ -1060,8 +970,8 @@
         currentStatus.status = liveData.status || currentStatus.status;
         currentStatus.lastUpdated = liveData.lastUpdated || currentStatus.lastUpdated;
         
-        saveStatus();
-        alert('✅ Status synchronized with JSON fallback!');
+        updateAllStatusDisplays();
+        alert('✅ Status synchronized from JSON!');
       } else {
         alert('⚠️ Could not load live status data');
       }
