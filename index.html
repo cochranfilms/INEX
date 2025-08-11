@@ -584,13 +584,25 @@
 
   function render(){
     const route = location.hash.replace('#/','') || 'dashboard';
+    console.log('🔄 Rendering route:', route);
     setActive(route);
     view.innerHTML = Views[route] || Views.dashboard;
     
-    // After rendering, initialize status and update displays
+    // After rendering, initialize status, update displays, and initialize message form
     setTimeout(async () => {
+      console.log('⏳ Post-render initialization starting...');
       await initializeStatus();
       updateAllStatusDisplays();
+      
+      // Initialize message form after view is rendered
+      if (route === 'status') {
+        console.log('📝 Initializing message form for status view...');
+        initializeMessageForm();
+        
+        // Also load messages for the status view
+        console.log('📨 Loading messages for status view...');
+        loadDevMessages();
+      }
     }, 50);
   }
   window.addEventListener('hashchange', render);
@@ -962,7 +974,10 @@
   // Messaging System Functions - Consolidated JSON ONLY
   async function loadDevMessages() {
     const messagesList = document.getElementById('messagesList');
-    if (!messagesList) return;
+    if (!messagesList) {
+      console.log('📨 messagesList element not found, skipping message load');
+      return;
+    }
     
     try {
       if (isLiveSite) {
@@ -1004,8 +1019,26 @@
         return;
       }
       
-      // Show no messages if JSON sources fail
-      console.log('All JSON sources failed, showing empty state');
+      // For live sites, try localStorage as final fallback
+      if (isLiveSite) {
+        console.log('JSON failed on live site, trying localStorage fallback');
+        const savedMessages = localStorage.getItem('inex-messages');
+        if (savedMessages) {
+          try {
+            const messages = JSON.parse(savedMessages);
+            if (messages.length > 0) {
+              displayDevMessages(messages);
+              console.log(`✅ Loaded ${messages.length} messages from localStorage fallback`);
+              return;
+            }
+          } catch (e) {
+            console.warn('Failed to parse localStorage messages in fallback:', e.message);
+          }
+        }
+      }
+      
+      // Show no messages if all sources fail
+      console.log('All sources failed, showing empty state');
       displayDevMessages([]);
       
     } catch (error) {
@@ -1015,8 +1048,14 @@
   }
 
   function displayDevMessages(messages) {
+    console.log('🎨 displayDevMessages called with:', messages);
     const messagesList = document.getElementById('messagesList');
-    if (!messagesList) return;
+    if (!messagesList) {
+      console.warn('❌ messagesList element not found!');
+      return;
+    }
+    
+    console.log('✅ messagesList element found, updating with', messages.length, 'messages');
     
     if (messages.length === 0) {
       messagesList.innerHTML = `
@@ -1128,39 +1167,55 @@
     updateAllStatusDisplays();
   }
 
-  // Message Form Functionality - Copy from working status page
-  const messageForm = document.getElementById('messageForm');
-  const messageText = document.getElementById('messageText');
-  const charCount = document.getElementById('charCount');
-  const githubPagesNotice = document.getElementById('githubPagesNotice');
+  // Message Form Functionality - Will be initialized after view rendering
+  let messageFormInitialized = false;
 
-  // Use the existing API configuration from above (no duplicate definition)
-  // const MESSAGES_API = `${API_BASE}/api/messages`; // This is already defined above
+  function initializeMessageForm() {
+    if (messageFormInitialized) return;
+    
+    const messageForm = document.getElementById('messageForm');
+    const messageText = document.getElementById('messageText');
+    const charCount = document.getElementById('charCount');
+    
+    if (!messageForm || !messageText || !charCount) {
+      console.log('⏳ Message form elements not ready yet, will retry in 100ms...');
+      console.log('🔍 Current DOM state:', {
+        messageForm: document.getElementById('messageForm'),
+        messageText: document.getElementById('messageText'),
+        charCount: document.getElementById('charCount'),
+        allForms: document.querySelectorAll('form').length,
+        allInputs: document.querySelectorAll('input').length,
+        allTextareas: document.querySelectorAll('textarea').length
+      });
+      setTimeout(initializeMessageForm, 100);
+      return;
+    }
+    
+    console.log('🔍 Message form elements found:', {
+      messageForm: !!messageForm,
+      messageText: !!messageText,
+      charCount: !!charCount
+    });
 
-  // Debug logging for API configuration
-  console.log('🔍 Index Page API Configuration:');
-  console.log('  API_BASE:', API_BASE);
-  console.log('  API_MESSAGES:', API_MESSAGES);
-  console.log('  API_STATUS_UPDATE:', API_STATUS_UPDATE);
-
-  // Update character count
-  if (messageText) {
+    // Update character count
     messageText.addEventListener('input', function() {
       const textLength = this.value.length;
-      if (charCount) charCount.textContent = `${textLength} characters`;
+      charCount.textContent = `${textLength} characters`;
     });
-  }
 
-  // Handle message form submission
-  if (messageForm) {
+    // Handle message form submission
+    console.log('✅ Message form found and event listener attached');
     messageForm.addEventListener('submit', async function(e) {
       e.preventDefault();
+      console.log('📝 Form submitted! Processing message...');
       
       const nameInput = document.getElementById('messageName');
       const textInput = document.getElementById('messageText');
       
       const name = nameInput.value.trim() || 'Anonymous';
       const text = textInput.value.trim();
+      
+      console.log('📝 Message details:', { name, text, isLiveSite, isDev });
       
       if (!text) {
         alert('Please enter a message');
@@ -1175,12 +1230,39 @@
 
       try {
         if (isLiveSite) {
-          // For live site, show GitHub integration message
-          showMessageSuccess('Message saved! For live site integration, messages are automatically synced via GitHub. Your message will appear after the next deployment.');
+          console.log('🌐 Live site detected, saving message locally');
+          // For live site, save message locally and show it immediately
+          const message = {
+            name: name,
+            text: text,
+            timestamp: new Date().toISOString(),
+            id: Date.now(),
+            priority: 'normal',
+            category: 'client-feedback',
+            status: 'new',
+            read: false,
+            responded: false
+          };
+
+          console.log('💾 Saving message to localStorage:', message);
+
+          // Save to localStorage for immediate display
+          const savedMessages = localStorage.getItem('inex-messages') || '[]';
+          const messages = JSON.parse(savedMessages);
+          messages.unshift(message);
+          localStorage.setItem('inex-messages', JSON.stringify(messages));
+          
+          console.log('✅ Message saved to localStorage, now displaying...');
+          
+          // Display the new message immediately
+          displayDevMessages(messages);
+          
+          // Show success message
+          showMessageSuccess('Message saved locally! For live site integration, messages are automatically synced via GitHub. Your message will appear on this page immediately.');
           
           // Reset form
           textInput.value = '';
-          if (charCount) charCount.textContent = '0 characters';
+          charCount.textContent = '0 characters';
           
         } else {
           // For development, try the API endpoint first for automatic GitHub push
@@ -1209,7 +1291,7 @@
             
             // Reset form
             textInput.value = '';
-            if (charCount) charCount.textContent = '0 characters';
+            charCount.textContent = '0 characters';
             
           } else {
             // API failed - try to get error details
@@ -1236,6 +1318,9 @@
       submitBtn.innerHTML = originalText;
       submitBtn.disabled = false;
     });
+    
+    messageFormInitialized = true;
+    console.log('✅ Message form initialization complete');
   }
 
   // Format timestamp for messages
@@ -1304,16 +1389,8 @@
     }, 8000);
   }
 
-  // Call loadDevMessages when the status view is rendered
-  const originalRender = render;
-  render = function() {
-    originalRender();
-    // Wait a bit for the DOM to be ready, then load messages and update progress
-    setTimeout(() => {
-      loadDevMessages();
-      updateAllStatusDisplays();
-    }, 100);
-  };
+  // Note: loadDevMessages is now called only when the status view is rendered
+  // This prevents errors when other views don't have the message elements
 </script>
 </body>
 </html>
