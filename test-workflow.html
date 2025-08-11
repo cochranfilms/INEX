@@ -358,14 +358,24 @@
 
   // Test functions
   function updateTestData() {
-    const phase = document.getElementById('testPhase').value;
-    const progress = document.getElementById('testProgress').value;
+    const phaseSelect = document.getElementById('testPhase');
+    const progressInput = document.getElementById('testProgress');
+    const phaseDisplay = document.getElementById('displayPhase');
+    const progressDisplay = document.getElementById('displayProgress');
+    
+    if (!phaseSelect || !progressInput || !phaseDisplay || !progressDisplay) {
+      console.warn('Test elements not found, view may not be fully loaded');
+      return;
+    }
+    
+    const phase = phaseSelect.value;
+    const progress = progressInput.value;
     
     testData.currentPhase = phase;
     testData.progress = parseInt(progress);
     
-    document.getElementById('displayPhase').textContent = phase;
-    document.getElementById('displayProgress').textContent = progress + '%';
+    phaseDisplay.textContent = phase;
+    progressDisplay.textContent = progress + '%';
     
     logTestResult('Test data updated', `Phase: ${phase}, Progress: ${progress}%`);
   }
@@ -394,13 +404,23 @@
   }
 
   function resetTestData() {
+    const phaseSelect = document.getElementById('testPhase');
+    const progressInput = document.getElementById('testProgress');
+    const phaseDisplay = document.getElementById('displayPhase');
+    const progressDisplay = document.getElementById('displayProgress');
+    
+    if (!phaseSelect || !progressInput || !phaseDisplay || !progressDisplay) {
+      console.warn('Test elements not found, view may not be fully loaded');
+      return;
+    }
+    
     testData.currentPhase = 'Discovery';
     testData.progress = 15;
     
-    document.getElementById('testPhase').value = 'Discovery';
-    document.getElementById('testProgress').value = 15;
-    document.getElementById('displayPhase').textContent = 'Discovery';
-    document.getElementById('displayProgress').textContent = '15%';
+    phaseSelect.value = 'Discovery';
+    progressInput.value = 15;
+    phaseDisplay.textContent = 'Discovery';
+    progressDisplay.textContent = '15%';
     
     logTestResult('🔄 Test data reset', 'Reset to Phase 1: Discovery, 15% progress');
   }
@@ -420,6 +440,10 @@
 
   function logTestResult(title, message) {
     const results = document.getElementById('testResults');
+    if (!results) {
+      console.warn('Test results element not found');
+      return;
+    }
     const timestamp = new Date().toLocaleTimeString();
     results.innerHTML += `<div style="margin:.5rem 0;padding:.5rem;background:#fff;border-radius:4px;border-left:3px solid var(--accent)"><strong>${title}</strong><br><small>${timestamp}: ${message}</small></div>`;
     results.scrollTop = results.scrollHeight;
@@ -427,6 +451,10 @@
 
   function logWorkflowTest(message) {
     const log = document.getElementById('workflowTestLog');
+    if (!log) {
+      console.warn('Workflow test log element not found');
+      return;
+    }
     const timestamp = new Date().toLocaleTimeString();
     log.innerHTML += `<div style="margin:.2rem 0;padding:.3rem;background:#fff;border-radius:4px;border-left:3px solid #4CAF50"><small>${timestamp}: ${message}</small></div>`;
     log.scrollTop = log.scrollHeight;
@@ -434,6 +462,10 @@
 
   function logStatusTest(message) {
     const log = document.getElementById('statusTestResults');
+    if (!log) {
+      console.warn('Status test results element not found');
+      return;
+    }
     const timestamp = new Date().toLocaleTimeString();
     log.innerHTML += `<div style="margin:.2rem 0;padding:.3rem;background:#fff;border-radius:4px;border-left:3px solid #2196F3"><small>${timestamp}: ${message}</small></div>`;
     log.scrollTop = log.scrollHeight;
@@ -441,6 +473,10 @@
 
   function logTrackingTest(message) {
     const log = document.getElementById('trackingTestResults');
+    if (!log) {
+      console.warn('Tracking test results element not found');
+      return;
+    }
     const timestamp = new Date().toLocaleTimeString();
     log.innerHTML += `<div style="margin:.2rem 0;padding:.3rem;background:#fff;border-radius:4px;border-left:3px solid #FF9800"><small>${timestamp}: ${message}</small></div>`;
     log.scrollTop = log.scrollHeight;
@@ -448,25 +484,41 @@
 
   // Workflow test functions
   function testPhaseTransition() {
+    const phaseSelect = document.getElementById('testPhase');
+    const phaseDisplay = document.getElementById('displayPhase');
+    
+    if (!phaseSelect || !phaseDisplay) {
+      console.warn('Phase elements not found, view may not be fully loaded');
+      return;
+    }
+    
     logWorkflowTest('🔄 Testing phase transition...');
     const phases = ['Discovery', 'Design', 'Shell', 'Features', 'Integration', 'Testing', 'Launch'];
     let currentIndex = phases.indexOf(testData.currentPhase);
     currentIndex = (currentIndex + 1) % phases.length;
     testData.currentPhase = phases[currentIndex];
     
-    document.getElementById('testPhase').value = testData.currentPhase;
-    document.getElementById('displayPhase').textContent = testData.currentPhase;
+    phaseSelect.value = testData.currentPhase;
+    phaseDisplay.textContent = testData.currentPhase;
     
     logWorkflowTest(`✅ Phase transitioned to: ${testData.currentPhase}`);
   }
 
   function testProgressUpdate() {
+    const progressInput = document.getElementById('testProgress');
+    const progressDisplay = document.getElementById('displayProgress');
+    
+    if (!progressInput || !progressDisplay) {
+      console.warn('Progress elements not found, view may not be fully loaded');
+      return;
+    }
+    
     logWorkflowTest('📊 Testing progress update...');
     const newProgress = Math.min(100, testData.progress + 10);
     testData.progress = newProgress;
     
-    document.getElementById('testProgress').value = newProgress;
-    document.getElementById('displayProgress').textContent = newProgress + '%';
+    progressInput.value = newProgress;
+    progressDisplay.textContent = newProgress + '%';
     
     logWorkflowTest(`✅ Progress updated to: ${newProgress}%`);
   }
@@ -655,9 +707,17 @@
 
   // Simulate functions
   function simulatePhaseChange(phase) {
+    const phaseSelect = document.getElementById('testPhase');
+    const phaseDisplay = document.getElementById('displayPhase');
+    
+    if (!phaseSelect || !phaseDisplay) {
+      console.warn('Phase elements not found, view may not be fully loaded');
+      return;
+    }
+    
     testData.currentPhase = phase;
-    document.getElementById('testPhase').value = phase;
-    document.getElementById('displayPhase').textContent = phase;
+    phaseSelect.value = phase;
+    phaseDisplay.textContent = phase;
     
     if (typeof window.inexTracker !== 'undefined') {
       window.inexTracker.addUpdate(`Phase changed to ${phase} (simulated)`);
@@ -667,9 +727,17 @@
   }
 
   function simulateProgress(progress) {
+    const progressInput = document.getElementById('testProgress');
+    const progressDisplay = document.getElementById('displayProgress');
+    
+    if (!progressInput || !progressDisplay) {
+      console.warn('Progress elements not found, view may not be fully loaded');
+      return;
+    }
+    
     testData.progress = progress;
-    document.getElementById('testProgress').value = progress;
-    document.getElementById('displayProgress').textContent = progress + '%';
+    progressInput.value = progress;
+    progressDisplay.textContent = progress + '%';
     
     if (typeof window.inexTracker !== 'undefined') {
       window.inexTracker.addUpdate(`Progress updated to ${progress}% (simulated)`);
@@ -715,12 +783,38 @@
 
   // Initialize test environment
   window.addEventListener('load', () => {
-    logTestResult('🧪 Test environment initialized', 'Ready for development workflow testing');
-    
-    if (typeof window.inexTracker !== 'undefined') {
-      window.inexTracker.addUpdate('Test environment loaded - development workflow testing ready');
-    }
+    // Small delay to ensure DOM is fully rendered
+    setTimeout(() => {
+      logTestResult('🧪 Test environment initialized', 'Ready for development workflow testing');
+      
+      if (typeof window.inexTracker !== 'undefined') {
+        window.inexTracker.addUpdate('Test environment loaded - development workflow testing ready');
+      }
+    }, 100);
   });
+
+  // Add a ready state check for immediate interactions
+  function isTestEnvironmentReady() {
+    const requiredElements = [
+      'testPhase', 'testProgress', 'displayPhase', 'displayProgress',
+      'testResults', 'workflowTestLog', 'statusTestResults', 'trackingTestResults'
+    ];
+    
+    return requiredElements.every(id => document.getElementById(id) !== null);
+  }
+
+  // Override the render function to add ready state check
+  const originalRender = render;
+  render = function() {
+    originalRender();
+    
+    // Check if test environment is ready after render
+    if (isTestEnvironmentReady()) {
+      console.log('🧪 Test environment DOM elements ready');
+    } else {
+      console.log('🧪 Test environment DOM elements not yet ready');
+    }
+  };
 
   console.log('🧪 INEX Development Workflow Test Environment loaded');
 </script>
