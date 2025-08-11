@@ -441,20 +441,7 @@
       return await new Promise((resolve)=>{ const r=new FileReader(); r.onload=()=>resolve(r.result); r.readAsDataURL(blob); });
     }
     
-    // Convert blob to base64 for secure upload
-    async function blobToBase64(blob) {
-      return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = () => {
-          const dataUrl = reader.result;
-          // Extract base64 data from data URL (remove "data:application/pdf;base64," prefix)
-          const base64 = dataUrl.split(',')[1];
-          resolve(base64);
-        };
-        reader.onerror = reject;
-        reader.readAsDataURL(blob);
-      });
-    }
+
 
     function buildContractData(contractId = null, effectiveDate = null){
       return {
@@ -642,16 +629,7 @@
       return doc;
     }
     
-    // Generate signed PDF as blob for secure upload
-    async function generateSignedPDF(contractData) {
-      try {
-        const doc = await generateINEXPDF(contractData);
-        return doc.output('blob');
-      } catch (error) {
-        console.error('Failed to generate signed PDF:', error);
-        throw new Error('PDF generation failed: ' + error.message);
-      }
-    }
+
 
     async function finalizeOnServer(payload){
       try {
@@ -704,29 +682,8 @@
           console.log('✅ User confirmation email sent');
         }
         
-        // Upload signed contract to secure storage
-        try {
-          const pdfBlob = await generateSignedPDF(contractData);
-          const pdfBase64 = await blobToBase64(pdfBlob);
-          
-          const uploadResponse = await fetch('/api/contracts/secure-upload', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              contractId: contractId,
-              pdfBase64: pdfBase64,
-              userEmail: payload.contactEmail || ''
-            })
-          });
-          
-          if (uploadResponse.ok) {
-            console.log('✅ Contract uploaded to secure storage');
-          } else {
-            console.warn('⚠️ Contract upload failed:', await uploadResponse.text());
-          }
-        } catch (uploadError) {
-          console.warn('⚠️ Contract upload error:', uploadError.message);
-        }
+        // Contract PDF generated successfully - no upload needed
+        console.log('✅ Contract PDF generated successfully');
         
         // Return the generated contract data
         return {
@@ -857,7 +814,6 @@
         lastData.carePlan = serverRes.carePlan || lastData.carePlan;
         // Generate PDF with the authoritative values
         lastDoc = await generateINEXPDF(lastData);
-        try { if (lastDoc.internal.getNumberOfPages() === 0) { lastDoc.addPage(); } } catch(_){ }
         // Success UI
         const successPanel = document.getElementById('successPanel');
         const emailConfirm = document.getElementById('emailConfirm');

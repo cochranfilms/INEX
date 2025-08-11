@@ -30,15 +30,41 @@
       .signature-highlight { font-family:'Georgia', 'Times New Roman', serif; font-style:italic; font-size:16px; color:#d69e2e; font-weight:600; }
       .timestamp { font-size:13px; color:#9ca3af; font-weight:500; }
       
-      /* Responsive design */
+      /* Mobile-first responsive design */
       @media (max-width: 640px) {
-        .container { margin:16px; border-radius:12px; }
-        .header { padding:20px 24px; }
-        .brand-title { font-size:16px; }
-        .body { padding:24px; }
-        .meta { padding:16px 24px; }
-        .cta-wrap { padding:20px 0; }
-        .btn { display:block; margin:8px 0; }
+        .wrapper { padding: 16px 0; }
+        .container { margin: 8px; border-radius: 12px; max-width: 100%; }
+        .header { padding: 16px 20px; flex-direction: column; gap: 16px; text-align: center; }
+        .brand { flex-direction: column; gap: 12px; }
+        .brand-title { font-size: 16px; text-align: center; }
+        .body { padding: 20px; font-size: 14px; }
+        .meta { padding: 12px 20px; font-size: 12px; text-align: center; }
+        .cta-wrap { padding: 16px 0; }
+        .btn { display: block; margin: 8px 0; width: 100%; text-align: center; }
+        .table { font-size: 12px; }
+        .table th, .table td { padding: 12px 16px; }
+        .callout { padding: 16px; margin: 16px 0; }
+        .footer { padding: 16px 20px; font-size: 11px; }
+      }
+      
+      /* Extra small mobile devices */
+      @media (max-width: 480px) {
+        .container { margin: 4px; }
+        .header { padding: 12px 16px; }
+        .body { padding: 16px; }
+        .brand-title { font-size: 14px; }
+        .table th, .table td { padding: 8px 12px; font-size: 11px; }
+        .btn { padding: 14px 20px; font-size: 12px; }
+      }
+      
+      /* Table stacking for very small screens */
+      @media (max-width: 400px) {
+        .table { display: block; }
+        .table thead { display: none; }
+        .table tbody { display: block; }
+        .table tr { display: block; margin-bottom: 16px; padding: 12px; border: 1px solid #e5e7eb; border-radius: 8px; background: #f8f9fa; }
+        .table td { display: block; padding: 8px 0; border: none; text-align: left; }
+        .table td:before { content: attr(data-label) ": "; font-weight: 700; color: #6b7280; }
       }
       
       @media (prefers-color-scheme: dark) {
@@ -59,12 +85,12 @@
         <div class="header">
           <div class="brand">
             <div class="brand-logo">
-              <img src="https://inex.cochranfilms.com/inex-logo.png" alt="INEX" width="32" height="32" style="display:block; width:32px; height:32px; object-fit:contain;">
+              <img src="https://inex.cochranfilms.com/inex-logo.png" alt="INEX" width="32" height="32" style="display:block; width:32px; height:32px; object-fit:contain; max-width:100%;">
             </div>
             <div class="brand-title">INEX Systems & Designs — Agreement</div>
           </div>
           <div class="brand-logo">
-            <img src="https://inex.cochranfilms.com/CochranFilms-logo.png" alt="Cochran Films" width="32" height="32" style="display:block; width:32px; height:32px; object-fit:contain;">
+            <img src="https://inex.cochranfilms.com/CochranFilms-logo.png" alt="Cochran Films" width="32" height="32" style="display:block; width:32px; height:32px; object-fit:contain; max-width:100%;">
           </div>
         </div>
 
@@ -93,24 +119,24 @@
             </thead>
             <tbody>
               <tr>
-                <td>Contract ID</td>
-                <td>{{contract_id}}</td>
+                <td data-label="Contract ID">Contract ID</td>
+                <td data-label="Contract ID">{{contract_id}}</td>
               </tr>
               <tr>
-                <td>Effective Date</td>
-                <td>{{effective_date}}</td>
+                <td data-label="Effective Date">Effective Date</td>
+                <td data-label="Effective Date">{{effective_date}}</td>
               </tr>
               <tr>
-                <td>One‑Time Implementation</td>
-                <td>{{amount}}</td>
+                <td data-label="One‑Time Implementation">One‑Time Implementation</td>
+                <td data-label="One‑Time Implementation">{{amount}}</td>
               </tr>
               <tr>
-                <td>Managed Care Plan</td>
-                <td>{{care_plan}}</td>
+                <td data-label="Managed Care Plan">Managed Care Plan</td>
+                <td data-label="Managed Care Plan">{{care_plan}}</td>
               </tr>
               <tr>
-                <td>Scope Summary</td>
-                <td>{{project_scope_summary}}</td>
+                <td data-label="Scope Summary">Scope Summary</td>
+                <td data-label="Scope Summary">{{project_scope_summary}}</td>
               </tr>
             </tbody>
           </table>
