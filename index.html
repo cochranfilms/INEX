@@ -393,19 +393,27 @@
   
   // Load saved status data when dashboard loads
   window.addEventListener('load', function() {
-    const savedProgress = localStorage.getItem('inex-project-progress');
-    const savedPhase = localStorage.getItem('inex-project-phase');
-    const savedStatus = localStorage.getItem('inex-project-status');
-    
-    if (savedProgress) {
-      document.getElementById('progressDisplay').textContent = savedProgress + '%';
-    }
-    if (savedPhase) {
-      document.getElementById('phaseDisplay').textContent = savedPhase;
-    }
-    if (savedStatus) {
-      document.getElementById('statusText').textContent = savedStatus;
-    }
+    // Wait a bit for the DOM to be fully ready
+    setTimeout(() => {
+      const savedProgress = localStorage.getItem('inex-project-progress');
+      const savedPhase = localStorage.getItem('inex-project-phase');
+      const savedStatus = localStorage.getItem('inex-project-status');
+      
+      // Only update if elements exist (they only exist in the status view)
+      const progressElement = document.getElementById('progressDisplay');
+      const phaseElement = document.getElementById('phaseDisplay');
+      const statusElement = document.getElementById('statusText');
+      
+      if (savedProgress && progressElement) {
+        progressElement.textContent = savedProgress + '%';
+      }
+      if (savedPhase && phaseElement) {
+        phaseElement.textContent = savedPhase;
+      }
+      if (savedStatus && statusElement) {
+        statusElement.textContent = savedStatus;
+      }
+    }, 100);
   });
 
   /* Theme toggle + persistence */
@@ -514,11 +522,23 @@
 
   // Live Deployment Functions
   async function deployStatusUpdate() {
-    const progress = document.getElementById('progressDisplay').textContent.replace('%', '');
-    const phase = document.getElementById('phaseDisplay').textContent;
-    const status = document.getElementById('statusText').textContent;
+    const progressElement = document.getElementById('progressDisplay');
+    const phaseElement = document.getElementById('phaseDisplay');
+    const statusElement = document.getElementById('statusText');
+    
+    // Check if elements exist (only available in status view)
+    if (!progressElement || !phaseElement || !statusElement) {
+      alert('⚠️ Please navigate to the Status Management section first to use this feature.');
+      return;
+    }
+    
+    const progress = progressElement.textContent.replace('%', '');
+    const phase = phaseElement.textContent;
+    const status = statusElement.textContent;
     
     try {
+      console.log('Deploying status update:', { progress, phase, status });
+      
       const response = await fetch('/api/status-update', {
         method: 'POST',
         headers: {
@@ -531,24 +551,55 @@
         })
       });
 
+      console.log('Response status:', response.status);
+      
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('API Error Response:', errorText);
+        
+        let errorMessage = 'Deployment failed';
+        try {
+          const errorJson = JSON.parse(errorText);
+          errorMessage = errorJson.error || errorMessage;
+        } catch (e) {
+          errorMessage = `HTTP ${response.status}: ${errorText.substring(0, 100)}`;
+        }
+        
+        alert('❌ ' + errorMessage);
+        return;
+      }
+
       const result = await response.json();
+      console.log('API Success Response:', result);
       
       if (result.success) {
         alert('🚀 Status update deployed successfully! Zebediah will see the changes in a few minutes.');
       } else {
-        alert('❌ Deployment failed: ' + result.error);
+        alert('❌ Deployment failed: ' + (result.error || 'Unknown error'));
       }
     } catch (error) {
+      console.error('Deployment error:', error);
       alert('❌ Deployment error: ' + error.message);
     }
   }
 
   async function deployPhaseChange() {
-    const progress = document.getElementById('progressDisplay').textContent.replace('%', '');
-    const phase = document.getElementById('phaseDisplay').textContent;
+    const progressElement = document.getElementById('progressDisplay');
+    const phaseElement = document.getElementById('phaseDisplay');
+    
+    // Check if elements exist (only available in status view)
+    if (!progressElement || !phaseElement) {
+      alert('⚠️ Please navigate to the Status Management section first to use this feature.');
+      return;
+    }
+    
+    const progress = progressElement.textContent.replace('%', '');
+    const phase = phaseElement.textContent;
     const status = `Phase transition to ${phase} - ${progress}% complete`;
     
     try {
+      console.log('Deploying phase change:', { progress, phase, status });
+      
       const response = await fetch('/api/status-update', {
         method: 'POST',
         headers: {
@@ -561,14 +612,34 @@
         })
       });
 
+      console.log('Response status:', response.status);
+      
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('API Error Response:', errorText);
+        
+        let errorMessage = 'Deployment failed';
+        try {
+          const errorJson = JSON.parse(errorText);
+          errorMessage = errorJson.error || errorMessage;
+        } catch (e) {
+          errorMessage = `HTTP ${response.status}: ${errorText.substring(0, 100)}`;
+        }
+        
+        alert('❌ ' + errorMessage);
+        return;
+      }
+
       const result = await response.json();
+      console.log('API Success Response:', result);
       
       if (result.success) {
         alert('🔄 Phase change deployed successfully! Zebediah will see the new phase in a few minutes.');
       } else {
-        alert('❌ Deployment failed: ' + result.error);
+        alert('❌ Deployment failed: ' + (result.error || 'Unknown error'));
       }
     } catch (error) {
+      console.error('Deployment error:', error);
       alert('❌ Deployment error: ' + error.message);
     }
   }

@@ -68,11 +68,24 @@ This system automatically deploys status updates to Zebediah's live status page 
 ## **🔍 Testing**
 
 ### **Test the System**
-1. Make a small status change
-2. Click deploy button
-3. Check GitHub Actions tab for workflow
-4. Wait for Vercel deployment
-5. Verify changes on live status page
+1. **Local Testing First** (recommended):
+   ```bash
+   node test-api.js
+   ```
+   This will test your API endpoint locally
+
+2. **Live Testing**:
+   - Make a small status change
+   - Click deploy button
+   - Check GitHub Actions tab for workflow
+   - Wait for Vercel deployment
+   - Verify changes on live status page
+
+### **Debug Common Issues**
+- **Check browser console** for detailed error messages
+- **Verify API endpoint** is accessible
+- **Check GitHub Actions** workflow runs
+- **Monitor Vercel deployment** logs
 
 ### **Monitor Deployments**
 - **GitHub Actions**: Check workflow runs
@@ -95,10 +108,22 @@ This system automatically deploys status updates to Zebediah's live status page 
 - Check Vercel deployment logs
 - Verify GitHub Actions completed
 
-#### **API Endpoint Not Found**
+#### **API Endpoint Not Found (405 Error)**
 - Ensure `/api/status-update.js` exists
 - Check Vercel function deployment
 - Verify API route configuration
+- **Fix**: Make sure `vercel.json` includes API functions
+
+#### **TypeError: Cannot set properties of null**
+- **Fix**: Navigate to Status Management section first
+- Elements only exist when status view is rendered
+- Check browser console for detailed error messages
+
+#### **"Unexpected token '<'" Error**
+- **Fix**: API is returning HTML instead of JSON
+- Check if API endpoint is properly configured
+- Verify Vercel function deployment
+- Use `test-api.js` to debug locally
 
 ### **Debug Steps**
 1. **Check browser console** for errors

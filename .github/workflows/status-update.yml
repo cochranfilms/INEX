@@ -38,6 +38,11 @@ jobs:
         
     - name: Update status files
       run: |
+        echo "Updating status.html with new values..."
+        echo "Progress: ${{ github.event.inputs.progress }}%"
+        echo "Phase: ${{ github.event.inputs.phase }}"
+        echo "Status: ${{ github.event.inputs.status }}"
+        
         # Update status.html with new progress
         sed -i "s/id=\"pct\">.*%/id=\"pct\">${{ github.event.inputs.progress }}%/g" status.html
         sed -i "s/id=\"phaseLabel\">.*</id=\"phaseLabel\">${{ github.event.inputs.phase }}</g" status.html
@@ -53,6 +58,20 @@ jobs:
           sed -i "s/Current Status:.*</Current Status: ${{ github.event.inputs.status }}</g" status.html
         fi
         
+        echo "Status files updated successfully"
+        
+    - name: Verify changes
+      run: |
+        echo "Verifying changes were made correctly..."
+        echo "Progress in file:"
+        grep -o 'id="pct">[^<]*' status.html
+        echo "Phase in file:"
+        grep -o 'id="phaseLabel">[^<]*' status.html
+        echo "Progress bar:"
+        grep -o '--bar:[^;]*' status.html
+        echo "Ring progress:"
+        grep -o '--p:[^;]*' status.html
+        
     - name: Commit and push changes
       run: |
         git config --local user.email "action@github.com"
@@ -60,9 +79,30 @@ jobs:
         git add status.html
         git commit -m "Status Update: ${{ github.event.inputs.phase }} - ${{ github.event.inputs.progress }}% - ${{ github.event.inputs.status }}"
         git push
+        echo "Changes committed and pushed successfully"
+        echo "Commit message: Status Update: ${{ github.event.inputs.phase }} - ${{ github.event.inputs.progress }}% - ${{ github.event.inputs.status }}"
         
     - name: Trigger Vercel deployment
       run: |
         if [ -n "${{ secrets.VERCEL_DEPLOY_HOOK }}" ]; then
+          echo "Triggering Vercel deployment..."
           curl -X POST ${{ secrets.VERCEL_DEPLOY_HOOK }}
+          echo "Vercel deployment triggered successfully"
+        else
+          echo "No Vercel deploy hook configured - skipping deployment trigger"
+          echo "Note: Vercel will still auto-deploy when changes are pushed to main branch"
         fi
+        
+    - name: Workflow Summary
+      run: |
+        echo "🎉 Status Update Workflow Completed Successfully!"
+        echo "================================================"
+        echo "Progress: ${{ github.event.inputs.progress }}%"
+        echo "Phase: ${{ github.event.inputs.phase }}"
+        echo "Status: ${{ github.event.inputs.status }}"
+        echo "Update: ${{ github.event.inputs.update || 'None' }}"
+        echo "Update Status: ${{ github.event.inputs.update_status || 'In Progress' }}"
+        echo ""
+        echo "Changes have been committed and pushed to main branch."
+        echo "Vercel will automatically deploy the updated status page."
+        echo "Zebediah should see the changes in 2-3 minutes."
