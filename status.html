@@ -1,10 +1,10 @@
 <!doctype html>
-<html lang="en" data-theme="dark">
+<html lang="en" data-theme="light">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>INEX Project Status — Timeline & Progress</title>
-  <meta name="description" content="One‑page project timeline and live progress for the INEX Systems & Designs dashboard." />
+  <title>INEX Project Status — Phase 1: Discovery</title>
+  <meta name="description" content="INEX Systems & Designs — Project status and progress tracking for Phase 1: Discovery phase." />
   <link rel="icon" type="image/svg+xml" href="vite.svg" />
   <link rel="alternate icon" type="image/x-icon" href="vite.ico" />
   <style>
@@ -118,10 +118,10 @@
         <div class="head">Overview</div>
         <div class="body">
           <div class="progress-wrap">
-            <div class="ring" style="--p:15"><div class="ring-inner"><strong id="pct">15%</strong></div></div>
+            <div class="ring" style="--p:5"><div class="ring-inner"><strong id="pct">5%</strong></div></div>
             <div>
               <div style="font-weight:900;font-size:18px">Current Phase: <span id="phaseLabel">Discovery</span></div>
-              <div class="muted" id="eta">ETA: Dec 2024 · Weekly updates posted below</div>
+              <div class="muted" id="eta">ETA: Jan 2025 · Weekly updates posted below</div>
               <div style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap">
                 <span class="pill" id="badgeScope">Scope v1.0</span>
                 <span class="pill" id="badgeOwner">Owner: Cochran Full Stack Solutions</span>
@@ -137,8 +137,8 @@
         <div class="head">Milestones</div>
         <div class="body">
           <ul class="list">
-            <li>Project kickoff & requirements — <strong>Complete</strong> ✅</li>
-            <li>Branding & design tokens — <strong>In Progress</strong> ⏳</li>
+            <li>Project kickoff & requirements — <strong>In Progress</strong> ⏳</li>
+            <li>Branding & design tokens — <strong>Planned</strong> 📅</li>
             <li>Basic shell & navigation — <strong>Planned</strong> 📅</li>
             <li>Dashboard & KPIs — <strong>Planned</strong> 📅</li>
             <li>Core features & views — <strong>Planned</strong> 📅</li>
@@ -152,9 +152,9 @@
         <div class="head">Next Actions</div>
         <div class="body">
           <ul class="list" id="nextActions">
-            <li>Finalize brand guidelines & color palette</li>
-            <li>Create design system & component library</li>
-            <li>Build responsive navigation shell</li>
+            <li>Complete project requirements gathering</li>
+            <li>Define brand guidelines & color palette</li>
+            <li>Create project timeline & milestones</li>
           </ul>
         </div>
       </article>
@@ -164,7 +164,7 @@
     <section class="card" style="margin-top:16px">
       <div class="head">Project Timeline</div>
       <div class="body timeline">
-        <div class="bar"><span id="barFill" style="--bar:15%"></span></div>
+        <div class="bar"><span id="barFill" style="--bar:5%"></span></div>
         <div class="steps" id="steps">
           <div class="step active" data-phase="Discovery"><span class="dot"></span><strong>Discovery</strong><small>Kickoff + scope</small></div>
           <div class="step" data-phase="Design"><span class="dot"></span><strong>Design</strong><small>Tokens & layout</small></div>
@@ -182,31 +182,31 @@
       <div class="head">Development Tracker</div>
       <div class="body">
         <div class="dev-tracker">
-          <h4>🔄 Active Development Items</h4>
+          <h4>🔄 Phase 1: Discovery Items</h4>
           <div id="devItems">
             <div class="dev-item">
-              <input type="checkbox" class="dev-checkbox" id="dev1" data-task="brand-guidelines">
-              <label for="dev1" class="dev-label">Brand guidelines & color palette</label>
+              <input type="checkbox" class="dev-checkbox" id="dev1" data-task="project-kickoff">
+              <label for="dev1" class="dev-label">Project kickoff & requirements gathering</label>
               <span class="dev-status status-progress">In Progress</span>
             </div>
             <div class="dev-item">
-              <input type="checkbox" class="dev-checkbox" id="dev2" data-task="design-system">
-              <label for="dev2" class="dev-label">Design system & components</label>
+              <input type="checkbox" class="dev-checkbox" id="dev2" data-task="brand-research">
+              <label for="dev2" class="dev-label">Brand research & initial concepts</label>
               <span class="dev-status status-pending">Pending</span>
             </div>
             <div class="dev-item">
-              <input type="checkbox" class="dev-checkbox" id="dev3" data-task="navigation-shell">
-              <label for="dev3" class="dev-label">Navigation shell & routing</label>
+              <input type="checkbox" class="dev-checkbox" id="dev3" data-task="scope-definition">
+              <label for="dev3" class="dev-label">Scope definition & project planning</label>
               <span class="dev-status status-pending">Pending</span>
             </div>
             <div class="dev-item">
-              <input type="checkbox" class="dev-checkbox" id="dev4" data-task="dashboard-kpis">
-              <label for="dev4" class="dev-label">Dashboard & KPI widgets</label>
+              <input type="checkbox" class="dev-checkbox" id="dev4" data-task="timeline-creation">
+              <label for="dev4" class="dev-label">Timeline & milestone creation</label>
               <span class="dev-status status-pending">Pending</span>
             </div>
             <div class="dev-item">
-              <input type="checkbox" class="dev-checkbox" id="dev5" data-task="core-views">
-              <label for="dev5" class="dev-label">Core feature views</label>
+              <input type="checkbox" class="dev-checkbox" id="dev5" data-task="stakeholder-approval">
+              <label for="dev5" class="dev-label">Stakeholder approval & signoff</label>
               <span class="dev-status status-pending">Pending</span>
             </div>
           </div>
@@ -222,9 +222,9 @@
           <table>
             <thead><tr><th>Date</th><th>Update</th><th>Status</th></tr></thead>
             <tbody id="updates">
-              <tr><td>Dec 15</td><td>Project kickoff & requirements gathering</td><td><span class="pill">Complete</span></td></tr>
-              <tr><td>Dec 16</td><td>Brand research & initial concepts</td><td><span class="pill">In Progress</span></td></tr>
-              <tr><td>Dec 17</td><td>Design system planning</td><td><span class="pill">Planned</span></td></tr>
+              <tr><td>Dec 15</td><td>Project kickoff initiated</td><td><span class="pill">In Progress</span></td></tr>
+              <tr><td>Dec 16</td><td>Initial client meeting scheduled</td><td><span class="pill">Planned</span></td></tr>
+              <tr><td>Dec 17</td><td>Requirements gathering begins</td><td><span class="pill">Planned</span></tr>
             </tbody>
           </table>
         </div>
@@ -241,12 +241,12 @@
   </main>
 
   <script>
-    // Project tracking data - now integrated with Git-based system
+    // Project tracking data - Phase 1: Discovery
     const projectData = {
       currentPhase: 'Discovery',
-      progress: 15,
+      progress: 5,
       phases: [
-        { name: 'Discovery', progress: 15, status: 'active', tasks: ['requirements', 'scope', 'timeline'] },
+        { name: 'Discovery', progress: 5, status: 'active', tasks: ['requirements', 'scope', 'timeline'] },
         { name: 'Design', progress: 0, status: 'pending', tasks: ['branding', 'tokens', 'layout'] },
         { name: 'Shell', progress: 0, status: 'pending', tasks: ['navigation', 'routing', 'themes'] },
         { name: 'Features', progress: 0, status: 'pending', tasks: ['dashboard', 'kpis', 'views'] },
@@ -255,20 +255,16 @@
         { name: 'Launch', progress: 0, status: 'pending', tasks: ['deploy', 'handoff', 'training'] }
       ],
       updates: [
-        { date: 'Dec 15', update: 'Project kickoff & requirements gathering', status: 'Complete' },
-        { date: 'Dec 16', update: 'Brand research & initial concepts', status: 'In Progress' },
-        { date: 'Dec 17', update: 'Design system planning', status: 'Planned' }
+        { date: 'Dec 15', update: 'Project kickoff initiated', status: 'In Progress' },
+        { date: 'Dec 16', update: 'Initial client meeting scheduled', status: 'Planned' },
+        { date: 'Dec 17', update: 'Requirements gathering begins', status: 'Planned' }
       ],
       nextActions: [
-        'Finalize brand guidelines & color palette',
-        'Create design system & component library',
-        'Build responsive navigation shell'
+        'Complete project requirements gathering',
+        'Define brand guidelines & color palette',
+        'Create project timeline & milestones'
       ]
     };
-
-    // Git-based progress integration
-    let gitProgressData = null;
-    let lastGitSync = null;
 
     // Theme persistence
     const root = document.documentElement;
@@ -288,7 +284,7 @@
     const params = new URLSearchParams(location.search);
     const pct = Math.max(0, Math.min(100, parseInt(params.get('progress') || projectData.progress.toString(), 10)));
     const phase = params.get('phase') || projectData.currentPhase;
-    const eta = params.get('eta') || 'ETA: Dec 2024 · Weekly updates posted below';
+    const eta = params.get('eta') || 'ETA: Jan 2025 · Weekly updates posted below';
     const scope = params.get('scope') || 'Scope v1.0';
     const owner = params.get('owner') || 'Cochran Full Stack Solutions';
     const client = params.get('client') || 'INEX';
@@ -386,185 +382,8 @@
       projectData.updates.push({ date, update, status });
     }
 
-    // Auto-sync with development tracker
-    function syncWithDevTracker() {
-      // Check for updates from localStorage (set by dev-tracker.js)
-      const savedProgress = localStorage.getItem('inex-overall-progress');
-      const savedPhase = localStorage.getItem('inex-current-phase');
-      const savedUpdates = localStorage.getItem('inex-updates');
-      
-      if (savedProgress) {
-        const progress = parseInt(savedProgress);
-        document.querySelector('.ring').style.setProperty('--p', progress);
-        document.getElementById('pct').textContent = progress + '%';
-        document.getElementById('barFill').style.setProperty('--bar', progress + '%');
-        projectData.progress = progress;
-      }
-      
-      if (savedPhase) {
-        document.getElementById('phaseLabel').textContent = savedPhase;
-        projectData.currentPhase = savedPhase;
-        
-        // Update timeline steps
-        steps.forEach(s => {
-          const stepPhase = s.dataset.phase.toLowerCase();
-          const currentPhase = savedPhase.toLowerCase();
-          
-          s.classList.remove('active', 'complete');
-          
-          if (stepPhase === currentPhase) {
-            s.classList.add('active');
-          }
-        });
-      }
-      
-      if (savedUpdates) {
-        try {
-          const updates = JSON.parse(savedUpdates);
-          if (updates.length > 0) {
-            // Clear existing updates
-            const updatesTable = document.getElementById('updates');
-            updatesTable.innerHTML = '';
-            
-            // Add new updates (most recent first)
-            updates.slice(0, 10).forEach(update => {
-              const newRow = document.createElement('tr');
-              newRow.innerHTML = `
-                <td>${update.date}</td>
-                <td>${update.message}</td>
-                <td><span class="pill">${update.status}</span></td>
-              `;
-              updatesTable.appendChild(newRow);
-            });
-          }
-        } catch (error) {
-          console.error('Error parsing updates:', error);
-        }
-      }
-    }
-
-    // Listen for messages from development tracker
-    window.addEventListener('message', function(event) {
-      if (event.data.type === 'inex-status-update') {
-        const data = event.data.data;
-        
-        // Update progress
-        document.querySelector('.ring').style.setProperty('--p', data.overallProgress);
-        document.getElementById('pct').textContent = data.overallProgress + '%';
-        document.getElementById('barFill').style.setProperty('--bar', data.overallProgress + '%');
-        
-        // Update phase
-        document.getElementById('phaseLabel').textContent = data.currentPhase;
-        
-        // Update timeline
-        steps.forEach(s => {
-          const stepPhase = s.dataset.phase.toLowerCase();
-          const currentPhase = data.currentPhase.toLowerCase();
-          
-          s.classList.remove('active', 'complete');
-          
-          if (stepPhase === currentPhase) {
-            s.classList.add('active');
-          } else if (data.phases[stepPhase]?.status === 'complete') {
-            s.classList.add('complete');
-          }
-        });
-      }
-    });
-
-    // Auto-sync every 5 seconds
-    setInterval(syncWithDevTracker, 5000);
-    
-    // Initial sync
-    syncWithDevTracker();
-
-    // Git-based progress integration
-    async function syncWithGitProgress() {
-      try {
-        // Try to load live data from Vercel build
-        const response = await fetch('/inex-live-data.json');
-        if (response.ok) {
-          const liveData = await response.json();
-          gitProgressData = liveData;
-          lastGitSync = new Date();
-          
-          // Update UI with Git data
-          updateUIFromGitData(liveData);
-          console.log('✅ Git progress data synced:', liveData.currentPhase, liveData.overallProgress + '%');
-        }
-      } catch (error) {
-        // Fallback to localStorage if live data not available
-        const savedGitData = localStorage.getItem('inex-git-data');
-        if (savedGitData) {
-          try {
-            const gitData = JSON.parse(savedGitData);
-            gitProgressData = gitData;
-            updateUIFromGitData(gitData);
-            console.log('📱 Git progress loaded from localStorage');
-          } catch (e) {
-            console.warn('Could not parse saved Git data');
-          }
-        }
-      }
-    }
-
-    function updateUIFromGitData(gitData) {
-      if (!gitData) return;
-
-      // Update progress ring and bar
-      if (gitData.overallProgress !== undefined) {
-        document.querySelector('.ring').style.setProperty('--p', gitData.overallProgress);
-        document.getElementById('pct').textContent = gitData.overallProgress + '%';
-        document.getElementById('barFill').style.setProperty('--bar', gitData.overallProgress + '%');
-        projectData.progress = gitData.overallProgress;
-      }
-
-      // Update phase
-      if (gitData.currentPhase) {
-        document.getElementById('phaseLabel').textContent = gitData.currentPhase;
-        projectData.currentPhase = gitData.currentPhase;
-        
-        // Update timeline steps
-        const steps = Array.from(document.querySelectorAll('.step'));
-        steps.forEach(s => {
-          const stepPhase = s.dataset.phase.toLowerCase();
-          const currentPhase = gitData.currentPhase.toLowerCase();
-          
-          s.classList.remove('active', 'complete');
-          
-          if (stepPhase === currentPhase) {
-            s.classList.add('active');
-          } else if (gitData.phases && gitData.phases[stepPhase]?.status === 'complete') {
-            s.classList.add('complete');
-          }
-        });
-      }
-
-      // Update updates table if Git data has updates
-      if (gitData.updates && gitData.updates.length > 0) {
-        const updatesTable = document.getElementById('updates');
-        updatesTable.innerHTML = '';
-        
-        gitData.updates.slice(0, 10).forEach(update => {
-          const newRow = document.createElement('tr');
-          newRow.innerHTML = `
-            <td>${update.date}</td>
-            <td>${update.message} <small style="opacity:.7">(${update.commit})</small></td>
-            <td><span class="pill">${update.status}</span></td>
-          `;
-          updatesTable.appendChild(newRow);
-        });
-      }
-    }
-
-    // Sync with Git progress every 30 seconds
-    setInterval(syncWithGitProgress, 30000);
-    
-    // Initial Git sync
-    syncWithGitProgress();
-
     // Example: Add a new update (you can call this from console or add a form)
-    // addUpdate('Dec 18', 'New feature implemented', 'Complete');
+    // addUpdate('Dec 18', 'Requirements document drafted', 'Complete');
   </script>
 </body>
 </html>

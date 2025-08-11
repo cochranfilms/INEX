@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>INEX Systems Portal — Operations Dashboard</title>
-        <meta name="description" content="INEX Systems & Designs — Professional operations portal with light/dark modes, project management, and system monitoring. Live progress tracking enabled and tested." />
+<title>INEX Systems Portal — Phase 1: Discovery</title>
+        <meta name="description" content="INEX Systems & Designs — Professional operations portal in Phase 1: Discovery phase. Basic shell with project kickoff focus." />
 <link rel="icon" type="image/svg+xml" href="vite.svg" />
 <link rel="alternate icon" type="image/x-icon" href="vite.ico" />
 <style>
@@ -79,21 +79,8 @@
   html[data-theme="dark"] .table tr:nth-child(even) td{background:rgba(255,255,255,.03)}
   .span-4{grid-column:span 4}.span-6{grid-column:span 6}.span-8{grid-column:span 8}.span-12{grid-column:1/-1}
 
-  /* v2-only styles */
-  .kpis{display:grid;grid-template-columns:repeat(12,1fr);gap:1rem}
-  .kpi{grid-column:span 3;background:var(--panel);border:1px solid var(--border);border-radius:16px;padding:14px;box-shadow:var(--shadow)}
-  .kpi h3{margin:0 0 6px 0;font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.12em}
-  .kpi .val{display:flex;align-items:baseline;gap:.5rem;font-weight:900;font-size:26px}
-  .kpi .delta{font-size:12px;padding:.2rem .45rem;border-radius:999px}
-  .delta.up{background:#0f2d1d;color:#88f7b8;border:1px solid #1f6a3c}
-  .delta.down{background:#3b1016;color:#ff9fb0;border:1px solid #6e1b2c}
-  .pulse{background:linear-gradient(90deg, rgba(166,46,63,.22), rgba(255,178,0,.22));border:1px solid var(--border);border-radius:16px;padding:14px}
-  .icon-actions{display:grid;grid-template-columns:repeat(8,1fr);gap:10px}
-  .ia{display:flex;flex-direction:column;align-items:center;gap:8px;padding:12px;border-radius:14px;border:1px solid var(--border);background:rgba(255,255,255,.06);text-decoration:none;color:inherit;font-weight:800}
-  .ia svg{width:26px;height:26px}
-  .ia:hover{filter:brightness(1.1);transform:translateY(-1px)}
-  .v2head{display:flex;align-items:center;gap:.75rem;margin:-.25rem 0 1rem 0;padding:.75rem 1rem;border:1px solid var(--border);border-radius:14px;background:linear-gradient(180deg, rgba(166,46,63,.28), rgba(166,46,63,.12))}
-  .v2head img{height:26px}
+  .footer{color:#999;font-size:12px;text-align:center;padding:1.2rem}
+  html[data-theme="dark"] .footer{color:var(--muted)}
 
   /* Pitch overlay */
   .overlay{position:fixed;inset:0;z-index:90;display:none;background:rgba(0,0,0,.55)}
@@ -111,14 +98,9 @@
   .pitch-close{position:absolute;top:8px;right:8px;background:#fff;border:1px solid #eee;border-radius:10px;padding:8px 10px;font-weight:800;cursor:pointer}
   html[data-theme="dark"] .pitch-close{background:rgba(255,255,255,.08);color:#fff;border-color:var(--border)}
 
-  .footer{color:#999;font-size:12px;text-align:center;padding:1.2rem}
-  html[data-theme="dark"] .footer{color:var(--muted)}
-
   @media (max-width:1000px){
     .wrap{grid-template-columns:1fr}
     .span-4,.span-6,.span-8{grid-column:1/-1}
-    .kpi{grid-column:span 6}
-    .icon-actions{grid-template-columns:repeat(4,1fr)}
     .pitch-grid{grid-template-columns:1fr}
   }
 </style>
@@ -128,11 +110,11 @@
   <div class="brand">
     <img src="inex-logo.png" alt="INEX Systems & Designs Logo" />
     <span>INEX Systems Portal</span>
-            <small>· Operations Portal</small>
+            <small>· Phase 1: Discovery</small>
   </div>
   <div class="spacer"></div>
-  <button class="pitch-btn" id="openPitch">📋 System Overview</button>
-  <a class="toggle" id="themeToggle" href="#"><span class="dot"></span><span id="themeLabel">2.0 Dark</span></a>
+  <button class="pitch-btn" id="openPitch">📋 Project Overview</button>
+  <a class="toggle" id="themeToggle" href="#"><span class="dot"></span><span id="themeLabel">1.0 Light</span></a>
 </header>
 
 <div class="wrap">
@@ -141,90 +123,56 @@
       <h3>Navigation</h3>
       <a href="#/dashboard" data-route="dashboard" class="active">🏠 Dashboard</a>
       <a href="#/projects"  data-route="projects">📁 Projects</a>
-      <a href="#/jobs"      data-route="jobs">🗓️ Jobs &amp; Scheduling</a>
-      <a href="#/inventory" data-route="inventory">📦 Inventory</a>
-      <a href="#/rma"       data-route="rma">↩️ RMA &amp; Warranties</a>
-      <a href="#/slas"      data-route="slas">⏱️ SLAs &amp; Performance</a>
-      <a href="#/knowledge" data-route="knowledge">📚 Knowledge Base</a>
-      <a href="#/clients"   data-route="clients">👥 Clients</a>
-      <a href="#/careers"   data-route="careers">🧰 Careers</a>
-      <a href="#/settings"  data-route="settings">⚙️ Settings</a>
+      <a href="#/planning"  data-route="planning">📋 Planning</a>
+      <a href="#/status"    data-route="status">📊 Status</a>
     </nav>
   </aside>
 
   <main id="view"></main>
 </div>
 
-<!-- Pitch Overlay (scrollable) -->
+<!-- Project Overview Overlay -->
 <div class="overlay" id="pitchOverlay" aria-hidden="true">
   <div class="pitch" role="dialog" aria-modal="true" aria-labelledby="pitchTitle">
     <button class="pitch-close" id="closePitch">✕ Close</button>
     <div class="pitch-head">
       <img src="inex-logo.png" alt="INEX Logo">
-      <h2 id="pitchTitle" style="margin:0;font-size:18px;">INEX Systems Portal — Overview</h2>
-              <span style="opacity:.85;font-weight:700;margin-left:.5rem">Operations Dashboard</span>
+      <h2 id="pitchTitle" style="margin:0;font-size:18px;">INEX Systems Portal — Phase 1</h2>
+              <span style="opacity:.85;font-weight:700;margin-left:.5rem">Discovery Phase</span>
     </div>
     <div class="pitch-scroll">
       <div class="pitch-grid">
         <div class="p-card">
-          <div class="p-head">Navigation Map</div>
-          <div class="p-body" style="padding:0">
-            <svg viewBox="0 0 1100 520" width="100%" aria-label="Navigation Map">
-              <defs>
-                <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
-                  <path d="M 0 0 L 10 5 L 0 10 z" fill="#A62E3F"></path>
-                </marker>
-                <linearGradient id="nodeGrad" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stop-color="white" stop-opacity=".95"/><stop offset="100%" stop-color="#f6f6f6" stop-opacity=".95"/>
-                </linearGradient>
-              </defs>
-              <style>.n{fill:url(#nodeGrad);stroke:#d9d9d9;stroke-width:1.2}.t{font: 600 12px system-ui; fill:#111}.title{font: 700 16px system-ui; fill:#A62E3F}.sub{font: 500 12px system-ui; fill:#666}</style>
-              <text x="20" y="28" class="title">INEX Portal — App Flow</text>
-              <text x="20" y="46" class="sub">Topbar toggle → Router → Feature views; charts = inline SVG; theme in local storage</text>
-              <rect class="n" x="60" y="80"  rx="10" ry="10" width="220" height="48"></rect><text class="t" x="170" y="110" text-anchor="middle">Topbar + Theme Toggle</text>
-              <rect class="n" x="360" y="80" rx="10" ry="10" width="200" height="48"></rect><text class="t" x="460" y="110" text-anchor="middle">Router (hashchange)</text>
-              <rect class="n" x="640" y="80" rx="10" ry="10" width="220" height="48"></rect><text class="t" x="750" y="110" text-anchor="middle">Local Storage (theme)</text>
-              <rect class="n" x="40"  y="200" rx="10" ry="10" width="200" height="44"></rect><text class="t" x="140" y="228" text-anchor="middle">Dashboard</text>
-              <rect class="n" x="260" y="200" rx="10" ry="10" width="200" height="44"></rect><text class="t" x="360" y="228" text-anchor="middle">Projects</text>
-              <rect class="n" x="480" y="200" rx="10" ry="10" width="200" height="44"></rect><text class="t" x="580" y="228" text-anchor="middle">Jobs & Scheduling</text>
-              <rect class="n" x="700" y="200" rx="10" ry="10" width="200" height="44"></rect><text class="t" x="800" y="228" text-anchor="middle">Inventory</text>
-              <rect class="n" x="920" y="200" rx="10" ry="10" width="140" height="44"></rect><text class="t" x="990" y="228" text-anchor="middle">Settings</text>
-              <rect class="n" x="40"  y="290" rx="10" ry="10" width="200" height="44"></rect><text class="t" x="140" y="318" text-anchor="middle">RMA & Warranties</text>
-              <rect class="n" x="260" y="290" rx="10" ry="10" width="200" height="44"></rect><text class="t" x="360" y="318" text-anchor="middle">SLAs & Performance</text>
-              <rect class="n" x="480" y="290" rx="10" ry="10" width="200" height="44"></rect><text class="t" x="580" y="318" text-anchor="middle">Knowledge Base</text>
-              <rect class="n" x="700" y="290" rx="10" ry="10" width="200" height="44"></rect><text class="t" x="800" y="318" text-anchor="middle">Clients</text>
-              <rect class="n" x="920" y="290" rx="10" ry="10" width="140" height="44"></rect><text class="t" x="990" y="318" text-anchor="middle">Careers</text>
-              <line x1="280" y1="104" x2="360" y2="104" stroke="#A62E3F" stroke-width="2.2" marker-end="url(#arrow)"></line>
-              <line x1="560" y1="104" x2="640" y2="104" stroke="#A62E3F" stroke-width="2.2" marker-end="url(#arrow)"></line>
-              <line x1="460" y1="128" x2="140" y2="200" stroke="#A62E3F" stroke-width="2.2" marker-end="url(#arrow)"></line>
-              <line x1="460" y1="128" x2="360" y2="200" stroke="#A62E3F" stroke-width="2.2" marker-end="url(#arrow)"></line>
-              <line x1="460" y1="128" x2="580" y2="200" stroke="#A62E3F" stroke-width="2.2" marker-end="url(#arrow)"></line>
-              <line x1="460" y1="128" x2="800" y2="200" stroke="#A62E3F" stroke-width="2.2" marker-end="url(#arrow)"></line>
-              <line x1="460" y1="128" x2="990" y2="200" stroke="#A62E3F" stroke-width="2.2" marker-end="url(#arrow)"></line>
-              <line x1="140" y1="244" x2="140" y2="290" stroke="#A62E3F" stroke-width="2.2" marker-end="url(#arrow)"></line>
-              <line x1="360" y1="244" x2="360" y2="290" stroke="#A62E3F" stroke-width="2.2" marker-end="url(#arrow)"></line>
-              <line x1="580" y1="244" x2="580" y2="290" stroke="#A62E3F" stroke-width="2.2" marker-end="url(#arrow)"></line>
-              <line x1="800" y1="244" x2="800" y2="290" stroke="#A62E3F" stroke-width="2.2" marker-end="url(#arrow)"></line>
-            </svg>
+          <div class="p-head">Phase 1: Discovery</div>
+          <div class="p-body">
+            <h4 style="margin:.2rem 0 .5rem 0">🎯 Current Focus</h4>
+            <ul class="list">
+              <li><strong>Project Kickoff:</strong> Initial requirements gathering and stakeholder alignment</li>
+              <li><strong>Scope Definition:</strong> Understanding INEX's operational needs and system requirements</li>
+              <li><strong>Brand Research:</strong> Exploring design direction and visual identity</li>
+              <li><strong>Timeline Planning:</strong> Creating project roadmap and milestone structure</li>
+            </ul>
+            <h4 style="margin:1rem 0 .5rem 0">📋 Next Steps</h4>
+            <ul class="list">
+              <li>Complete stakeholder interviews and requirements documentation</li>
+              <li>Define technical architecture and system requirements</li>
+              <li>Create project timeline with key milestones</li>
+              <li>Obtain stakeholder approval to proceed to Phase 2</li>
+            </ul>
           </div>
         </div>
         <div class="p-card">
-          <div class="p-head">What We’ve Done · What You Get · What 2.0 Enables</div>
+          <div class="p-head">Project Overview</div>
           <div class="p-body">
-            <h4 style="margin:.2rem 0 .5rem 0">✅ Core Features</h4>
+            <h4 style="margin:.2rem 0 .5rem 0">🏗️ What We're Building</h4>
             <ul class="list">
-              <li>Professional INEX branding with <strong>Light 1.0 / Dark 2.0</strong> themes.</li>
-              <li>Complete navigation across Projects, Jobs, Inventory, RMA, SLAs, Knowledge, Clients, Careers, Settings.</li>
-              <li>Interactive dashboard with KPI widgets and operational overview.</li>
-            </ul>
-            <h4 style="margin:1rem 0 .5rem 0">💡 Business Benefits</h4>
-            <ul class="list">
-              <li>Unified portal experience for faster operations and training.</li>
-              <li>Professional interface that matches ClickShare's quality standards.</li>
-              <li>Ready for enterprise deployment and team adoption.</li>
+              <li><strong>Operations Portal:</strong> Centralized dashboard for INEX team operations</li>
+              <li><strong>Project Management:</strong> Tools for tracking installations and client projects</li>
+              <li><strong>Inventory System:</strong> Management of ClickShare units and equipment</li>
+              <li><strong>Client Portal:</strong> Interface for client access and support</li>
             </ul>
             <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:8px">
-              <a class="btn secondary" href="https://inex.cochranfilms.com/?utm_source=overview&utm_medium=overlay&utm_campaign=inex_portal" target="_blank">🌐 Open Portal</a>
+              <a class="btn secondary" href="status.html" target="_blank">📊 View Status</a>
               <a class="btn ghost" href="#/dashboard">Back to Dashboard</a>
             </div>
           </div>
@@ -235,383 +183,172 @@
 </div>
 
   <script>
-  /* SVG helpers */
-  const spark = (points, stroke="#7cf5ff") => `
-    <svg class="spark" viewBox="0 0 100 30" preserveAspectRatio="none" aria-hidden="true">
-      <polyline fill="none" stroke="${stroke}" stroke-width="2" points="${points}" />
-      <linearGradient id="g1" x1="0" y1="0" x2="0" y2="1">
-        <stop offset="0%" stop-color="${stroke}" stop-opacity=".28"/><stop offset="100%" stop-color="${stroke}" stop-opacity="0"/>
-      </linearGradient>
-      <polygon fill="url(#g1)" points="${points} 100,30 0,30"/>
-    </svg>`;
-  const bars = (values, color="#FFB200") => {
-    const gap = 6, bw = (100 - gap*(values.length+1))/values.length;
-    let x = gap, rects='';
-    values.forEach(v=>{
-      const h = Math.max(4, Math.min(100, v));
-      rects += `<rect x="${x}" y="${100-h}" width="${bw}" height="${h}" rx="2" fill="${color}" opacity=".9"/>`;
-      x += bw + gap;
-    });
-    return `<svg class="bars" viewBox="0 0 100 100" preserveAspectRatio="none">${rects}</svg>`;
-  };
-
-  /* Views: 1.0 (light) dashboard */
-  const V1 = {
+  /* Views: Phase 1 - Discovery Focus */
+  const Views = {
     dashboard: `
-      <div class="header"><h1>Welcome, INEX Team</h1><span class="muted">Operations Dashboard — Real-time project and system status</span></div>
+      <div class="header"><h1>Welcome to INEX Systems Portal</h1><span class="muted">Phase 1: Discovery — Project kickoff and requirements gathering</span></div>
       <section class="cards">
-        <article class="card span-4">
-          <div class="head">Quick Actions</div>
-          <div class="body">
-            <div style="display:grid;gap:.6rem">
-              <a class="btn primary" href="#/projects">View Projects</a>
-              <a class="btn secondary" href="#/jobs">Schedule Jobs</a>
-              <a class="btn primary" href="#/inventory">Check Inventory</a>
-              <a class="btn secondary" href="#/rma">RMA Requests</a>
-            </div>
-          </div>
-        </article>
-        <article class="card span-4">
-          <div class="head">System Status</div>
-          <div class="body">
-            <ul class="list">
-              <li><strong>All Systems</strong> — Operational ✅</li>
-              <li><strong>ClickShare Network</strong> — Online ✅</li>
-              <li><strong>Audio Systems</strong> — Operational ✅</li>
-              <li><strong>Support Tickets</strong> — 3 Active</li>
-            </ul>
-          </div>
-        </article>
-        <article class="card span-4">
-          <div class="head">Recent Activity</div>
-          <div class="body">
-            <ul class="list">
-              <li>RICE Auditorium — ClickShare installed</li>
-              <li>Room 2C — Audio tuning completed</li>
-              <li>New support ticket — Mic echo in 3B</li>
-              <li>Inventory update — 6 CX-50 units available</li>
-            </ul>
-          </div>
-        </article>
-        <article class="card span-8">
-          <div class="head">Operations Overview</div>
-          <div class="body" style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">
-            <div style="border:1px solid var(--border);border-radius:12px;padding:1rem">
-              <span class="pill">Active Projects</span>
-              <ul class="list" style="margin-top:.5rem">
-                <li>RICE Auditorium modernization</li>
-                <li>Room 2C audio tuning</li>
-                <li>ClickShare network expansion</li>
-              </ul>
-            </div>
-            <div style="border:1px solid var(--border);border-radius:12px;padding:1rem">
-              <span class="pill">This Week</span>
-              <ul class="list" style="margin-top:.5rem">
-                <li>3 scheduled installations</li>
-                <li>2 support tickets</li>
-                <li>Inventory audit</li>
-              </ul>
-            </div>
-          </div>
-        </article>
-        <article class="card span-4">
-          <div class="head">Support & Resources</div>
-          <div class="body" style="display:grid;gap:.6rem">
-            <a class="btn secondary" href="#/knowledge">Knowledge Base</a>
-            <a class="btn primary" href="#/rma">RMA Requests</a>
-            <a class="btn secondary" href="#/slas">SLA Dashboard</a>
-          </div>
-        </article>
-        <article class="card span-12">
-          <div class="head">Current Operations</div>
+        <article class="card span-6">
+          <div class="head">Current Phase: Discovery</div>
           <div class="body">
             <div style="display:flex;align-items:center;gap:1rem;margin-bottom:1rem">
-              <div style="width:100px;height:100px;border-radius:50%;background:conic-gradient(#A62E3F 15%, #e6e6e6 0);display:grid;place-items:center;border:3px solid #f0f0f0">
-                <strong style="font-size:18px">15%</strong>
+              <div style="width:80px;height:80px;border-radius:50%;background:conic-gradient(#A62E3F 5%, #e6e6e6 0);display:grid;place-items:center;border:3px solid #f0f0f0">
+                <strong style="font-size:16px">5%</strong>
               </div>
               <div>
-                <strong>Current Focus: Project Setup</strong><br>
-                <small class="muted">Requirements gathering and system planning</small>
+                <strong>Project Status: Discovery Phase</strong><br>
+                <small class="muted">Requirements gathering and project planning in progress</small>
               </div>
             </div>
             <div style="background:#f8f8f8;border-radius:8px;padding:.8rem;border:1px solid var(--border)">
-              <strong>Status:</strong> All systems operational. Projects progressing on schedule.
+              <strong>Focus:</strong> Understanding INEX's operational needs, defining project scope, and creating implementation timeline.
             </div>
           </div>
         </article>
-      </section>
-      <p class="footer">INEX Systems Portal • Operations Dashboard • © Cochran Full Stack Solutions</p>
-    `
-  };
-
-  /* Views: 2.0 (dark) dashboard — Clean business focus */
-  const V2 = {
-    dashboard: `
-      <div class="v2head"><img src="inex-logo.png" alt="INEX"><strong>INEX Operations</strong><span class="muted">• Real-time dashboard • Live project tracking</span></div>
-
-      <!-- KPI Tiles -->
-      <section class="kpis">
-        <div class="kpi">
-          <h3>Active Projects</h3>
-          <div class="val">3 <span class="delta up">Active</span></div>
-          <div id="kpi-proj" style="margin-top:6px"></div>
-        </div>
-        <div class="kpi">
-          <h3>Support Tickets</h3>
-          <div class="val">3 <span class="delta down">Open</span></div>
-          <div id="kpi-tix" style="margin-top:6px"></div>
-        </div>
-        <div class="kpi">
-          <h3>System Status</h3>
-          <div class="val">100% <span class="delta up">Online</span></div>
-          <div id="kpi-sla" style="margin-top:6px"></div>
-        </div>
-        <div class="kpi">
-          <h3>This Week</h3>
-          <div class="val">5 <span class="delta up">Scheduled</span></div>
-          <div id="kpi-inst" style="margin-top:6px"></div>
-        </div>
-      </section>
-
-      <!-- Operations Overview -->
-      <section class="card span-12" style="margin-top:1rem">
-        <div class="head">Operations Overview</div>
-        <div class="body">
-          <div class="pulse" id="pulse-bars"></div>
-          <div style="margin-top:12px;display:flex;align-items:center;gap:12px">
-            <div style="width:80px;height:80px;border-radius:50%;background:conic-gradient(#A62E3F 15%, rgba(255,255,255,.12) 0);display:grid;place-items:center;border:2px solid var(--border)">
-              <strong style="font-size:16px;color:var(--accent)">15%</strong>
-            </div>
-            <div>
-              <strong>Current Focus:</strong> Project setup and requirements gathering<br>
-              <small class="muted">All systems operational and projects on schedule</small>
+        <article class="card span-6">
+          <div class="head">Quick Actions</div>
+          <div class="body">
+            <div style="display:grid;gap:.6rem">
+              <a class="btn primary" href="#/projects">View Project Plan</a>
+              <a class="btn secondary" href="#/planning">Planning Documents</a>
+              <a class="btn primary" href="#/status">Project Status</a>
+              <a class="btn secondary" href="status.html" target="_blank">External Status</a>
             </div>
           </div>
-        </div>
-      </section>
-
-      <!-- Quick Actions -->
-      <section class="card span-12" style="margin-top:1rem">
-        <div class="head">Quick Actions</div>
-        <div class="body">
-          <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(200px, 1fr));gap:1rem">
-            <a class="btn primary" href="#/projects">📁 View Projects</a>
-            <a class="btn secondary" href="#/jobs">🗓️ Schedule Jobs</a>
-            <a class="btn primary" href="#/inventory">📦 Check Inventory</a>
-            <a class="btn secondary" href="#/rma">↩️ RMA Requests</a>
-            <a class="btn primary" href="#/knowledge">📚 Knowledge Base</a>
-            <a class="btn secondary" href="#/slas">⏱️ SLA Dashboard</a>
+        </article>
+        <article class="card span-8">
+          <div class="head">Discovery Phase Objectives</div>
+          <div class="body">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">
+              <div style="border:1px solid var(--border);border-radius:12px;padding:1rem">
+                <span class="pill">Requirements</span>
+                <ul class="list" style="margin-top:.5rem">
+                  <li>Stakeholder interviews</li>
+                  <li>Operational workflow analysis</li>
+                  <li>System requirements definition</li>
+                </ul>
+              </div>
+              <div style="border:1px solid var(--border);border-radius:12px;padding:1rem">
+                <span class="pill">Planning</span>
+                <ul class="list" style="margin-top:.5rem">
+                  <li>Project timeline creation</li>
+                  <li>Resource allocation planning</li>
+                  <li>Risk assessment</li>
+                </ul>
+              </div>
+            </div>
           </div>
-        </div>
+        </article>
+        <article class="card span-4">
+          <div class="head">Project Info</div>
+          <div class="body">
+            <ul class="list">
+              <li><strong>Client:</strong> INEX Systems & Designs</li>
+              <li><strong>Phase:</strong> 1 - Discovery</li>
+              <li><strong>Progress:</strong> 5%</li>
+              <li><strong>ETA:</strong> Jan 2025</li>
+            </ul>
+          </div>
+        </article>
       </section>
-
-      <p class="footer">INEX Systems Portal • Operations Dashboard • © Cochran Full Stack Solutions</p>
-    `
-  };
-
-  /* Helper to build icon action tiles */
-  function iconAction(href, path, label){
-    return `
-      <a class="ia" href="${href}">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="${path}" />
-        </svg>
-        ${label}
-      </a>
-    `;
-  }
-
-  /* Other (shared) views — same for both modes */
-  const Shared = {
+      <p class="footer">INEX Systems Portal • Phase 1: Discovery • © Cochran Full Stack Solutions</p>
+    `,
     projects: `
-      <div class="header"><h1>Projects</h1><span class="muted">Installations &amp; rollouts by site</span></div>
-      <div class="card" style="margin-bottom:1rem">
-        <div class="body" style="display:flex;gap:.5rem;flex-wrap:wrap">
-          <input placeholder="Search projects (RICE, Auditorium, Room 2C…)" />
-          <select><option>Status: All</option><option>Planned</option><option>In Progress</option><option>Complete</option></select>
-          <select><option>Site: All</option><option>RICE</option><option>HQ</option></select>
-          <a class="btn primary" href="#">New Project</a>
-        </div>
-      </div>
-      <div class="cards">
-        <article class="card span-6">
-          <div class="head">RICE · Auditorium — Modernization</div>
-          <div class="body">
-            <div style="display:flex;gap:.5rem;flex-wrap:wrap"><span class="pill">Phase: Cabling</span><span class="pill">Owner: Team A</span><span class="pill">Due: Aug 28</span></div>
-            <ul class="list"><li>ClickShare base, dual 98&quot; displays</li><li>DSP &amp; ceiling mic arrays</li><li>Scene: <em>Town Hall</em></li></ul>
-            <div style="margin-top:.75rem"><a class="btn ghost" href="#">View Gantt</a> <a class="btn primary" href="#">Open</a></div>
-          </div>
-        </article>
-        <article class="card span-6">
-          <div class="head">RICE · Room 2C — Audio Tuning</div>
-          <div class="body">
-            <div style="display:flex;gap:.5rem;flex-wrap:wrap"><span class="pill">Phase: Commission</span><span class="pill">Owner: Team B</span><span class="pill">Due: Aug 13</span></div>
-            <ul class="list"><li>Mic placement &amp; DSP profile</li><li>ClickShare pairing verification</li><li>Preset: <em>VC Focus</em></li></ul>
-            <div style="margin-top:.75rem"><a class="btn ghost" href="#">Docs</a> <a class="btn primary" href="#">Open</a></div>
-          </div>
-        </article>
-      </div>
-    `,
-    jobs: `
-      <div class="header"><h1>Jobs &amp; Scheduling</h1><span class="muted">Dispatch board &amp; technician workload</span></div>
+      <div class="header"><h1>Project Planning</h1><span class="muted">Discovery phase planning and requirements gathering</span></div>
       <div class="cards">
         <article class="card span-8">
-          <div class="head">Weekly Dispatch</div>
+          <div class="head">Discovery Phase Plan</div>
           <div class="body">
             <table class="table">
-              <thead><tr><th>Job</th><th>Site</th><th>Team</th><th>Start</th><th>ETA</th><th>Priority</th><th>Status</th></tr></thead>
+              <thead><tr><th>Task</th><th>Status</th><th>Owner</th><th>Due Date</th><th>Notes</th></tr></thead>
               <tbody>
-                <tr><td>Audio Tuning — 2C</td><td>RICE</td><td>Team B</td><td>Wed 9:00a</td><td>Same Day</td><td><span class="pill">P2</span></td><td>Scheduled</td></tr>
-                <tr><td>ClickShare Dongle Replace</td><td>RICE</td><td>Team C</td><td>Thu 10:00a</td><td>Thu</td><td><span class="pill">P3</span></td><td>Queued</td></tr>
-                <tr><td>Auditorium Cabling</td><td>RICE</td><td>Team A</td><td>Daily 9:30a</td><td>Fri</td><td><span class="pill">P3</span></td><td>In Progress</td></tr>
+                <tr><td>Project kickoff meeting</td><td><span class="pill">In Progress</span></td><td>Project Team</td><td>Dec 15</td><td>Initial requirements gathering</td></tr>
+                <tr><td>Stakeholder interviews</td><td><span class="pill">Planned</span></td><td>Project Manager</td><td>Dec 20</td><td>Key personnel interviews</td></tr>
+                <tr><td>Requirements documentation</td><td><span class="pill">Planned</span></td><td>Business Analyst</td><td>Dec 25</td><td>Detailed requirements doc</td></tr>
+                <tr><td>Technical architecture</td><td><span class="pill">Planned</span></td><td>Technical Lead</td><td>Dec 30</td><td>System design & architecture</td></tr>
+                <tr><td>Project timeline</td><td><span class="pill">Planned</span></td><td>Project Manager</td><td>Jan 5</td><td>Complete project roadmap</td></tr>
               </tbody>
             </table>
           </div>
         </article>
         <article class="card span-4">
-          <div class="head">Create Ticket</div>
+          <div class="head">Phase 1 Deliverables</div>
           <div class="body">
-            <div style="display:flex;gap:.5rem;flex-wrap:wrap">
-              <input placeholder="Title (Mic echo 3B)" />
-              <select><option>Priority</option><option>P1</option><option selected>P2</option><option>P3</option></select>
-              <select><option>Assign</option><option>Team A</option><option selected>Team B</option><option>Team C</option></select>
-              <a class="btn primary" href="#">Add Ticket</a>
-            </div>
-            <p class="muted" style="margin-top:.75rem">Techs update status & upload photos via mobile.</p>
+            <ul class="list">
+              <li>Project requirements document</li>
+              <li>Technical architecture plan</li>
+              <li>Project timeline & milestones</li>
+              <li>Resource allocation plan</li>
+              <li>Risk assessment document</li>
+              <li>Stakeholder approval</li>
+            </ul>
           </div>
         </article>
       </div>
     `,
-    inventory: `
-      <div class="header"><h1>Inventory</h1><span class="muted">ClickShare units, cameras, mics, cables</span></div>
-      <div class="card" style="margin-bottom:1rem">
-        <div class="body" style="display:flex;gap:.5rem;flex-wrap:wrap">
-          <input placeholder="Search SKU or item (CX‑50, PTZ, DSP…)" />
-          <select><option>Type: All</option><option>ClickShare</option><option>Camera</option><option>Audio</option><option>Cabling</option></select>
-          <select><option>Location: All</option><option>Warehouse</option><option>RICE</option><option>Truck A</option></select>
-          <a class="btn primary" href="#">Add Item</a>
-        </div>
-      </div>
-      <table class="table">
-        <thead><tr><th>Item</th><th>SKU</th><th>Qty</th><th>Location</th><th>Status</th><th>Last Scan</th></tr></thead>
-        <tbody>
-          <tr><td>Barco ClickShare CX‑50</td><td>CX50‑BK</td><td>6</td><td>Warehouse</td><td><span class="pill">Ready</span></td><td>Aug 08</td></tr>
-          <tr><td>PTZ Camera 4K</td><td>PTZ‑4K‑PRO</td><td>3</td><td>Truck A</td><td><span class="pill">Low</span></td><td>Aug 07</td></tr>
-          <tr><td>Ceiling Mic Array</td><td>MIC‑ARR‑X</td><td>8</td><td>Warehouse</td><td><span class="pill">Ready</span></td><td>Aug 09</td></tr>
-        </tbody>
-      </table>
-    `,
-    rma: `
-      <div class="header"><h1>RMA &amp; Warranties</h1><span class="muted">Defects, replacements, and vendor workflows</span></div>
+    planning: `
+      <div class="header"><h1>Planning Documents</h1><span class="muted">Discovery phase planning and documentation</span></div>
       <div class="cards">
         <article class="card span-6">
-          <div class="head">Open RMAs</div>
+          <div class="head">Requirements Gathering</div>
           <div class="body">
-            <table class="table">
-              <thead><tr><th>RMA #</th><th>Item</th><th>Client/Room</th><th>Status</th><th>Raised</th></tr></thead>
-              <tbody>
-                <tr><td>RMA‑1027</td><td>ClickShare Button</td><td>RICE 1A</td><td><span class="pill">Awaiting Vendor</span></td><td>Aug 05</td></tr>
-                <tr><td>RMA‑1028</td><td>PTZ 4K</td><td>RICE 3B</td><td><span class="pill">Ship Device</span></td><td>Aug 08</td></tr>
-              </tbody>
-            </table>
+            <h4>Key Areas of Focus:</h4>
+            <ul class="list">
+              <li><strong>Operational Workflows:</strong> Current processes and pain points</li>
+              <li><strong>System Integration:</strong> Existing systems and data sources</li>
+              <li><strong>User Experience:</strong> Team member needs and preferences</li>
+              <li><strong>Scalability:</strong> Future growth and expansion plans</li>
+            </ul>
+            <div style="margin-top:1rem">
+              <a class="btn primary" href="#">Create Requirements Doc</a>
+            </div>
           </div>
         </article>
         <article class="card span-6">
-          <div class="head">Create RMA</div>
+          <div class="head">Technical Planning</div>
           <div class="body">
-            <div style="display:grid;gap:.5rem">
-              <input placeholder="Item/SKU" />
-              <input placeholder="Serial #" />
-              <select><option>Reason</option><option>Defective</option><option>Dead on Arrival</option><option>Warranty Replace</option></select>
-              <a class="btn primary" href="#">Generate RMA</a>
-              <p class="muted">Auto-email vendor with packing slip.</p>
+            <h4>Architecture Considerations:</h4>
+            <ul class="list">
+              <li><strong>Frontend:</strong> Modern web application framework</li>
+              <li><strong>Backend:</strong> API design and data management</li>
+              <li><strong>Database:</strong> Data structure and relationships</li>
+              <li><strong>Security:</strong> Authentication and authorization</li>
+            </ul>
+            <div style="margin-top:1rem">
+              <a class="btn secondary" href="#">Technical Specs</a>
             </div>
           </div>
         </article>
       </div>
     `,
-    slas: `
-      <div class="header"><h1>SLAs &amp; Performance</h1><span class="muted">Response &amp; resolution targets across sites</span></div>
+    status: `
+      <div class="header"><h1>Project Status</h1><span class="muted">Current progress and milestone tracking</span></div>
       <div class="cards">
-        <article class="card span-4">
-          <div class="head">This Week</div>
-          <div class="body"><ul class="list"><li>Avg Response: <strong>1h 12m</strong></li><li>Avg Resolution: <strong>6h 45m</strong></li><li>Tickets Met SLA: <strong>94%</strong></li></ul></div>
-        </article>
-        <article class="card span-8">
-          <div class="head">Recent Tickets</div>
+        <article class="card span-12">
+          <div class="head">Phase 1 Progress</div>
           <div class="body">
-            <table class="table">
-              <thead><tr><th>Ticket</th><th>Priority</th><th>Responded</th><th>Resolved</th><th>SLA</th></tr></thead>
-              <tbody><tr><td>Mic echo · 3B</td><td><span class="pill">P2</span></td><td>53m</td><td>4h 10m</td><td><span class="pill">Met</span></td></tr><tr><td>Dongle Replace · 1A</td><td><span class="pill">P3</span></td><td>1h 40m</td><td>6h 52m</td><td><span class="pill">Met</span></td></tr></tbody>
-            </table>
-          </div>
-        </article>
-      </div>
-    `,
-    knowledge: `
-      <div class="header"><h1>Knowledge Base</h1><span class="muted">Guides &amp; training</span></div>
-      <div class="cards">
-        <article class="card span-6">
-          <div class="head">ClickShare Quick‑Start</div>
-          <div class="body">
-            <ul class="list"><li>Tap preset → Connect → Share</li><li>Camera/mic select</li><li>Room etiquette tips</li></ul>
-            <div style="margin-top:.7rem"><a class="btn primary" href="#">Open Guide</a> <a class="btn ghost" href="#">Download PDF</a></div>
-          </div>
-        </article>
-        <article class="card span-6">
-          <div class="head">Troubleshooting Tree</div>
-          <div class="body"><p class="muted">Step‑by‑step for audio/video/network symptoms.</p><a class="btn primary" href="#">Open Troubleshooter</a></div>
-        </article>
-      </div>
-    `,
-    clients: `
-      <div class="header"><h1>Clients</h1><span class="muted">Organizations &amp; room inventories</span></div>
-      <table class="table">
-        <thead><tr><th>Client</th><th>Sites</th><th>Rooms</th><th>Tickets</th><th>Owner</th></tr></thead>
-        <tbody><tr><td>RICE</td><td>3</td><td>18</td><td>3</td><td>J. Carter</td></tr><tr><td>HQ Campus</td><td>1</td><td>6</td><td>0</td><td>M. Diaz</td></tr></tbody>
-      </table>
-    `,
-    careers: `
-      <div class="header"><h1>Careers</h1><span class="muted">Recruit AV technicians &amp; specialists</span></div>
-      <div class="cards">
-        <article class="card span-8">
-          <div class="head">Open Roles</div>
-          <div class="body">
-            <table class="table">
-              <thead><tr><th>Role</th><th>Type</th><th>Rate</th><th>Location</th><th>Status</th></tr></thead>
-              <tbody><tr><td>AV Installation Technician</td><td>Contract</td><td>$35–$55/hr</td><td>Atlanta</td><td><span class="pill">Accepting</span></td></tr><tr><td>Field Engineer (DSP)</td><td>Full‑time</td><td>$85k–$105k</td><td>Atlanta</td><td><span class="pill">Pipeline</span></td></tr></tbody>
-            </table>
-          </div>
-        </article>
-        <article class="card span-4">
-          <div class="head">Post a Role</div>
-          <div class="body">
-            <div style="display:flex;gap:.5rem;flex-wrap:wrap">
-              <input placeholder="Role title" /><select><option>Type</option><option>Contract</option><option>Full‑time</option></select><input placeholder="Rate / Salary" />
-              <a class="btn primary" href="#">Publish</a>
+            <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin-bottom:1rem">
+              <div style="text-align:center;padding:1rem;border:1px solid var(--border);border-radius:12px">
+                <div style="font-size:24px;font-weight:900;color:var(--maroon)">5%</div>
+                <div style="font-size:12px;color:var(--muted)">Overall Progress</div>
+              </div>
+              <div style="text-align:center;padding:1rem;border:1px solid var(--border);border-radius:12px">
+                <div style="font-size:24px;font-weight:900;color:var(--accent)">1/5</div>
+                <div style="font-size:12px;color:var(--muted)">Tasks Complete</div>
+              </div>
+              <div style="text-align:center;padding:1rem;border:1px solid var(--border);border-radius:12px">
+                <div style="font-size:24px;font-weight:900;color:var(--muted)">Dec 15</div>
+                <div style="font-size:12px;color:var(--muted)">Phase Start</div>
+              </div>
+              <div style="text-align:center;padding:1rem;border:1px solid var(--border);border-radius:12px">
+                <div style="font-size:24px;font-weight:900;color:var(--muted)">Jan 5</div>
+                <div style="font-size:12px;color:var(--muted)">Phase End</div>
+              </div>
+            </div>
+            <div style="background:#f8f8f8;border-radius:8px;padding:1rem;border:1px solid var(--border)">
+              <strong>Current Status:</strong> Project kickoff initiated. Team is conducting initial requirements gathering and stakeholder interviews. Next milestone is completion of requirements documentation by Dec 25.
             </div>
           </div>
-        </article>
-      </div>
-    `,
-    settings: `
-      <div class="header"><h1>Settings</h1><span class="muted">Branding &amp; preferences</span></div>
-      <div class="cards">
-        <article class="card span-6">
-          <div class="head">Brand</div>
-          <div class="body">
-            <div style="display:flex;gap:.5rem;flex-wrap:wrap">
-              <input placeholder="Company Name" value="INEX Systems & Designs" />
-              <input placeholder="Primary Color" value="#A62E3F" />
-              <input placeholder="Accent Color" value="#FFB200" />
-              <a class="btn primary" href="#">Save</a>
-            </div>
-            <p class="muted" style="margin-top:.6rem">Logo appears in the header. Colors cascade to UI tokens.</p>
-          </div>
-        </article>
-        <article class="card span-6">
-          <div class="head">Notifications</div>
-          <div class="body"><ul class="list"><li><label><input type="checkbox" checked> Ticket SLA risk alerts</label></li><li><label><input type="checkbox" checked> Inventory low‑stock alerts</label></li><li><label><input type="checkbox"> Daily project digest</label></li></ul></div>
         </article>
       </div>
     `
@@ -621,34 +358,10 @@
   const links = Array.from(document.querySelectorAll('.nav a'));
   function setActive(route){ links.forEach(a => a.classList.toggle('active', a.dataset.route === route)); }
 
-  function currentDash(){
-    const dark = document.documentElement.getAttribute('data-theme') === 'dark';
-    return dark ? V2.dashboard : V1.dashboard;
-  }
   function render(){
     const route = location.hash.replace('#/','') || 'dashboard';
     setActive(route);
-    if(route === 'dashboard'){
-      view.innerHTML = currentDash();
-      // inject charts
-      const themeDark = document.documentElement.getAttribute('data-theme') === 'dark';
-      // V1 charts - Phase 1 development workflow
-      const sp1 = document.getElementById('spark-projects');
-      if(sp1) sp1.innerHTML = spark("0,15 20,18 40,16 60,20 80,15 100,15", themeDark ? '#7cf5ff' : '#A62E3F');
-      const barsWrap = document.getElementById('bars-tickets');
-      if(barsWrap) barsWrap.innerHTML = bars([15,18,16,20,15,15,15], themeDark ? '#7cf5ff' : '#A62E3F');
-      const spSla = document.getElementById('spark-sla');
-      if(spSla) spSla.innerHTML = spark("0,15 20,18 40,16 60,20 80,15 100,15", themeDark ? '#FFB200' : '#7c2330');
-
-      // V2 charts - Phase 1 development workflow
-      const kp = document.getElementById('kpi-proj'); if(kp) kp.innerHTML = spark("0,15 10,18 20,16 30,20 40,15 50,15 60,18 70,16 80,20 90,15 100,15","#7cf5ff");
-      const kt = document.getElementById('kpi-tix');  if(kt) kt.innerHTML = spark("0,15 20,18 40,20 60,18 80,15 100,15","#ff99aa");
-      const ks = document.getElementById('kpi-sla');  if(ks) ks.innerHTML = spark("0,15 20,18 40,16 60,18 80,15 100,15","#c0f57c");
-      const ki = document.getElementById('kpi-inst'); if(ki) ki.innerHTML = spark("0,15 25,18 50,16 75,18 100,15","#ffd97c");
-      const pulse = document.getElementById('pulse-bars'); if(pulse) pulse.innerHTML = bars([15,18,16,20,15,18,16,20,15,18], "#FFB200");
-    } else {
-      view.innerHTML = Shared[route] || V1.dashboard;
-    }
+    view.innerHTML = Views[route] || Views.dashboard;
   }
   window.addEventListener('hashchange', render);
   window.addEventListener('load', render);
@@ -665,10 +378,9 @@
     root.setAttribute('data-theme', next);
     localStorage.setItem('inex-theme', next);
     label.textContent = next === 'dark' ? '1.0 Light' : '2.0 Dark';
-    render(); // re-render with the correct dashboard variant
   });
 
-  /* Pitch overlay controls */
+  /* Project overview overlay controls */
   const overlay = document.getElementById('pitchOverlay');
   const openPitch = document.getElementById('openPitch');
   const closePitch = document.getElementById('closePitch');
