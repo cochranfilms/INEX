@@ -1,1 +1,17 @@
-[]
+{
+  "messages": [
+    {
+      "id": "1754951075644",
+      "name": "We gone see",
+      "text": "High Hopes",
+      "email": "test@example.com",
+      "priority": "normal",
+      "category": "client-feedback",
+      "timestamp": "2025-08-11T22:24:35.644Z",
+      "status": "new",
+      "read": false,
+      "responded": false
+    }
+  ],
+  "lastUpdated": "2025-08-11T23:25:00.000Z"
+}
