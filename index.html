@@ -936,7 +936,7 @@
     try {
       // Always try the API endpoint first (both local and production)
       console.log('Loading messages from API endpoint');
-      const response = await fetch(MESSAGES_API, { 
+      const response = await fetch(API_MESSAGES, { 
         cache: 'no-store',
         headers: { 'Content-Type': 'application/json' }
       });
@@ -1007,98 +1007,8 @@
       </div>
     `).join('');
   }
-              justify-content:center;
-              color:white;
-              font-weight:700;
-              font-size:14px;
-            ">${(msg.name || 'A').charAt(0).toUpperCase()}</div>
-            <div>
-              <strong style="font-size:14px;color:var(--panel-ink);font-weight:700">${msg.name || 'Anonymous'}</strong>
-              <div style="font-size:11px;color:var(--muted);margin-top:2px">${formatTimestamp(msg.timestamp)}</div>
-            </div>
-          </div>
-          <div style="
-            padding:4px 8px;
-            background:rgba(166,46,63,.1);
-            border:1px solid rgba(166,46,63,.2);
-            border-radius:6px;
-            font-size:11px;
-            color:var(--maroon);
-            font-weight:600;
-          ">${msg.priority || 'normal'}</div>
-        </div>
-        
-        <div style="
-          font-size:14px;
-          line-height:1.5;
-          color:var(--panel-ink);
-          margin-bottom:8px;
-        ">${msg.text}</div>
-        
-        ${msg.responses && msg.responses.length > 0 ? `
-          <div style="
-            margin-top:12px;
-            padding:12px;
-            background:rgba(255,178,0,.08);
-            border:1px solid rgba(255,178,0,.2);
-            border-radius:8px;
-            border-left:4px solid var(--accent);
-          ">
-            <div style="font-size:12px;color:var(--accent);font-weight:700;margin-bottom:4px">💬 Response from Development Team</div>
-            <div style="font-size:13px;color:var(--panel-ink);line-height:1.4">${msg.responses[msg.responses.length - 1].text}</div>
-            <div style="font-size:11px;color:var(--muted);margin-top:6px">${formatTimestamp(msg.responses[msg.responses.length - 1].timestamp)}</div>
-          </div>
-        ` : ''}
-        
-        <div style="
-          margin-top:12px;
-          padding-top:8px;
-          border-top:1px solid var(--border);
-          display:flex;
-          gap:8px;
-          justify-content:flex-end;
-        ">
-          <button onclick="markMessageRead()" style="
-            padding:6px 12px;
-            border:1px solid var(--border);
-            border-radius:6px;
-            background:var(--panel);
-            color:var(--muted);
-            font-size:11px;
-            cursor:pointer;
-            transition:all 0.2s ease;
-          ">Mark Read</button>
-          <button onclick="addResponse('${msg.id}')" style="
-            padding:6px 12px;
-            border:1px solid var(--maroon);
-            border-radius:6px;
-            background:var(--maroon);
-            color:white;
-            font-size:11px;
-            cursor:pointer;
-            transition:all 0.2s ease;
-          ">Respond</button>
-        </div>
-      </div>
-    `).join('');
-  }
 
-  function formatTimestamp(timestamp) {
-    if (!timestamp) return 'Just now';
-    
-    try {
-      const date = new Date(timestamp);
-      const now = new Date();
-      const diff = now - date;
-      
-      if (diff < 60000) return 'Just now';
-      if (diff < 3600000) return `${Math.floor(diff / 60000)}m ago`;
-      if (diff < 86400000) return `${Math.floor(diff / 3600000)}h ago`;
-      return date.toLocaleDateString();
-    } catch (e) {
-      return timestamp;
-    }
-  }
+
 
   function refreshMessages() {
     console.log('🔄 Refreshing messages...');
@@ -1275,23 +1185,11 @@
   const charCount = document.getElementById('charCount');
   const githubPagesNotice = document.getElementById('githubPagesNotice');
 
-  // API endpoint for messages - detect development vs production
-  const isDev = window.location.hostname === 'localhost' || 
-                window.location.hostname === '127.0.0.1' ||
-                window.location.port !== '' ||
-                window.location.protocol === 'file:';
-  
-  const API_BASE = isDev ? 'http://localhost:3000' : window.location.origin;
+  // Use existing API configuration from above
   const MESSAGES_API = `${API_BASE}/api/messages`;
 
   // Debug logging for API configuration
   console.log('🔍 Index Page API Configuration:');
-  console.log('  Hostname:', window.location.hostname);
-  console.log('  Port:', window.location.port);
-  console.log('  Protocol:', window.location.protocol);
-  console.log('  Origin:', window.location.origin);
-  console.log('  isDev:', isDev);
-  console.log('  API_BASE:', API_BASE);
   console.log('  MESSAGES_API:', MESSAGES_API);
 
   // Update character count
