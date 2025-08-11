@@ -1,0 +1,83 @@
+name: Messages Workflow
+
+on:
+  workflow_dispatch:
+    inputs:
+      name:
+        description: 'Sender name'
+        required: false
+        type: string
+        default: 'Anonymous'
+      text:
+        description: 'Message text'
+        required: true
+        type: string
+      email:
+        description: 'Sender email'
+        required: false
+        type: string
+      priority:
+        description: 'Message priority'
+        required: false
+        type: string
+        default: 'normal'
+      category:
+        description: 'Message category'
+        required: false
+        type: string
+        default: 'general'
+
+jobs:
+  add-message:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      
+    - name: Add new message
+      run: |
+        # Read existing messages or create empty array
+        if [ -f "inex-messages.json" ]; then
+          messages=$(cat inex-messages.json)
+        else
+          messages="[]"
+        fi
+        
+        # Create new message object
+        new_message=$(cat << EOF
+        {
+          "id": "$(date +%s)000",
+          "name": "${{ inputs.name }}",
+          "text": "${{ inputs.text }}",
+          "email": "${{ inputs.email || '' }}",
+          "priority": "${{ inputs.priority }}",
+          "category": "${{ inputs.category }}",
+          "timestamp": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
+          "status": "new",
+          "read": false,
+          "responded": false
+        }
+        EOF
+        )
+        
+        # Add new message to beginning of array (newest first)
+        if [ "$messages" = "[]" ]; then
+          # First message
+          echo "[$new_message]" > inex-messages.json
+        else
+          # Insert at beginning
+          sed -i "s/^\[/[$new_message,/" inex-messages.json
+        fi
+        
+        # Display the updated content
+        echo "Updated inex-messages.json:"
+        cat inex-messages.json
+        
+    - name: Commit and push changes
+      run: |
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action"
+        git add inex-messages.json
+        git commit -m "Add new message from ${{ inputs.name }}: ${{ inputs.text }}"
+        git push

@@ -1,189 +1,49 @@
-name: Status Update & Deploy
+name: Status Update Workflow
 
 on:
   workflow_dispatch:
     inputs:
       progress:
-        description: 'Progress percentage'
+        description: 'Progress percentage (0-100)'
         required: true
-        default: '5'
+        type: string
       phase:
         description: 'Current phase'
         required: true
-        default: 'Discovery'
+        type: string
       status:
         description: 'Status description'
         required: true
-        default: 'Project kickoff initiated'
-      update:
-        description: 'Weekly update'
-        required: false
-      update_status:
-        description: 'Update status'
-        required: false
-        default: 'In Progress'
+        type: string
 
 jobs:
   update-status:
     runs-on: ubuntu-latest
     
     steps:
-    - name: Validate inputs
-      run: |
-        echo "🔍 Validating workflow inputs..."
-        
-        # Check required inputs
-        if [ -z "${{ github.event.inputs.progress }}" ]; then
-          echo "❌ Error: progress input is required"
-          exit 1
-        fi
-        
-        if [ -z "${{ github.event.inputs.phase }}" ]; then
-          echo "❌ Error: phase input is required"
-          exit 1
-        fi
-        
-        if [ -z "${{ github.event.inputs.status }}" ]; then
-          echo "❌ Error: status input is required"
-          exit 1
-        fi
-        
-        # Validate progress is a number between 0-100
-        if ! [[ "${{ github.event.inputs.progress }}" =~ ^[0-9]+$ ]] || [ "${{ github.event.inputs.progress }}" -lt 0 ] || [ "${{ github.event.inputs.progress }}" -gt 100 ]; then
-          echo "❌ Error: progress must be a number between 0-100, got: ${{ github.event.inputs.progress }}"
-          exit 1
-        fi
-        
-        # Validate phase is one of the allowed values
-        allowed_phases=("Discovery" "Design & Setup" "Development & Testing" "Deployment & Training")
-        phase_valid=false
-        for allowed_phase in "${allowed_phases[@]}"; do
-          if [ "${{ github.event.inputs.phase }}" = "$allowed_phase" ]; then
-            phase_valid=true
-            break
-          fi
-        done
-        
-        if [ "$phase_valid" = false ]; then
-          echo "❌ Error: phase must be one of: ${allowed_phases[*]}"
-          echo "   Got: ${{ github.event.inputs.phase }}"
-          exit 1
-        fi
-        
-        echo "✅ All inputs validated successfully"
-        echo "   Progress: ${{ github.event.inputs.progress }}%"
-        echo "   Phase: ${{ github.event.inputs.phase }}"
-        echo "   Status: ${{ github.event.inputs.status }}"
-        
-    - name: Check required secrets
-      run: |
-        echo "🔍 Checking required secrets..."
-        
-        if [ -n "${{ secrets.GITHUB_TOKEN }}" ]; then
-          echo "✅ GITHUB_TOKEN: Available (auto-provided by GitHub)"
-        else
-          echo "❌ GITHUB_TOKEN: Missing (this should be auto-provided)"
-        fi
-        
-        if [ -n "${{ secrets.VERCEL_DEPLOY_HOOK }}" ]; then
-          echo "✅ VERCEL_DEPLOY_HOOK: Available"
-        else
-          echo "⚠️ VERCEL_DEPLOY_HOOK: Not configured (optional)"
-          echo "   This secret enables manual Vercel deployment triggers"
-        fi
-        
-        echo ""
-        echo "📋 Required setup for this workflow:"
-        echo "1. GITHUB_TOKEN: ✅ Auto-provided by GitHub"
-        echo "2. VERCEL_DEPLOY_HOOK: ⚠️ Optional - add to enable manual deployments"
-        echo ""
-        echo "🔗 To add VERCEL_DEPLOY_HOOK:"
-        echo "   Repository Settings > Secrets and variables > Actions > New repository secret"
-        echo "   Name: VERCEL_DEPLOY_HOOK"
-        echo "   Value: Your Vercel deploy hook URL"
-        
     - name: Checkout repository
       uses: actions/checkout@v4
       
-    - name: Setup Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: '18'
-        
-    - name: Update status files
+    - name: Update status data
       run: |
-        echo "Updating status.html with new values..."
-        echo "Progress: ${{ github.event.inputs.progress }}%"
-        echo "Phase: ${{ github.event.inputs.phase }}"
-        echo "Status: ${{ github.event.inputs.status }}"
+        # Create the status data
+        cat > inex-live-data.json << EOF
+        {
+          "progress": ${{ inputs.progress }},
+          "phase": "${{ inputs.phase }}",
+          "status": "${{ inputs.status }}",
+          "lastUpdated": "${{ github.event.head_commit.timestamp || github.event.head_commit.committer.date || github.event.head_commit.author.date || '2025-08-11T00:00:00Z' }}"
+        }
+        EOF
         
-        # Update status.html with new progress
-        sed -i "s/id=\"pct\">.*%/id=\"pct\">${{ github.event.inputs.progress }}%/g" status.html
-        sed -i "s/id=\"phaseLabel\">.*</id=\"phaseLabel\">${{ github.event.inputs.phase }}</g" status.html
-        
-        # Update progress bar
-        sed -i "s/--bar:.*%/--bar:${{ github.event.inputs.progress }}%/g" status.html
-        
-        # Update ring progress
-        sed -i "s/--p:.*/--p:${{ github.event.inputs.progress }}/g" status.html
-        
-        # Update status text if provided
-        if [ -n "${{ github.event.inputs.status }}" ]; then
-          sed -i "s/Current Status:.*</Current Status: ${{ github.event.inputs.status }}</g" status.html
-        fi
-        
-        # Update ETA to match proposal timeline (Feb 2025)
-        sed -i "s/ETA:.*2025/ETA: Feb 2025/g" status.html
-        
-        echo "Status files updated successfully"
-        
-    - name: Verify changes
-      run: |
-        echo "Verifying changes were made correctly..."
-        echo "Progress in file:"
-        grep -o 'id="pct">[^<]*' status.html
-        echo "Phase in file:"
-        grep -o 'id="phaseLabel">[^<]*' status.html
-        echo "Progress bar:"
-        grep -o '--bar:[^;]*' status.html
-        echo "Ring progress:"
-        grep -o '--p:[^;]*' status.html
+        # Display the updated content
+        echo "Updated inex-live-data.json:"
+        cat inex-live-data.json
         
     - name: Commit and push changes
       run: |
         git config --local user.email "action@github.com"
         git config --local user.name "GitHub Action"
-        git add status.html
-        git commit -m "Status Update: ${{ github.event.inputs.phase }} - ${{ github.event.inputs.progress }}% - ${{ github.event.inputs.status }}"
+        git add inex-live-data.json
+        git commit -m "Update project status: ${{ inputs.phase }} - ${{ inputs.progress }}% - ${{ inputs.status }}"
         git push
-        echo "Changes committed and pushed successfully"
-        echo "Commit message: Status Update: ${{ github.event.inputs.phase }} - ${{ github.event.inputs.progress }}% - ${{ github.event.inputs.status }}"
-        
-    - name: Trigger Vercel deployment
-      run: |
-        if [ -n "${{ secrets.VERCEL_DEPLOY_HOOK }}" ]; then
-          echo "Triggering Vercel deployment..."
-          curl -X POST ${{ secrets.VERCEL_DEPLOY_HOOK }}
-          echo "Vercel deployment triggered successfully"
-        else
-          echo "⚠️ VERCEL_DEPLOY_HOOK secret not configured - skipping deployment trigger"
-          echo "Note: Vercel will still auto-deploy when changes are pushed to main branch"
-          echo "To enable manual deployment triggers, add VERCEL_DEPLOY_HOOK to repository secrets:"
-          echo "1. Go to Settings > Secrets and variables > Actions"
-          echo "2. Add new repository secret named 'VERCEL_DEPLOY_HOOK'"
-          echo "3. Set value to your Vercel deploy hook URL"
-        fi
-        
-    - name: Workflow Summary
-      run: |
-        echo "🎉 Status Update Workflow Completed Successfully!"
-        echo "================================================"
-        echo "Progress: ${{ github.event.inputs.progress }}%"
-        echo "Phase: ${{ github.event.inputs.phase }}"
-        echo "Status: ${{ github.event.inputs.status }}"
-        echo "Update: ${{ github.event.inputs.update || 'None' }}"
-        echo "Update Status: ${{ github.event.inputs.update_status || 'In Progress' }}"
-        echo ""
-        echo "Changes have been committed and pushed to main branch."
-        echo "Vercel will automatically deploy the updated status page."
-        echo "Zebediah should see the changes in 2-3 minutes."

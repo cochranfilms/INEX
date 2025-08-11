@@ -530,9 +530,27 @@
   const isDev = window.location.hostname === 'localhost' || 
                 window.location.hostname === '127.0.0.1' ||
                 window.location.port !== '';
+  
+  // For GitHub Pages deployment, we'll use GitHub Actions workflows instead of API endpoints
   let API_BASE = isDev ? 'http://localhost:3000' : window.location.origin;
   let API_STATUS_UPDATE = `${API_BASE}/api/status-update`;
   let API_MESSAGES = `${API_BASE}/api/messages`;
+
+  // GitHub Actions workflow URLs for GitHub Pages deployment
+  const GITHUB_WORKFLOW_URLS = {
+    statusUpdate: 'https://api.github.com/repos/cochranfilms/INEX/actions/workflows/status-update.yml/dispatches',
+    messages: 'https://api.github.com/repos/cochranfilms/INEX/actions/workflows/messages.yml/dispatches'
+  };
+
+  // Debug logging
+  console.log('🔍 API Configuration Debug:');
+  console.log('  Hostname:', window.location.hostname);
+  console.log('  Port:', window.location.port);
+  console.log('  Origin:', window.location.origin);
+  console.log('  isDev:', isDev);
+  console.log('  API_BASE:', API_BASE);
+  console.log('  API_STATUS_UPDATE:', API_STATUS_UPDATE);
+  console.log('  API_MESSAGES:', API_MESSAGES);
 
   const candidateBases = isDev ? [API_BASE] : [
     window.location.origin,
@@ -698,7 +716,31 @@
     
     try {
       console.log('Deploying status update:', { progress, phase, status });
+      console.log('🔍 Using GitHub Actions workflow for status update');
+      console.log('🔍 Request payload:', { progress: parseInt(progress), phase, status });
       
+      // For GitHub Pages deployment, trigger GitHub Actions workflow
+      if (!isDev) {
+        // This would require a GitHub token and proper authentication
+        // For now, we'll show instructions
+        alert(`🚀 Status Update Ready for GitHub Actions!
+
+Progress: ${progress}%
+Phase: ${phase}
+Status: ${status}
+
+To deploy this update:
+1. Go to your GitHub repository: https://github.com/cochranfilms/INEX
+2. Click "Actions" tab
+3. Select "Status Update Workflow"
+4. Click "Run workflow"
+5. Fill in the details and run
+
+The workflow will update inex-live-data.json and deploy the changes.`);
+        return;
+      }
+      
+      // Local development - use API endpoint
       let response = await fetch(API_STATUS_UPDATE, {
         method: 'POST',
         headers: {
@@ -887,10 +929,23 @@
   }
 
   function refreshMessages() {
-    const savedMessages = localStorage.getItem('inex-messages') || '[]';
-    const messages = JSON.parse(savedMessages);
-    displayDevMessages(messages);
-    alert('Messages refreshed!');
+    // Load messages from the JSON file instead of localStorage
+    fetch('/inex-messages.json', { cache: 'no-store' })
+      .then(response => response.json())
+      .then(messages => {
+        displayDevMessages(messages);
+        // Also save to localStorage for offline access
+        localStorage.setItem('inex-messages', JSON.stringify(messages));
+        alert(`Messages refreshed! Loaded ${messages.length} messages.`);
+      })
+      .catch(error => {
+        console.error('Error loading messages:', error);
+        // Fallback to localStorage if JSON file fails
+        const savedMessages = localStorage.getItem('inex-messages') || '[]';
+        const messages = JSON.parse(savedMessages);
+        displayDevMessages(messages);
+        alert('⚠️ Could not load fresh messages. Showing cached version.');
+      });
   }
 
   function markMessageRead() {
@@ -985,9 +1040,21 @@
   function loadDevMessages() {
     const messagesList = document.getElementById('devMessagesList');
     if (messagesList) {
-      const savedMessages = localStorage.getItem('inex-messages') || '[]';
-      const messages = JSON.parse(savedMessages);
-      displayDevMessages(messages);
+      // Load messages from the JSON file
+      fetch('/inex-messages.json', { cache: 'no-store' })
+        .then(response => response.json())
+        .then(messages => {
+          displayDevMessages(messages);
+          // Also save to localStorage for offline access
+          localStorage.setItem('inex-messages', JSON.stringify(messages));
+        })
+        .catch(error => {
+          console.error('Error loading messages:', error);
+          // Fallback to localStorage if JSON file fails
+          const savedMessages = localStorage.getItem('inex-messages') || '[]';
+          const messages = JSON.parse(savedMessages);
+          displayDevMessages(messages);
+        });
     }
   }
 
