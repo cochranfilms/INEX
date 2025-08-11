@@ -251,7 +251,7 @@
             </p>
             
             <!-- GitHub Pages Notice -->
-            <div id="githubPagesNotice" style="display:none;margin-bottom:16px;padding:12px;background:rgba(0,150,136,.1);border:1px solid rgba(0,150,136,.2);border-radius:8px;font-size:12px">
+            <div id="githubPagesNotice" style="display:block;margin-bottom:16px;padding:12px;background:rgba(0,150,136,.1);border:1px solid rgba(0,150,136,.2);border-radius:8px;font-size:12px">
               <strong>✅ Automatic GitHub Integration Active</strong><br>
               <small>This site automatically pushes messages to GitHub in real-time. When you send a message, it's immediately committed to the repository and visible to the development team.</small>
             </div>
@@ -362,7 +362,8 @@
         // Extract all data from consolidated JSON
         const pct = typeof data.progress === 'number' ? data.progress : 5;
         const phase = data.phase || 'Phase 1';
-        const eta = data.eta || 'ETA: Sep 11-18, 2025 · Weekly updates posted below';
+        const phaseName = data.phaseName || 'Prototype Polish';
+        const eta = data.eta || 'Sep 11-18, 2025';
         const scope = data.scope || 'Scope v1.0';
         const owner = data.owner || 'Cochran Full Stack Solutions';
         const client = data.client || 'INEX';
@@ -373,7 +374,7 @@
         // Update progress and phase displays
         document.querySelector('.ring').style.setProperty('--p', pct);
         document.getElementById('pct').textContent = pct + '%';
-        document.getElementById('phaseLabel').textContent = phase;
+        document.getElementById('phaseLabel').textContent = phaseName || phase;
         document.getElementById('barFill').style.setProperty('--bar', pct + '%');
         document.getElementById('eta').textContent = eta;
         document.getElementById('badgeScope').textContent = scope;
@@ -401,7 +402,7 @@
         // Silent fallback to localStorage values
       }
     }
-    // Project tracking data - Phase 1: Prototype Polish
+    // Project tracking data - Phase 1: Prototype Polish (fallback data)
     const projectData = {
       currentPhase: 'Phase 1',
       progress: 5,
@@ -422,7 +423,7 @@
       ]
     };
 
-    // Initialize localStorage with default values if none exist
+    // Initialize localStorage with default values if none exist (fallback only)
     if (!localStorage.getItem('inex-project-progress')) {
       localStorage.setItem('inex-project-progress', '5');
     }
@@ -455,9 +456,10 @@
     const savedPhase = localStorage.getItem('inex-project-phase') || 'Phase 1';
     const savedStatusValue = localStorage.getItem('inex-project-status') || 'Phase 1 (Prototype Polish) in progress. Working on INEX branding integration and basic UI framework. On track for Aug 22 completion.';
     
+    // Initial values (will be overridden by JSON data)
     const pct = Math.max(0, Math.min(100, parseInt(params.get('progress') || savedProgress || '5', 10)));
     const phase = params.get('phase') || savedPhase || 'Phase 1';
-    const eta = params.get('eta') || 'ETA: Sep 11-18, 2025 · Weekly updates posted below';
+    const eta = params.get('eta') || 'Sep 11-18, 2025';
     const scope = params.get('scope') || 'Scope v1.0';
     const owner = params.get('owner') || 'Cochran Full Stack Solutions';
     const client = params.get('client') || 'INEX';
@@ -551,7 +553,7 @@
       });
     }
 
-    // Mark active step (initial load)
+    // Mark active step (initial load - will be updated by JSON data)
     const steps = Array.from(document.querySelectorAll('.step'));
     steps.forEach(s => {
       const stepPhase = s.dataset.phase;
@@ -566,7 +568,7 @@
       }
     });
 
-    // Development tracker functionality
+    // Development tracker functionality (initial setup - will be updated by JSON data)
     const devCheckboxes = document.querySelectorAll('.dev-checkbox');
     devCheckboxes.forEach(checkbox => {
       checkbox.addEventListener('change', function() {

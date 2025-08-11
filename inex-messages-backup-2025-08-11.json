@@ -1,5 +1,17 @@
 [
   {
+    "id": "1754906153138",
+    "name": "API Test",
+    "text": "Testing the comprehensive messaging system integration",
+    "email": null,
+    "priority": "high",
+    "category": "test",
+    "timestamp": "2025-08-11T09:55:53.138Z",
+    "status": "new",
+    "read": false,
+    "responded": false
+  },
+  {
     "id": "1754892665931",
     "name": "Test User",
     "text": "This is a test message",
@@ -62,17 +74,17 @@
     "email": "zeb@inexsystemsdesigns.com",
     "priority": "normal",
     "category": "client-feedback",
-    "timestamp": "2025-08-11T04:45:31.321Z",
+    "timestamp": "2025-08-11T04:47:31.321Z",
     "status": "responded",
     "read": true,
     "responded": true,
     "responses": [
       {
         "text": "Thank you for your message! We are working hard on the INEX portal development. Everything is progressing well and we should have Phase 1 completed soon.",
-        "timestamp": "2025-08-11T04:45:43.247Z",
+        "timestamp": "2025-08-11T04:47:43.247Z",
         "responder": "Development Team"
       }
     ],
-    "lastUpdated": "2025-08-11T04:45:43.247Z"
+    "lastUpdated": "2025-08-11T04:47:43.247Z"
   }
 ]

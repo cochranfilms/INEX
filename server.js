@@ -175,8 +175,20 @@ app.post('/api/status-update', (req, res) => {
     // For now, we'll just log the update and return success
     console.log('Status Update Received:', { progress, phase, status, timestamp: new Date().toISOString() });
     
-    // Save to a simple JSON file for persistence
+    // Read existing live data to preserve all parameters
+    let existingData = {};
+    try {
+      if (fs.existsSync('inex-live-data.json')) {
+        const existingFile = fs.readFileSync('inex-live-data.json', 'utf8');
+        existingData = JSON.parse(existingFile);
+      }
+    } catch (readError) {
+      console.log('No existing data found, starting fresh');
+    }
+    
+    // Update the consolidated data with all available parameters
     const statusData = {
+      ...existingData,
       progress,
       phase,
       status,
@@ -185,7 +197,12 @@ app.post('/api/status-update', (req, res) => {
     
     try {
       fs.writeFileSync('inex-live-data.json', JSON.stringify(statusData, null, 2));
-      console.log('Status data saved to inex-live-data.json');
+      console.log('Status data updated in inex-live-data.json');
+      
+      // Also create a backup with timestamp
+      const backupFile = `inex-live-data-backup-${new Date().toISOString().split('T')[0]}.json`;
+      fs.writeFileSync(backupFile, JSON.stringify(statusData, null, 2));
+      console.log('Backup created:', backupFile);
     } catch (writeError) {
       console.error('Error saving status data:', writeError);
       // Continue anyway - this is not critical
@@ -209,22 +226,38 @@ app.post('/api/status-update', (req, res) => {
 // Messaging API endpoints
 app.get('/api/messages', (req, res) => {
   try {
-    const messagesFile = 'inex-messages.json';
-    const messagesPath = path.join(__dirname, messagesFile);
+    const liveDataFile = 'inex-live-data.json';
+    const liveDataPath = path.join(__dirname, liveDataFile);
     
-    // Ensure messages file exists
-    if (!fs.existsSync(messagesPath)) {
-      fs.writeFileSync(messagesPath, JSON.stringify([], null, 2));
+    // Ensure live data file exists
+    if (!fs.existsSync(liveDataPath)) {
+      const defaultData = {
+        progress: 5,
+        phase: "Phase 1",
+        phaseName: "Prototype Polish",
+        status: "Phase 1 (Prototype Polish) in progress. Working on INEX branding integration and basic UI framework. On track for Aug 22 completion.",
+        lastUpdated: new Date().toISOString(),
+        eta: "Sep 11-18, 2025",
+        scope: "Scope v1.0",
+        owner: "Cochran Full Stack Solutions",
+        client: "INEX",
+        phases: [],
+        updates: [],
+        nextActions: [],
+        messages: []
+      };
+      fs.writeFileSync(liveDataPath, JSON.stringify(defaultData, null, 2));
     }
     
-    const messagesData = fs.readFileSync(messagesPath, 'utf8');
-    const messages = JSON.parse(messagesData);
+    const liveData = fs.readFileSync(liveDataPath, 'utf8');
+    const data = JSON.parse(liveData);
+    const messages = data.messages || [];
     
     res.json({
       success: true,
       messages: messages,
       count: messages.length,
-      lastUpdated: new Date().toISOString()
+      lastUpdated: data.lastUpdated || new Date().toISOString()
     });
     
   } catch (error) {
@@ -234,7 +267,7 @@ app.get('/api/messages', (req, res) => {
       error: 'Internal server error reading messages'
     });
   }
-});
+ });
 
 app.post('/api/messages', (req, res) => {
   try {
@@ -248,17 +281,33 @@ app.post('/api/messages', (req, res) => {
       });
     }
     
-    const messagesFile = 'inex-messages.json';
-    const messagesPath = path.join(__dirname, messagesFile);
+    const liveDataFile = 'inex-live-data.json';
+    const liveDataPath = path.join(__dirname, liveDataFile);
     
-    // Ensure messages file exists
-    if (!fs.existsSync(messagesPath)) {
-      fs.writeFileSync(messagesPath, JSON.stringify([], null, 2));
+    // Ensure live data file exists
+    if (!fs.existsSync(liveDataPath)) {
+      const defaultData = {
+        progress: 5,
+        phase: "Phase 1",
+        phaseName: "Prototype Polish",
+        status: "Phase 1 (Prototype Polish) in progress. Working on INEX branding integration and basic UI framework. On track for Aug 22 completion.",
+        lastUpdated: new Date().toISOString(),
+        eta: "Sep 11-18, 2025",
+        scope: "Scope v1.0",
+        owner: "Cochran Full Stack Solutions",
+        client: "INEX",
+        phases: [],
+        updates: [],
+        nextActions: [],
+        messages: []
+      };
+      fs.writeFileSync(liveDataPath, JSON.stringify(defaultData, null, 2));
     }
     
-    // Read existing messages
-    const messagesData = fs.readFileSync(messagesPath, 'utf8');
-    const messages = JSON.parse(messagesData);
+    // Read existing live data
+    const liveData = fs.readFileSync(liveDataPath, 'utf8');
+    const data = JSON.parse(liveData);
+    const messages = data.messages || [];
     
     // Create new message
     const newMessage = {
@@ -277,13 +326,28 @@ app.post('/api/messages', (req, res) => {
     // Add to beginning of array (newest first)
     messages.unshift(newMessage);
     
-    // Save back to file
-    fs.writeFileSync(messagesPath, JSON.stringify(messages, null, 2));
+    // Update the consolidated data
+    data.messages = messages;
+    data.lastUpdated = new Date().toISOString();
     
-    // Also save to a backup file with timestamp
-    const backupFile = `inex-messages-backup-${new Date().toISOString().split('T')[0]}.json`;
+    // Save back to consolidated file
+    fs.writeFileSync(liveDataPath, JSON.stringify(data, null, 2));
+    
+    // Create comprehensive backup with timestamp
+    const backupFile = `inex-live-data-backup-${new Date().toISOString().split('T')[0]}.json`;
     const backupPath = path.join(__dirname, backupFile);
-    fs.writeFileSync(backupPath, JSON.stringify(messages, null, 2));
+    fs.writeFileSync(backupPath, JSON.stringify(data, null, 2));
+    
+    // Also save messages-only backup
+    const messagesBackupFile = `inex-messages-backup-${new Date().toISOString().split('T')[0]}.json`;
+    const messagesBackupPath = path.join(__dirname, messagesBackupFile);
+    fs.writeFileSync(messagesBackupPath, JSON.stringify(messages, null, 2));
+    
+    console.log('Message saved and backups created:', {
+      liveData: liveDataFile,
+      dataBackup: backupFile,
+      messagesBackup: messagesBackupFile
+    });
     
     res.status(201).json({
       success: true,

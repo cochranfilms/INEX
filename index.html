@@ -646,11 +646,15 @@
 
   // Centralized Status Management System - JSON ONLY
   let currentStatus = {
-    progress: 0,
-    phase: 'Discovery',
-    phaseName: 'Discovery Phase',
-    status: 'Project initiated - gathering requirements',
-    lastUpdated: new Date().toISOString()
+    progress: 5,
+    phase: 'Phase 1',
+    phaseName: 'Prototype Polish',
+    status: 'Phase 1 (Prototype Polish) in progress. Working on INEX branding integration and basic UI framework. On track for Aug 22 completion.',
+    lastUpdated: new Date().toISOString(),
+    eta: 'Sep 11-18, 2025',
+    scope: 'Scope v1.0',
+    owner: 'Cochran Full Stack Solutions',
+    client: 'INEX'
   };
 
   // Initialize status from consolidated JSON file ONLY
@@ -663,10 +667,17 @@
         const liveData = await response.json();
         console.log('📄 Loaded live data:', liveData);
         
-        currentStatus.progress = liveData.progress || 0;
-        currentStatus.phase = liveData.phase || 'Discovery';
-        currentStatus.status = liveData.status || 'Project initiated - gathering requirements';
+        // Load all available parameters from JSON
+        currentStatus.progress = liveData.progress || 5;
+        currentStatus.phase = liveData.phase || 'Phase 1';
+        currentStatus.phaseName = liveData.phaseName || 'Prototype Polish';
+        currentStatus.status = liveData.status || 'Phase 1 (Prototype Polish) in progress. Working on INEX branding integration and basic UI framework. On track for Aug 22 completion.';
         currentStatus.lastUpdated = liveData.lastUpdated || new Date().toISOString();
+        currentStatus.eta = liveData.eta || 'Sep 11-18, 2025';
+        currentStatus.scope = liveData.scope || 'Scope v1.0';
+        currentStatus.owner = liveData.owner || 'Cochran Full Stack Solutions';
+        currentStatus.client = liveData.client || 'INEX';
+        
         console.log('✅ Status loaded from consolidated JSON:', currentStatus);
       } else {
         console.log('⚠️ Could not load consolidated data, using defaults');
@@ -729,14 +740,19 @@
   // Save status to JSON via API ONLY (no localStorage)
   async function saveStatus() {
     try {
-      // Update via API to JSON files
+      // Update via API to JSON files with all available parameters
       const response = await fetch(API_STATUS_UPDATE, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           progress: currentStatus.progress,
           phase: currentStatus.phase,
-          status: currentStatus.status
+          status: currentStatus.status,
+          phaseName: currentStatus.phaseName,
+          eta: currentStatus.eta,
+          scope: currentStatus.scope,
+          owner: currentStatus.owner,
+          client: currentStatus.client
         })
       });
 
@@ -821,7 +837,12 @@
         body: JSON.stringify({
           progress: currentStatus.progress,
           phase: currentStatus.phase,
-          status: currentStatus.status
+          status: currentStatus.status,
+          phaseName: currentStatus.phaseName,
+          eta: currentStatus.eta,
+          scope: currentStatus.scope,
+          owner: currentStatus.owner,
+          client: currentStatus.client
         })
       });
 
@@ -871,7 +892,12 @@
         body: JSON.stringify({
           progress: currentStatus.progress,
           phase: currentStatus.phase,
-          status
+          status,
+          phaseName: currentStatus.phaseName,
+          eta: currentStatus.eta,
+          scope: currentStatus.scope,
+          owner: currentStatus.owner,
+          client: currentStatus.client
         })
       });
 
