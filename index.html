@@ -1009,7 +1009,7 @@
       
       // Fallback to JSON file if API fails
       console.log('📄 Trying fallback JSON file...');
-      const jsonResponse = await fetch('/inex-live-data.json', { cache: 'no-store' });
+      const jsonResponse = await fetch('inex-live-data.json', { cache: 'no-store' });
       if (jsonResponse.ok) {
         const liveData = await jsonResponse.json();
         const messages = liveData.messages || [];
@@ -1042,6 +1042,23 @@
       console.warn('Failed to load messages from consolidated JSON:', error.message);
       displayDevMessages([]);
     }
+  }
+
+  // Enhanced function to load messages from JSON file directly (for immediate display)
+  async function loadMessagesFromJSON() {
+    try {
+      console.log('📄 Loading messages directly from JSON file...');
+      const response = await fetch('inex-live-data.json', { cache: 'no-store' });
+      if (response.ok) {
+        const liveData = await response.json();
+        const messages = liveData.messages || [];
+        console.log(`✅ Loaded ${messages.length} messages directly from JSON`);
+        return messages;
+      }
+    } catch (error) {
+      console.warn('Failed to load messages from JSON:', error.message);
+    }
+    return [];
   }
 
   function displayDevMessages(messages) {

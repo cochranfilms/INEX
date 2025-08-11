@@ -780,21 +780,21 @@
     // Load messages from consolidated JSON file
     async function loadMessages() {
       try {
-        if (isLiveSite) {
-          // For live site, load from JSON file directly (no API calls)
-          safeLog('debug', 'Live site detected, loading messages from JSON file');
-          const jsonResponse = await safeFetch('/inex-live-data.json');
-          if (jsonResponse.ok) {
-            const liveData = await jsonResponse.json();
-            const messages = liveData.messages || [];
-            displayMessages(messages);
-            localStorage.setItem('inex-messages', JSON.stringify(messages));
-            safeLog('debug', `✅ Loaded ${messages.length} messages from JSON file on live site`);
-            return;
-          }
-        } else {
-          // For development, try the API endpoint first
-          safeLog('debug', 'Loading messages from API endpoint');
+        // Always try to load from JSON file first for immediate display
+        safeLog('debug', 'Loading messages from JSON file...');
+        const jsonResponse = await safeFetch('inex-live-data.json');
+        if (jsonResponse.ok) {
+          const liveData = await jsonResponse.json();
+          const messages = liveData.messages || [];
+          displayMessages(messages);
+          localStorage.setItem('inex-messages', JSON.stringify(messages));
+          safeLog('debug', `✅ Loaded ${messages.length} messages from JSON file`);
+          return;
+        }
+        
+        // If JSON fails, try API endpoint as fallback
+        if (!isLiveSite) {
+          safeLog('debug', 'JSON failed, trying API endpoint...');
           const response = await safeFetch(MESSAGES_API);
           
           if (response.ok) {
@@ -807,18 +807,6 @@
             safeLog('debug', `✅ Loaded ${messages.length} messages from API`);
             return;
           }
-        }
-        
-        // If API fails or JSON fails, try loading from consolidated JSON file as fallback
-        safeLog('warn', 'Primary source failed, trying consolidated JSON file fallback');
-        const jsonResponse = await safeFetch('/inex-live-data.json');
-        if (jsonResponse.ok) {
-          const liveData = await jsonResponse.json();
-          const messages = liveData.messages || [];
-          displayMessages(messages);
-          localStorage.setItem('inex-messages', JSON.stringify(messages));
-          safeLog('debug', `✅ Loaded ${messages.length} messages from consolidated JSON file`);
-          return;
         }
         
         // Final fallback to localStorage
