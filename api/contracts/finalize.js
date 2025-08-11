@@ -64,7 +64,7 @@ export default async function handler(req, res) {
       const params = {
         to_email: EMAILJS_TO_EMAIL,
         client_name: 'INEX Systems & Designs',
-        company_name: 'Cochran Films LLC — Systems Division',
+        company_name: 'Cochran Full Stack Solutions',
         contract_id: contractId,
         effective_date: effectiveDate,
         amount: amount,
