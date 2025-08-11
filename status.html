@@ -7,6 +7,10 @@
   <meta name="description" content="INEX Systems & Designs — Public project status and progress tracking for Phase 1: Prototype Polish phase." />
   <link rel="icon" type="image/svg+xml" href="vite.svg" />
   <link rel="alternate icon" type="image/x-icon" href="vite.ico" />
+  
+  <!-- Preload only essential resources that will be used immediately -->
+  <link rel="preload" href="inex-logo.png" as="image" type="image/png">
+  
   <style>
     :root{
       --inex-charcoal:#191919;
@@ -285,10 +289,59 @@
   </main>
 
   <script>
+    // Error handling and logging configuration
+    const CONFIG = {
+      enableSentry: false, // Disable Sentry to prevent 429 errors
+      enableConsoleLogs: true,
+      autoRefreshInterval: 30000,
+      maxRetries: 3
+    };
+
+    // Safe console logging
+    const safeLog = (level, ...args) => {
+      if (CONFIG.enableConsoleLogs && console[level]) {
+        try {
+          console[level](...args);
+        } catch (e) {
+          // Silently fail if console logging fails
+        }
+      }
+    };
+
+    // Safe fetch with retry logic
+    async function safeFetch(url, options = {}, retries = CONFIG.maxRetries) {
+      try {
+        // Create timeout signal with fallback for older browsers
+        let signal = null;
+        if (AbortSignal.timeout) {
+          signal = AbortSignal.timeout(10000); // 10 second timeout
+        } else {
+          // Fallback for older browsers
+          const controller = new AbortController();
+          setTimeout(() => controller.abort(), 10000);
+          signal = controller.signal;
+        }
+        
+        const response = await fetch(url, { 
+          ...options, 
+          cache: 'no-store',
+          signal: signal
+        });
+        return response;
+      } catch (error) {
+        if (retries > 0 && error.name !== 'AbortError') {
+          safeLog('warn', `Fetch failed, retrying... (${retries} attempts left)`);
+          await new Promise(resolve => setTimeout(resolve, 1000));
+          return safeFetch(url, options, retries - 1);
+        }
+        throw error;
+      }
+    }
+
     // Try to load live status JSON produced on the server/deploy
     async function loadLiveStatusFromJson() {
       try {
-        const response = await fetch('/inex-live-data.json', { cache: 'no-store' });
+        const response = await safeFetch('/inex-live-data.json');
         if (!response.ok) return;
         const data = await response.json();
         const pct = typeof data.progress === 'number' ? data.progress : parseInt((data?.current?.progress ?? '0'), 10) || 0;
@@ -303,7 +356,8 @@
           const etaEl = document.getElementById('eta');
           if (etaEl) etaEl.textContent = eta;
         }
-      } catch (_) {
+      } catch (error) {
+        safeLog('debug', 'Live status load failed, using fallback:', error.message);
         // Silent fallback to localStorage values
       }
     }
@@ -380,7 +434,15 @@
 
     // Override from live JSON if available, and refresh periodically
     loadLiveStatusFromJson();
-    setInterval(loadLiveStatusFromJson, 30000);
+    
+    // Use a more robust interval that can be cleared if needed
+    const liveStatusInterval = setInterval(() => {
+      try {
+        loadLiveStatusFromJson();
+      } catch (error) {
+        safeLog('warn', 'Live status refresh failed:', error.message);
+      }
+    }, CONFIG.autoRefreshInterval);
 
     // Mark active step
     const steps = Array.from(document.querySelectorAll('.step'));
@@ -436,9 +498,13 @@
     }
 
     // Auto-save progress every 30 seconds
-    setInterval(() => {
-      localStorage.setItem('inex-project-data', JSON.stringify(projectData));
-    }, 30000);
+    const autoSaveInterval = setInterval(() => {
+      try {
+        localStorage.setItem('inex-data', JSON.stringify(projectData));
+      } catch (error) {
+        safeLog('warn', 'Failed to save progress data:', error.message);
+      }
+    }, CONFIG.autoRefreshInterval);
 
     // Listen for localStorage changes to update the page in real-time
     window.addEventListener('storage', function(e) {
@@ -475,7 +541,7 @@
       }
       if (e.key === 'inex-project-status') {
         // Status updates could be displayed somewhere if needed
-        console.log('Status updated:', e.newValue);
+        safeLog('debug', 'Status updated:', e.newValue);
       }
       if (e.key === 'inex-project-updates') {
         try {
@@ -496,7 +562,7 @@
           // Update project data
           projectData.updates = updates;
         } catch (e) {
-          console.log('Error parsing updates');
+          safeLog('warn', 'Error parsing updates');
         }
       }
     });
@@ -530,7 +596,7 @@
         // Update project data
         projectData.updates = updates;
       } catch (e) {
-        console.log('No saved updates found');
+        safeLog('debug', 'No saved updates found');
       }
     }
 
@@ -572,14 +638,14 @@
     const MESSAGES_API = `${API_BASE}/api/messages`;
 
     // Debug logging for API configuration
-    console.log('🔍 Status Page API Configuration:');
-    console.log('  Hostname:', window.location.hostname);
-    console.log('  Port:', window.location.port);
-    console.log('  Protocol:', window.location.protocol);
-    console.log('  Origin:', window.location.origin);
-    console.log('  isDev:', isDev);
-    console.log('  API_BASE:', API_BASE);
-    console.log('  MESSAGES_API:', MESSAGES_API);
+    safeLog('debug', '🔍 Status Page API Configuration:');
+    safeLog('debug', '  Hostname:', window.location.hostname);
+    safeLog('debug', '  Port:', window.location.port);
+    safeLog('debug', '  Protocol:', window.location.protocol);
+    safeLog('debug', '  Origin:', window.location.origin);
+    safeLog('debug', '  isDev:', isDev);
+    safeLog('debug', '  API_BASE:', API_BASE);
+    safeLog('debug', '  MESSAGES_API:', MESSAGES_API);
 
     // Update character count
     messageText.addEventListener('input', function() {
@@ -592,8 +658,8 @@
       try {
         // On GitHub Pages, load directly from JSON file
         if (!isDev) {
-          console.log('🔄 Loading messages from JSON file (GitHub Pages mode)');
-          const response = await fetch('/inex-messages.json', { cache: 'no-store' });
+          safeLog('debug', 'Loading messages from JSON file (GitHub Pages mode)');
+          const response = await safeFetch('/inex-messages.json');
           if (!response.ok) {
             throw new Error('Failed to load messages.json');
           }
@@ -607,10 +673,10 @@
         }
         
         // Local development - try API endpoint
-        console.log('🔄 Loading messages from API (local development mode)');
-        const response = await fetch(MESSAGES_API);
+        safeLog('debug', 'Loading messages from API (local development mode)');
+        const response = await safeFetch(MESSAGES_API);
         if (!response.ok) {
-          console.warn('Failed to fetch messages from API, falling back to localStorage');
+          safeLog('warn', 'Failed to fetch messages from API, falling back to localStorage');
           loadMessagesFromLocalStorage();
           return;
         }
@@ -623,7 +689,7 @@
         localStorage.setItem('inex-messages', JSON.stringify(messages));
         
       } catch (error) {
-        console.warn('Failed to load messages, using localStorage fallback:', error);
+        safeLog('warn', 'Failed to load messages, using localStorage fallback:', error.message);
         loadMessagesFromLocalStorage();
       }
     }
@@ -714,8 +780,8 @@ The message will be added to inex-messages.json and appear on this page.`);
         }
         
         // Local development - try API first
-        console.log('🔄 Sending message via API (local development mode)');
-        const response = await fetch(MESSAGES_API, {
+        safeLog('debug', 'Sending message via API (local development mode)');
+        const response = await safeFetch(MESSAGES_API, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -736,7 +802,7 @@ The message will be added to inex-messages.json and appear on this page.`);
         }
         
       } catch (error) {
-        console.warn('API failed, using localStorage fallback:', error);
+        safeLog('warn', 'API failed, using localStorage fallback:', error.message);
         
         // Fallback to localStorage
         const message = {
@@ -804,7 +870,7 @@ The message will be added to inex-messages.json and appear on this page.`);
           const messages = JSON.parse(e.newValue || '[]');
           displayMessages(messages);
         } catch (e) {
-          console.log('Error parsing messages');
+          safeLog('warn', 'Error parsing messages');
         }
       }
     });
@@ -813,7 +879,13 @@ The message will be added to inex-messages.json and appear on this page.`);
     loadMessages();
 
     // Auto-refresh messages every 30 seconds
-    setInterval(loadMessages, 30000);
+    const messagesInterval = setInterval(() => {
+      try {
+        loadMessages();
+      } catch (error) {
+        safeLog('warn', 'Messages refresh failed:', error.message);
+      }
+    }, CONFIG.autoRefreshInterval);
 
     // Toggle GitHub Pages notice visibility
     if (!isDev) {
@@ -821,6 +893,26 @@ The message will be added to inex-messages.json and appear on this page.`);
     } else {
       githubPagesNotice.style.display = 'none';
     }
+
+    // Cleanup intervals when page is unloaded
+    window.addEventListener('beforeunload', () => {
+      try {
+        if (liveStatusInterval) clearInterval(liveStatusInterval);
+        if (messagesInterval) clearInterval(messagesInterval);
+        if (autoSaveInterval) clearInterval(autoSaveInterval);
+      } catch (error) {
+        // Silent cleanup
+      }
+    });
+
+    // Error boundary for unhandled errors
+    window.addEventListener('error', (event) => {
+      safeLog('error', 'Unhandled error:', event.error);
+    });
+
+    window.addEventListener('unhandledrejection', (event) => {
+      safeLog('error', 'Unhandled promise rejection:', event.reason);
+    });
   </script>
 </body>
 </html>
