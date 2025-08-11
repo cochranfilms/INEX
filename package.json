@@ -4,8 +4,9 @@
   "private": true,
   "description": "INEX Systems & Designs portal and proposal",
   "license": "MIT",
+  "type": "module",
   "engines": {
-    "node": "18.x"
+    "node": "22.x"
   },
   "dependencies": {
     "express": "^4.18.2",
@@ -13,7 +14,9 @@
   },
   "scripts": {
     "build": "node vercel-build-hook.js",
-    "vercel-build": "node vercel-build-hook.js"
+    "vercel-build": "node vercel-build-hook.js",
+    "start": "node server.js",
+    "dev": "node server.js"
   },
   "devDependencies": {
     "@playwright/test": "^1.54.2"

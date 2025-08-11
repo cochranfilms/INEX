@@ -1,6 +1,10 @@
-const express = require('express');
-const path = require('path');
-const fs = require('fs');
+import express from 'express';
+import path from 'path';
+import fs from 'fs';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -72,7 +76,8 @@ const htmlFiles = [
   'status',
   'inex-portal-agreement',
   'inex-proposal',
-  'contract-reference'
+  'contract-reference',
+  'dev-dashboard'
 ];
 
 htmlFiles.forEach(file => {
@@ -178,6 +183,276 @@ app.post('/api/status-update', (req, res) => {
   }
 });
 
+// Messaging API endpoints
+app.get('/api/messages', (req, res) => {
+  try {
+    const messagesFile = 'inex-messages.json';
+    const messagesPath = path.join(__dirname, messagesFile);
+    
+    // Ensure messages file exists
+    if (!fs.existsSync(messagesPath)) {
+      fs.writeFileSync(messagesPath, JSON.stringify([], null, 2));
+    }
+    
+    const messagesData = fs.readFileSync(messagesPath, 'utf8');
+    const messages = JSON.parse(messagesData);
+    
+    res.json({
+      success: true,
+      messages: messages,
+      count: messages.length,
+      lastUpdated: new Date().toISOString()
+    });
+    
+  } catch (error) {
+    console.error('Error reading messages:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Internal server error reading messages'
+    });
+  }
+});
+
+app.post('/api/messages', (req, res) => {
+  try {
+    const { name, text, email, priority = 'normal', category = 'general' } = req.body;
+    
+    // Validate required fields
+    if (!text || text.trim().length === 0) {
+      return res.status(400).json({
+        success: false,
+        error: 'Message text is required'
+      });
+    }
+    
+    const messagesFile = 'inex-messages.json';
+    const messagesPath = path.join(__dirname, messagesFile);
+    
+    // Ensure messages file exists
+    if (!fs.existsSync(messagesPath)) {
+      fs.writeFileSync(messagesPath, JSON.stringify([], null, 2));
+    }
+    
+    // Read existing messages
+    const messagesData = fs.readFileSync(messagesPath, 'utf8');
+    const messages = JSON.parse(messagesData);
+    
+    // Create new message
+    const newMessage = {
+      id: Date.now().toString(),
+      name: (name || 'Anonymous').trim(),
+      text: text.trim(),
+      email: email ? email.trim() : null,
+      priority: ['low', 'normal', 'high', 'urgent'].includes(priority) ? priority : 'normal',
+      category: category || 'general',
+      timestamp: new Date().toISOString(),
+      status: 'new',
+      read: false,
+      responded: false
+    };
+    
+    // Add to beginning of array (newest first)
+    messages.unshift(newMessage);
+    
+    // Save back to file
+    fs.writeFileSync(messagesPath, JSON.stringify(messages, null, 2));
+    
+    // Also save to a backup file with timestamp
+    const backupFile = `inex-messages-backup-${new Date().toISOString().split('T')[0]}.json`;
+    const backupPath = path.join(__dirname, backupFile);
+    fs.writeFileSync(backupPath, JSON.stringify(messages, null, 2));
+    
+    res.status(201).json({
+      success: true,
+      message: 'Message sent successfully',
+      data: newMessage,
+      totalMessages: messages.length
+    });
+    
+  } catch (error) {
+    console.error('Error processing message:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Internal server error processing message'
+    });
+  }
+});
+
+app.get('/api/message-manager', (req, res) => {
+  try {
+    const { status, priority, category, limit = 50, offset = 0 } = req.query;
+    
+    const messagesFile = 'inex-messages.json';
+    const messagesPath = path.join(__dirname, messagesFile);
+    
+    // Ensure messages file exists
+    if (!fs.existsSync(messagesPath)) {
+      fs.writeFileSync(messagesPath, JSON.stringify([], null, 2));
+    }
+    
+    const messagesData = fs.readFileSync(messagesPath, 'utf8');
+    let messages = JSON.parse(messagesData);
+    
+    // Apply filters
+    if (status) {
+      messages = messages.filter(msg => msg.status === status);
+    }
+    if (priority) {
+      messages = messages.filter(msg => msg.priority === priority);
+    }
+    if (category) {
+      messages = messages.filter(msg => msg.category === category);
+    }
+    
+    // Apply pagination
+    const totalCount = messages.length;
+    messages = messages.slice(parseInt(offset), parseInt(offset) + parseInt(limit));
+    
+    res.json({
+      success: true,
+      messages: messages,
+      pagination: {
+        total: totalCount,
+        limit: parseInt(limit),
+        offset: parseInt(offset),
+        hasMore: parseInt(offset) + parseInt(limit) < totalCount
+      },
+      filters: { status, priority, category },
+      lastUpdated: new Date().toISOString()
+    });
+    
+  } catch (error) {
+    console.error('Error reading messages for manager:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Internal server error reading messages'
+    });
+  }
+});
+
+app.put('/api/message-manager', (req, res) => {
+  try {
+    const { id, status, read, responded, response, priority, category } = req.body;
+    
+    if (!id) {
+      return res.status(400).json({
+        success: false,
+        error: 'Message ID is required'
+      });
+    }
+    
+    const messagesFile = 'inex-messages.json';
+    const messagesPath = path.join(__dirname, messagesFile);
+    
+    // Ensure messages file exists
+    if (!fs.existsSync(messagesPath)) {
+      fs.writeFileSync(messagesPath, JSON.stringify([], null, 2));
+    }
+    
+    const messagesData = fs.readFileSync(messagesPath, 'utf8');
+    const messages = JSON.parse(messagesData);
+    
+    const messageIndex = messages.findIndex(msg => msg.id === id);
+    if (messageIndex === -1) {
+      return res.status(404).json({
+        success: false,
+        error: 'Message not found'
+      });
+    }
+    
+    // Update message fields
+    if (status !== undefined) messages[messageIndex].status = status;
+    if (read !== undefined) messages[messageIndex].read = read;
+    if (responded !== undefined) messages[messageIndex].responded = responded;
+    if (priority !== undefined) messages[messageIndex].priority = priority;
+    if (category !== undefined) messages[messageIndex].category = category;
+    
+    // Add response if provided
+    if (response) {
+      if (!messages[messageIndex].responses) {
+        messages[messageIndex].responses = [];
+      }
+      messages[messageIndex].responses.push({
+        text: response,
+        timestamp: new Date().toISOString(),
+        responder: 'Development Team'
+      });
+      messages[messageIndex].responded = true;
+      messages[messageIndex].status = 'responded';
+    }
+    
+    // Update timestamp
+    messages[messageIndex].lastUpdated = new Date().toISOString();
+    
+    // Save back to file
+    fs.writeFileSync(messagesPath, JSON.stringify(messages, null, 2));
+    
+    res.json({
+      success: true,
+      message: 'Message updated successfully',
+      data: messages[messageIndex]
+    });
+    
+  } catch (error) {
+    console.error('Error updating message:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Internal server error updating message'
+    });
+  }
+});
+
+app.delete('/api/message-manager', (req, res) => {
+  try {
+    const { id } = req.body;
+    
+    if (!id) {
+      return res.status(400).json({
+        success: false,
+        error: 'Message ID is required'
+      });
+    }
+    
+    const messagesFile = 'inex-messages.json';
+    const messagesPath = path.join(__dirname, messagesFile);
+    
+    // Ensure messages file exists
+    if (!fs.existsSync(messagesPath)) {
+      fs.writeFileSync(messagesPath, JSON.stringify([], null, 2));
+    }
+    
+    const messagesData = fs.readFileSync(messagesPath, 'utf8');
+    const messages = JSON.parse(messagesData);
+    
+    const messageIndex = messages.findIndex(msg => msg.id === id);
+    if (messageIndex === -1) {
+      return res.status(404).json({
+        success: false,
+        error: 'Message not found'
+      });
+    }
+    
+    // Soft delete by marking as archived
+    messages[messageIndex].status = 'archived';
+    messages[messageIndex].archivedAt = new Date().toISOString();
+    
+    // Save back to file
+    fs.writeFileSync(messagesPath, JSON.stringify(messages, null, 2));
+    
+    res.json({
+      success: true,
+      message: 'Message archived successfully'
+    });
+    
+  } catch (error) {
+    console.error('Error archiving message:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Internal server error archiving message'
+    });
+  }
+});
+
 // Catch-all route for 404
 app.use((req, res) => {
   res.status(404).send(`
@@ -207,4 +482,6 @@ app.listen(PORT, () => {
     console.log(`  /${file} (or /${file}.html)`);
   });
   console.log(`  / (serves index.html)`);
+  console.log(`  /api/messages (messaging API)`);
+  console.log(`  /api/message-manager (message management API)`);
 });

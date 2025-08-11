@@ -1,0 +1,66 @@
+[
+  {
+    "id": "1754887660763",
+    "name": "Urgent Client",
+    "text": "We have an urgent request for additional features. Please respond ASAP.",
+    "email": "urgent@client.com",
+    "priority": "urgent",
+    "category": "feature-request",
+    "timestamp": "2025-08-11T04:47:40.763Z",
+    "status": "responded",
+    "read": true,
+    "responded": true,
+    "lastUpdated": "2025-08-11T04:47:40.767Z",
+    "responses": [
+      {
+        "text": "Thank you for your message! We are working on your request.",
+        "timestamp": "2025-08-11T04:47:40.767Z",
+        "responder": "Development Team"
+      }
+    ]
+  },
+  {
+    "id": "1754887660760",
+    "name": "Test User",
+    "text": "This is a test message to verify the messaging system is working correctly.",
+    "email": "test@example.com",
+    "priority": "low",
+    "category": "test",
+    "timestamp": "2025-08-11T04:47:40.760Z",
+    "status": "new",
+    "read": false,
+    "responded": false
+  },
+  {
+    "id": "1754887660757",
+    "name": "Zebadiah Henry",
+    "text": "Hi team! I wanted to check on the progress of the INEX portal development. Everything looking good?",
+    "email": "zeb@inexsystemsdesigns.com",
+    "priority": "normal",
+    "category": "client-feedback",
+    "timestamp": "2025-08-11T04:47:40.757Z",
+    "status": "new",
+    "read": false,
+    "responded": false
+  },
+  {
+    "id": "1754887531321",
+    "name": "Zebadiah Henry",
+    "text": "Hi team! I wanted to check on the progress of the INEX portal development. Everything looking good?",
+    "email": "zeb@inexsystemsdesigns.com",
+    "priority": "normal",
+    "category": "client-feedback",
+    "timestamp": "2025-08-11T04:45:31.321Z",
+    "status": "responded",
+    "read": true,
+    "responded": true,
+    "responses": [
+      {
+        "text": "Thank you for your message! We are working hard on the INEX portal development. Everything is progressing well and we should have Phase 1 completed soon.",
+        "timestamp": "2025-08-11T04:45:43.247Z",
+        "responder": "Development Team"
+      }
+    ],
+    "lastUpdated": "2025-08-11T04:45:43.247Z"
+  }
+]

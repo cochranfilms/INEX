@@ -97,6 +97,13 @@
     .dev-checkbox{width:16px;height:16px;accent-color:var(--accent)}
     .dev-label{flex:1;font-size:13px}
     .dev-status{font-size:11px;opacity:.8}
+
+    /* Success notification */
+    .success{color:#22c55e}
+    @keyframes slideIn {
+      from { transform: translateX(100%); opacity: 0; }
+      to { transform: translateX(0); opacity: 1; }
+    }
   </style>
 </head>
 <body>
@@ -485,11 +492,14 @@
     // Example: Add a new update (you can call this from console or add a form)
     // addUpdate('Dec 18', 'Requirements document drafted', 'Complete');
 
-    // Messaging System
+    // Messaging System - Global API Integration
     const messageForm = document.getElementById('messageForm');
     const messagesList = document.getElementById('messagesList');
     const messageText = document.getElementById('messageText');
     const charCount = document.getElementById('charCount');
+
+    // API endpoint for messages
+    const MESSAGES_API = `${window.location.origin}/api/messages`;
 
     // Update character count
     messageText.addEventListener('input', function() {
@@ -497,8 +507,31 @@
       charCount.textContent = `${textLength} characters`;
     });
 
-    // Load saved messages
-    function loadMessages() {
+    // Load messages from API
+    async function loadMessages() {
+      try {
+        const response = await fetch(MESSAGES_API);
+        if (!response.ok) {
+          console.warn('Failed to fetch messages from API, falling back to localStorage');
+          loadMessagesFromLocalStorage();
+          return;
+        }
+        
+        const data = await response.json();
+        const messages = data.messages || [];
+        displayMessages(messages);
+        
+        // Also save to localStorage as backup
+        localStorage.setItem('inex-messages', JSON.stringify(messages));
+        
+      } catch (error) {
+        console.warn('API unreachable, using localStorage fallback:', error);
+        loadMessagesFromLocalStorage();
+      }
+    }
+
+    // Fallback to localStorage
+    function loadMessagesFromLocalStorage() {
       const savedMessages = localStorage.getItem('inex-messages') || '[]';
       const messages = JSON.parse(savedMessages);
       displayMessages(messages);
@@ -519,15 +552,20 @@
         <div style="padding:12px;border:1px solid var(--border);border-radius:8px;margin-bottom:8px;background:rgba(255,255,255,.02)">
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
             <strong style="font-size:13px;color:var(--accent)">${msg.name || 'Anonymous'}</strong>
-            <small style="color:var(--muted);font-size:11px">${msg.timestamp}</small>
+            <small style="color:var(--muted);font-size:11px">${formatTimestamp(msg.timestamp)}</small>
           </div>
           <div style="font-size:13px;line-height:1.4">${msg.text}</div>
+          ${msg.responses && msg.responses.length > 0 ? `
+            <div style="margin-top:8px;padding-top:8px;border-top:1px solid var(--border);font-size:12px;color:var(--muted)">
+              <strong>Response:</strong> ${msg.responses[msg.responses.length - 1].text}
+            </div>
+          ` : ''}
         </div>
       `).join('');
     }
 
     // Handle message form submission
-    messageForm.addEventListener('submit', function(e) {
+    messageForm.addEventListener('submit', async function(e) {
       e.preventDefault();
       
       const nameInput = document.getElementById('messageName');
@@ -541,37 +579,95 @@
         return;
       }
 
-      // Create message object
-      const message = {
-        name: name,
-        text: text,
-        timestamp: new Date().toLocaleString(),
-        id: Date.now()
-      };
+      // Show loading state
+      const submitBtn = messageForm.querySelector('button[type="submit"]');
+      const originalText = submitBtn.innerHTML;
+      submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Sending...';
+      submitBtn.disabled = true;
 
-      // Get existing messages and add new one
-      const savedMessages = localStorage.getItem('inex-messages') || '[]';
-      const messages = JSON.parse(savedMessages);
-      messages.unshift(message); // Add to beginning
-      
-      // Save to localStorage
-      localStorage.setItem('inex-messages', JSON.stringify(messages));
-      
-      // Display updated messages
-      displayMessages(messages);
-      
-      // Clear form
+      try {
+        // Try to send via API first
+        const response = await fetch(MESSAGES_API, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            name: name,
+            text: text,
+            priority: 'normal',
+            category: 'client-feedback'
+          })
+        });
+
+        if (response.ok) {
+          // API success - reload messages
+          await loadMessages();
+          showMessageSuccess('Message sent successfully! The development team will see it immediately.');
+        } else {
+          // API failed - fallback to localStorage
+          throw new Error('API request failed');
+        }
+        
+      } catch (error) {
+        console.warn('API failed, using localStorage fallback:', error);
+        
+        // Fallback to localStorage
+        const message = {
+          name: name,
+          text: text,
+          timestamp: new Date().toISOString(),
+          id: Date.now()
+        };
+
+        const savedMessages = localStorage.getItem('inex-messages') || '[]';
+        const messages = JSON.parse(savedMessages);
+        messages.unshift(message);
+        
+        localStorage.setItem('inex-messages', JSON.stringify(messages));
+        displayMessages(messages);
+        
+        showMessageSuccess('Message sent successfully! (Local mode)');
+      }
+
+      // Reset form
       textInput.value = '';
-      charCount.textContent = '0 characters'; // Reset character count
+      charCount.textContent = '0 characters';
       
-      // Trigger storage event for real-time updates
-      window.dispatchEvent(new StorageEvent('storage', {
-        key: 'inex-messages',
-        newValue: JSON.stringify(messages)
-      }));
-      
-      alert('Message sent successfully! The development team will see it immediately.');
+      // Reset button
+      submitBtn.innerHTML = originalText;
+      submitBtn.disabled = false;
     });
+
+    // Show success message
+    function showMessageSuccess(message) {
+      const notification = document.createElement('div');
+      notification.style.cssText = `
+        position: fixed; top: 20px; right: 20px; background: var(--success); color: white;
+        padding: 12px 16px; border-radius: 8px; z-index: 1000; font-weight: 600;
+        animation: slideIn 0.3s ease-out;
+      `;
+      notification.textContent = message;
+      document.body.appendChild(notification);
+      
+      setTimeout(() => notification.remove(), 4000);
+    }
+
+    // Format timestamp
+    function formatTimestamp(timestamp) {
+      if (!timestamp) return 'Just now';
+      
+      try {
+        const date = new Date(timestamp);
+        const now = new Date();
+        const diff = now - date;
+        
+        if (diff < 60000) return 'Just now';
+        if (diff < 3600000) return `${Math.floor(diff / 60000)}m ago`;
+        if (diff < 86400000) return `${Math.floor(diff / 3600000)}h ago`;
+        return date.toLocaleDateString();
+      } catch (e) {
+        return timestamp; // Return original if parsing fails
+      }
+    }
 
     // Listen for new messages from other windows
     window.addEventListener('storage', function(e) {
@@ -587,6 +683,9 @@
 
     // Load messages on page load
     loadMessages();
+
+    // Auto-refresh messages every 30 seconds
+    setInterval(loadMessages, 30000);
   </script>
 </body>
 </html>
