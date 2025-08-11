@@ -1,6 +1,109 @@
-// Vercel API function for messages - Single writer to inex-live-data.json with robust error handling
+// Vercel API function for messages - Uses GitHub API to update inex-live-data.json with robust error handling
 import { promises as fs } from 'fs';
 import path from 'path';
+
+// GitHub API configuration
+const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
+const GITHUB_REPO = process.env.GITHUB_REPO || 'cochranfilms/INEX';
+const GITHUB_BRANCH = process.env.GITHUB_BRANCH || 'main';
+const GITHUB_API_BASE = 'https://api.github.com';
+
+// Helper function to update file via GitHub API
+async function updateFileViaGitHub(filePath, content, commitMessage) {
+  if (!GITHUB_TOKEN) {
+    throw new Error('GitHub token not configured');
+  }
+
+  try {
+    // First, get the current file to get its SHA
+    const getFileResponse = await fetch(`${GITHUB_API_BASE}/repos/${GITHUB_REPO}/contents/${filePath}`, {
+      headers: {
+        'Authorization': `token ${GITHUB_TOKEN}`,
+        'Accept': 'application/vnd.github.v3+json',
+        'User-Agent': 'INEX-Portal-API'
+      }
+    });
+
+    let currentSha = null;
+    if (getFileResponse.ok) {
+      const fileData = await getFileResponse.json();
+      currentSha = fileData.sha;
+    }
+
+    // Update the file
+    const updateResponse = await fetch(`${GITHUB_API_BASE}/repos/${GITHUB_REPO}/contents/${filePath}`, {
+      method: 'PUT',
+      headers: {
+        'Authorization': `token ${GITHUB_TOKEN}`,
+        'Accept': 'application/vnd.github.v3+json',
+        'Content-Type': 'application/json',
+        'User-Agent': 'INEX-Portal-API'
+      },
+      body: JSON.stringify({
+        message: commitMessage,
+        content: Buffer.from(content).toString('base64'),
+        branch: GITHUB_BRANCH,
+        ...(currentSha && { sha: currentSha })
+      })
+    });
+
+    if (!updateResponse.ok) {
+      const errorData = await updateResponse.json();
+      throw new Error(`GitHub API error: ${errorData.message || updateResponse.statusText}`);
+    }
+
+    return await updateResponse.json();
+  } catch (error) {
+    console.error('GitHub API error:', error);
+    throw error;
+  }
+}
+
+// Helper function to read file via GitHub API
+async function readFileViaGitHub(filePath) {
+  if (!GITHUB_TOKEN) {
+    throw new Error('GitHub token not configured');
+  }
+
+  try {
+    const response = await fetch(`${GITHUB_API_BASE}/repos/${GITHUB_REPO}/contents/${filePath}`, {
+      headers: {
+        'Authorization': `token ${GITHUB_TOKEN}`,
+        'Accept': 'application/vnd.github.v3+json',
+        'User-Agent': 'INEX-Portal-API'
+      }
+    });
+
+    if (!response.ok) {
+      if (response.status === 404) {
+        // File doesn't exist, return default structure
+        return {
+          progress: 5,
+          phase: "Phase 1",
+          phaseName: "Prototype Polish",
+          status: "Phase 1 (Prototype Polish) in progress. Working on INEX branding integration and basic UI framework. On track for Aug 22 completion.",
+          lastUpdated: new Date().toISOString(),
+          eta: "Sep 11-18, 2025",
+          scope: "Scope v1.0",
+          owner: "Cochran Full Stack Solutions",
+          client: "INEX",
+          phases: [],
+          updates: [],
+          nextActions: [],
+          messages: []
+        };
+      }
+      throw new Error(`GitHub API error: ${response.statusText}`);
+    }
+
+    const fileData = await response.json();
+    const content = Buffer.from(fileData.content, 'base64').toString('utf8');
+    return JSON.parse(content);
+  } catch (error) {
+    console.error('GitHub API read error:', error);
+    throw error;
+  }
+}
 
 export default async function handler(req, res) {
   // Set CORS headers
@@ -15,40 +118,13 @@ export default async function handler(req, res) {
 
   try {
     if (req.method === 'GET') {
-      // GET /api/messages - Retrieve all messages from the JSON file
+      // GET /api/messages - Retrieve all messages from the JSON file via GitHub
       try {
-        // Use absolute path and ensure file exists
-        const jsonPath = path.resolve(process.cwd(), 'inex-live-data.json');
-        console.log('📁 Reading messages from:', jsonPath);
+        console.log('📁 Reading messages from GitHub repository');
         
-        // Check if file exists
-        try {
-          await fs.access(jsonPath);
-        } catch (accessError) {
-          console.log('⚠️ File does not exist, creating default structure');
-          const defaultData = {
-            progress: 5,
-            phase: "Phase 1",
-            phaseName: "Prototype Polish",
-            status: "Phase 1 (Prototype Polish) in progress. Working on INEX branding integration and basic UI framework. On track for Aug 22 completion.",
-            lastUpdated: new Date().toISOString(),
-            eta: "Sep 11-18, 2025",
-            scope: "Scope v1.0",
-            owner: "Cochran Full Stack Solutions",
-            client: "INEX",
-            phases: [],
-            updates: [],
-            nextActions: [],
-            messages: []
-          };
-          await fs.writeFile(jsonPath, JSON.stringify(defaultData, null, 2));
-          console.log('✅ Created default data file');
-        }
+        const data = await readFileViaGitHub('inex-live-data.json');
         
-        const jsonData = await fs.readFile(jsonPath, 'utf8');
-        const data = JSON.parse(jsonData);
-        
-        console.log(`✅ Successfully read ${(data.messages || []).length} messages from file`);
+        console.log(`✅ Successfully read ${(data.messages || []).length} messages from GitHub`);
         
         return res.status(200).json({
           success: true,
@@ -56,37 +132,33 @@ export default async function handler(req, res) {
           count: (data.messages || []).length,
           lastUpdated: data.lastUpdated || new Date().toISOString()
         });
-      } catch (fileError) {
-        console.error('❌ Error reading JSON file:', fileError);
+      } catch (error) {
+        console.error('❌ Error reading from GitHub:', error);
         return res.status(200).json({
           success: true,
           messages: [],
           count: 0,
           lastUpdated: new Date().toISOString(),
-          warning: 'Using empty message list due to file read error'
+          warning: 'Using empty message list due to GitHub API error'
         });
       }
     }
 
     if (req.method === 'POST') {
-      // POST /api/messages - Add new message directly to JSON file
+      // POST /api/messages - Add new message via GitHub API
       const { name, text, email, priority, category, action, messages } = req.body;
       
       // Handle bulk sync action
       if (action === 'sync' && messages && Array.isArray(messages)) {
         try {
-          const jsonPath = path.resolve(process.cwd(), 'inex-live-data.json');
-          console.log('📁 Syncing messages to:', jsonPath);
+          console.log('📁 Syncing messages via GitHub API');
           
           let existingData = {};
           
           try {
-            // Check if file exists
-            await fs.access(jsonPath);
-            const jsonData = await fs.readFile(jsonPath, 'utf8');
-            existingData = JSON.parse(jsonData);
-            console.log('✅ Read existing data file');
-          } catch (fileError) {
+            existingData = await readFileViaGitHub('inex-live-data.json');
+            console.log('✅ Read existing data from GitHub');
+          } catch (error) {
             console.log('⚠️ No existing file, starting fresh');
             existingData = {
               progress: 5,
@@ -116,25 +188,29 @@ export default async function handler(req, res) {
             lastUpdated: new Date().toISOString()
           };
           
-          // Write back to file with error handling
-          await fs.writeFile(jsonPath, JSON.stringify(updatedData, null, 2));
-          console.log(`✅ Successfully synced ${messages.length} messages, total: ${allMessages.length}`);
+          // Update via GitHub API
+          await updateFileViaGitHub(
+            'inex-live-data.json',
+            JSON.stringify(updatedData, null, 2),
+            `Sync ${messages.length} messages - ${new Date().toISOString()}`
+          );
+          
+          console.log(`✅ Successfully synced ${messages.length} messages via GitHub, total: ${allMessages.length}`);
           
           return res.status(200).json({
             success: true,
-            message: 'Messages synced successfully',
+            message: 'Messages synced successfully via GitHub',
             count: allMessages.length,
             messages: allMessages
           });
         } catch (error) {
-          console.error('❌ Error syncing messages:', error);
+          console.error('❌ Error syncing messages via GitHub:', error);
           return res.status(500).json({
             success: false,
-            error: 'Failed to sync messages: ' + error.message,
+            error: 'Failed to sync messages via GitHub: ' + error.message,
             details: {
-              filePath: path.resolve(process.cwd(), 'inex-live-data.json'),
               errorType: error.constructor.name,
-              errorCode: error.code
+              errorMessage: error.message
             }
           });
         }
@@ -163,18 +239,14 @@ export default async function handler(req, res) {
       };
 
       try {
-        const jsonPath = path.resolve(process.cwd(), 'inex-live-data.json');
-        console.log('📁 Adding message to:', jsonPath);
+        console.log('📁 Adding message via GitHub API');
         
         let existingData = {};
         
         try {
-          // Check if file exists
-          await fs.access(jsonPath);
-          const jsonData = await fs.readFile(jsonPath, 'utf8');
-          existingData = JSON.parse(jsonData);
-          console.log('✅ Read existing data file');
-        } catch (fileError) {
+          existingData = await readFileViaGitHub('inex-live-data.json');
+          console.log('✅ Read existing data from GitHub');
+        } catch (error) {
           console.log('⚠️ No existing file, creating default structure');
           existingData = {
             progress: 5,
@@ -204,10 +276,14 @@ export default async function handler(req, res) {
           lastUpdated: new Date().toISOString()
         };
         
-        // Write back to file with error handling
-        await fs.writeFile(jsonPath, JSON.stringify(updatedData, null, 2));
+        // Update via GitHub API
+        await updateFileViaGitHub(
+          'inex-live-data.json',
+          JSON.stringify(updatedData, null, 2),
+          `Add message from ${newMessage.name} - ${new Date().toISOString()}`
+        );
         
-        console.log('✅ Message added successfully:', {
+        console.log('✅ Message added successfully via GitHub:', {
           id: newMessage.id,
           name: newMessage.name,
           totalMessages: updatedMessages.length
@@ -215,19 +291,18 @@ export default async function handler(req, res) {
         
         return res.status(200).json({
           success: true,
-          message: 'Message added successfully',
+          message: 'Message added successfully via GitHub',
           data: newMessage,
           allMessages: updatedMessages
         });
       } catch (error) {
-        console.error('❌ Error adding message:', error);
+        console.error('❌ Error adding message via GitHub:', error);
         return res.status(500).json({
           success: false,
-          error: 'Failed to add message: ' + error.message,
+          error: 'Failed to add message via GitHub: ' + error.message,
           details: {
-            filePath: path.resolve(process.cwd(), 'inex-live-data.json'),
             errorType: error.constructor.name,
-            errorCode: error.code,
+            errorMessage: error.message,
             messageData: newMessage
           }
         });
@@ -235,7 +310,7 @@ export default async function handler(req, res) {
     }
 
     if (req.method === 'PUT') {
-      // PUT /api/messages - Update message (add response)
+      // PUT /api/messages - Update message via GitHub API
       const { messageId, action, responseText, responder } = req.body;
       
       if (!messageId || !action) {
@@ -247,21 +322,9 @@ export default async function handler(req, res) {
       }
 
       try {
-        const jsonPath = path.resolve(process.cwd(), 'inex-live-data.json');
-        console.log('📁 Updating message in:', jsonPath);
+        console.log('📁 Updating message via GitHub API');
         
-        // Check if file exists
-        try {
-          await fs.access(jsonPath);
-        } catch (accessError) {
-          return res.status(404).json({
-            success: false,
-            error: 'Data file not found'
-          });
-        }
-        
-        const jsonData = await fs.readFile(jsonPath, 'utf8');
-        const existingData = JSON.parse(jsonData);
+        const existingData = await readFileViaGitHub('inex-live-data.json');
         
         // Find and update the message
         const messages = existingData.messages || [];
@@ -298,28 +361,31 @@ export default async function handler(req, res) {
           lastUpdated: new Date().toISOString()
         };
         
-        // Write back to file with error handling
-        await fs.writeFile(jsonPath, JSON.stringify(updatedData, null, 2));
+        // Update via GitHub API
+        await updateFileViaGitHub(
+          'inex-live-data.json',
+          JSON.stringify(updatedData, null, 2),
+          `Update message ${messageId} - ${action} - ${new Date().toISOString()}`
+        );
         
-        console.log('✅ Message updated successfully:', {
+        console.log('✅ Message updated successfully via GitHub:', {
           messageId: messageId,
           action: action
         });
         
         return res.status(200).json({
           success: true,
-          message: 'Message updated successfully',
+          message: 'Message updated successfully via GitHub',
           data: messages[messageIndex]
         });
       } catch (error) {
-        console.error('❌ Error updating message:', error);
+        console.error('❌ Error updating message via GitHub:', error);
         return res.status(500).json({
           success: false,
-          error: 'Failed to update message: ' + error.message,
+          error: 'Failed to update message via GitHub: ' + error.message,
           details: {
-            filePath: path.resolve(process.cwd(), 'inex-live-data.json'),
             errorType: error.constructor.name,
-            errorCode: error.code,
+            errorMessage: error.message,
             messageId: messageId,
             action: action
           }
@@ -341,7 +407,7 @@ export default async function handler(req, res) {
       error: 'Internal server error: ' + error.message,
       details: {
         errorType: error.constructor.name,
-        errorCode: error.code,
+        errorMessage: error.message,
         method: req.method,
         timestamp: new Date().toISOString()
       }
