@@ -8,9 +8,6 @@
     },
     "api/status-update.js": {
       "maxDuration": 30
-    },
-    "api/message-manager.js": {
-      "maxDuration": 30
     }
   },
 
