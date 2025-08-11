@@ -68,61 +68,6 @@
   .btn{display:inline-flex;align-items:center;justify-content:center;padding:.8rem 1rem;border-radius:12px;border:1px solid transparent;text-decoration:none;font-weight:800;cursor:pointer;transition:.15s transform ease}
   .btn:hover{transform:translateY(-1px);filter:brightness(.97)}
   .btn.primary{background:var(--maroon);color:#fff;border-color:var(--maroon-700)}
-  .btn.primary.message-submit{
-    background: #A62E3F !important;
-    color: #fff !important;
-    border-color: #7c2330 !important;
-    padding: 16px 32px !important;
-    font-size: 16px !important;
-    font-weight: 700 !important;
-    border-radius: 12px !important;
-    box-shadow: 0 6px 20px rgba(166, 46, 63, 0.4) !important;
-    transition: all 0.3s ease !important;
-    border: none !important;
-    cursor: pointer !important;
-    text-transform: uppercase !important;
-    letter-spacing: 0.5px !important;
-    min-width: 160px !important;
-  }
-  
-  .btn.primary.message-submit:hover {
-    background: #8a2635 !important;
-    transform: translateY(-3px) !important;
-    box-shadow: 0 8px 25px rgba(166, 46, 63, 0.5) !important;
-  }
-  
-  /* Message form specific styles - AGGRESSIVE OVERRIDE */
-  .message-form input,
-  .message-form textarea {
-    padding: 12px 16px !important;
-    border: 2px solid #e6e6e6 !important;
-    border-radius: 12px !important;
-    background: #ffffff !important;
-    color: #222 !important;
-    font-size: 14px !important;
-    transition: all 0.2s ease !important;
-    outline: none !important;
-    min-height: 48px !important;
-    width: 100% !important;
-    box-sizing: border-box !important;
-  }
-  
-  .message-form input:focus,
-  .message-form textarea:focus {
-    border-color: #FFB200 !important;
-    box-shadow: 0 0 0 3px rgba(255, 178, 0, 0.1) !important;
-    transform: translateY(-1px) !important;
-  }
-  
-  .message-form label {
-    font-size: 12px !important;
-    font-weight: 600 !important;
-    color: #222 !important;
-    text-transform: uppercase !important;
-    letter-spacing: 0.5px !important;
-    margin-bottom: 8px !important;
-    display: block !important;
-  }
   
   /* Message display styles */
   .message-item {
@@ -538,20 +483,20 @@
                 <small>This site automatically pushes messages to GitHub. When you send a message, it's immediately committed to the repository and visible to the development team.</small>
               </div>
               
-              <form id="messageForm" class="message-form" style="display:grid;gap:16px">
+              <form id="messageForm" style="display:grid;gap:16px">
                 <div style="display:grid;gap:8px">
-                  <label for="messageName">Your Name</label>
-                  <input type="text" id="messageName" placeholder="Anonymous (optional)">
+                  <label for="messageName" style="font-size:12px;font-weight:600;color:var(--panel-ink);text-transform:uppercase;letter-spacing:0.5px">Your Name</label>
+                  <input type="text" id="messageName" placeholder="Anonymous (optional)" style="padding:12px 16px;border:2px solid var(--border);border-radius:12px;background:var(--panel);color:var(--panel-ink);font-size:14px;transition:all 0.2s ease;outline:none" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'">
                 </div>
                 
                 <div style="display:grid;gap:8px">
-                  <label for="messageText">Message</label>
-                  <textarea id="messageText" placeholder="Type your message here..." rows="4" style="resize:vertical;line-height:1.5"></textarea>
+                  <label for="messageText" style="font-size:12px;font-weight:600;color:var(--panel-ink);text-transform:uppercase;letter-spacing:0.5px">Message</label>
+                  <textarea id="messageText" placeholder="Type your message here..." rows="4" style="padding:12px 16px;border:2px solid var(--border);border-radius:12px;background:var(--panel);color:var(--panel-ink);font-size:14px;resize:vertical;transition:all 0.2s ease;outline:none;line-height:1.5" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'"></textarea>
                 </div>
                 
                 <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0">
                   <small style="color:var(--muted);font-size:12px;font-weight:500" id="charCount">0 characters</small>
-                  <button type="submit" class="btn primary message-submit">📤 Send Message</button>
+                  <button type="submit" class="btn primary" style="padding:12px 24px;font-size:14px;font-weight:700;border-radius:12px;box-shadow:0 4px 12px rgba(166,46,63,0.3);transition:all 0.2s ease" onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 6px 20px rgba(166,46,63,0.4)'" onmouseout="this.style.transform='translateY(0)';this.style.boxShadow='0 4px 12px rgba(166,46,63,0.3)'">📤 Send Message</button>
                 </div>
               </form>
             </div>
