@@ -381,8 +381,9 @@
               <strong>🚀 Live Deployment Controls</strong><br>
               <small>These buttons will update both local status AND deploy live to Zebediah's status page:</small>
               <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-top:1rem">
-                <button class="btn primary" onclick="deployStatusUpdate()">🚀 Deploy Live Update</button>
+                <button class="btn primary" onclick="deployStatusUpdate()">🚀 Deploy Status Update</button>
                 <button class="btn secondary" onclick="deployPhaseChange()">🔄 Deploy Phase Change</button>
+                <button class="btn ghost" onclick="testGitHubWorkflow()">🧪 Test Workflow</button>
               </div>
             </div>
             <div style="margin-top:1rem;padding:1rem;background:rgba(255,178,0,.1);border:1px solid rgba(255,178,0,.2);border-radius:8px">
@@ -1086,6 +1087,36 @@ The workflow will update inex-live-data.json and deploy the changes.`);
       updateDashboardProgress();
     }, 100);
   };
+
+  // Test GitHub Actions workflow dispatch (for development/testing)
+  async function testGitHubWorkflow() {
+    if (isDev) {
+      alert('This function is for testing GitHub Actions workflows on the live site.');
+      return;
+    }
+    
+    const testData = {
+      progress: 75,
+      phase: 'Testing',
+      status: 'GitHub Actions workflow test'
+    };
+    
+    alert(`🧪 GitHub Actions Workflow Test
+
+This will test the status update workflow with:
+Progress: ${testData.progress}%
+Phase: ${testData.phase}
+Status: ${testData.status}
+
+To test:
+1. Go to: https://github.com/cochranfilms/INEX/actions
+2. Click "Status Update Workflow"
+3. Click "Run workflow"
+4. Fill in the test data above
+5. Click "Run workflow"
+
+The workflow will update inex-live-data.json and deploy changes.`);
+  }
 </script>
 </body>
 </html>
