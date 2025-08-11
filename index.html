@@ -524,6 +524,35 @@
   overlay.addEventListener('click', (e)=>{ if(e.target === overlay) closeOverlay(); });
   window.addEventListener('keydown', (e)=>{ if(e.key === 'Escape' && overlay.classList.contains('show')) closeOverlay(); });
 
+  // Determine API base for both messages and status updates
+  const isDev = window.location.hostname === 'localhost' || 
+                window.location.hostname === '127.0.0.1' ||
+                window.location.port !== '';
+  let API_BASE = isDev ? 'http://localhost:3000' : window.location.origin;
+  let API_STATUS_UPDATE = `${API_BASE}/api/status-update`;
+
+  const candidateBases = isDev ? [API_BASE] : [
+    window.location.origin,
+    window.location.origin.replace('://inex.', '://www.inex.'),
+    window.location.origin.replace('://www.inex.', '://inex.'),
+  ].filter((v, i, a) => v && a.indexOf(v) === i);
+
+  async function detectApiBaseForStatus() {
+    if (isDev) return;
+    for (const base of candidateBases) {
+      try {
+        // Probe with a safe HEAD/GET to messages endpoint, which exists everywhere
+        const resp = await fetch(`${base}/api/messages`, { method: 'GET', cache: 'no-store' });
+        if (resp.ok) {
+          API_BASE = base;
+          API_STATUS_UPDATE = `${API_BASE}/api/status-update`;
+          console.log('Selected API Base (index):', API_BASE);
+          return;
+        }
+      } catch (_) {}
+    }
+  }
+
   // Status Management Functions
   // Load live status from JSON so the status view reflects deploy-time updates
   async function loadLiveStatusFromJson() {
@@ -653,7 +682,7 @@
     try {
       console.log('Deploying status update:', { progress, phase, status });
       
-      const response = await fetch('/api/status-update', {
+      let response = await fetch(API_STATUS_UPDATE, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -664,6 +693,14 @@
           status
         })
       });
+      if ((response.status === 404 || response.status === 405) && !isDev) {
+        await detectApiBaseForStatus();
+        response = await fetch(API_STATUS_UPDATE, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ progress: parseInt(progress), phase, status })
+        });
+      }
 
       console.log('Response status:', response.status);
       
@@ -714,7 +751,7 @@
     try {
       console.log('Deploying phase change:', { progress, phase, status });
       
-      const response = await fetch('/api/status-update', {
+      let response = await fetch(API_STATUS_UPDATE, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -725,6 +762,14 @@
           status
         })
       });
+      if ((response.status === 404 || response.status === 405) && !isDev) {
+        await detectApiBaseForStatus();
+        response = await fetch(API_STATUS_UPDATE, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ progress: parseInt(progress), phase, status })
+        });
+      }
 
       console.log('Response status:', response.status);
       
