@@ -60,61 +60,238 @@ export default function handler(req, res) {
       });
     }
     
-    // Read existing consolidated data
-      const liveDataFile = 'inex-live-data.json';
-  const liveDataPath = path.join(process.cwd(), liveDataFile);
-    
-    let liveData = {};
-    
-    try {
-      // Try to read existing data
-      if (fs.existsSync(liveDataPath)) {
-        const existingData = fs.readFileSync(liveDataPath, 'utf8');
-        liveData = JSON.parse(existingData);
-      }
-    } catch (readError) {
-      console.log('No existing data found, starting fresh');
-    }
-    
-    // Update the consolidated data with all available parameters
+    // Create the updated data structure
     const updatedData = {
-      ...liveData,
       progress,
       phase,
+      phaseName: phaseName || 'Discovery Phase',
       status,
       lastUpdated: new Date().toISOString(),
-      // Update optional parameters if provided
-      ...(phaseName && { phaseName }),
-      ...(eta && { eta }),
-      ...(scope && { scope }),
-      ...(owner && { owner }),
-      ...(client && { client }),
-      ...(phases && { phases }),
-      ...(updates && { updates }),
-      ...(nextActions && { nextActions })
+      eta: eta || 'Sep 11-18, 2025',
+      scope: scope || 'Scope v1.0',
+      owner: owner || 'Cochran Full Stack Solutions',
+      client: client || 'INEX',
+      phases: phases || [
+        {
+          name: "Discovery",
+          progress: 0,
+          status: "active",
+          tasks: [
+            {
+              id: "requirements-gathering",
+              name: "Gather project requirements and specifications",
+              status: "in-progress"
+            },
+            {
+              id: "project-planning",
+              name: "Create project timeline and milestones",
+              status: "pending"
+            },
+            {
+              id: "team-setup",
+              name: "Set up development team and tools",
+              status: "pending"
+            },
+            {
+              id: "stakeholder-interviews",
+              name: "Conduct stakeholder interviews and feedback sessions",
+              status: "pending"
+            },
+            {
+              id: "technical-assessment",
+              name: "Perform technical assessment and feasibility study",
+              status: "pending"
+            }
+          ]
+        },
+        {
+          name: "Phase 1",
+          progress: 0,
+          status: "pending",
+          tasks: [
+            {
+              id: "inex-branding",
+              name: "INEX branding integration and color tokens",
+              status: "planned"
+            },
+            {
+              id: "ui-framework",
+              name: "Basic UI framework (Dark/Light themes)",
+              status: "planned"
+            },
+            {
+              id: "dashboard-structure",
+              name: "Core dashboard structure and navigation",
+              status: "planned"
+            },
+            {
+              id: "project-docs",
+              name: "Project documentation and specs",
+              status: "planned"
+            },
+            {
+              id: "deployment-prep",
+              name: "Deployment preparation and testing",
+              status: "planned"
+            }
+          ]
+        },
+        {
+          name: "Phase 2",
+          progress: 0,
+          status: "pending",
+          tasks: [
+            {
+              id: "authentication",
+              name: "Authentication system",
+              status: "planned"
+            },
+            {
+              id: "data-connectors",
+              name: "Data connectors and integration",
+              status: "planned"
+            }
+          ]
+        },
+        {
+          name: "Phase 3",
+          progress: 0,
+          status: "pending",
+          tasks: [
+            {
+              id: "client-portal",
+              name: "Client portal development",
+              status: "planned"
+            },
+            {
+              id: "reporting",
+              name: "Reporting and analytics",
+              status: "planned"
+            }
+          ]
+        }
+      ],
+      updates: updates || [
+        {
+          date: "Jan 8",
+          update: "Project initiated - gathering requirements and specifications",
+          status: "In Progress"
+        },
+        {
+          date: "Jan 9",
+          update: "Requirements analysis and project planning",
+          status: "Planned"
+        },
+        {
+          date: "Jan 10",
+          update: "Team setup and development environment preparation",
+          status: "Planned"
+        }
+      ],
+      nextActions: nextActions || [
+        "Complete requirements gathering and stakeholder interviews",
+        "Finalize project timeline and milestones",
+        "Set up development team and tools",
+        "Conduct technical feasibility assessment",
+        "Prepare project scope document"
+      ],
+      messages: [
+        {
+          id: "1754906153138",
+          name: "API Test",
+          text: "Testing the comprehensive messaging system integration",
+          email: null,
+          priority: "high",
+          category: "test",
+          timestamp: "2025-08-11T09:55:53.138Z",
+          status: "new",
+          read: false,
+          responded: false
+        },
+        {
+          id: "1754892665931",
+          name: "Test User",
+          text: "This is a test message",
+          email: null,
+          priority: "normal",
+          category: "general",
+          timestamp: "2025-08-11T06:11:05.931Z",
+          status: "new",
+          read: false,
+          responded: false
+        },
+        {
+          id: "1754887660763",
+          name: "Urgent Client",
+          text: "We have an urgent request for additional features. Please respond ASAP.",
+          email: "urgent@client.com",
+          priority: "urgent",
+          category: "feature-request",
+          timestamp: "2025-08-11T04:47:40.763Z",
+          status: "responded",
+          read: true,
+          responded: true,
+          lastUpdated: "2025-08-11T04:47:40.767Z",
+          responses: [
+            {
+              text: "Thank you for your message! We are working on your request.",
+              timestamp: "2025-08-11T04:47:40.767Z",
+              responder: "Development Team"
+            }
+          ]
+        },
+        {
+          id: "1754887660760",
+          name: "Test User",
+          text: "This is a test message to verify the messaging system is working correctly.",
+          email: "test@example.com",
+          priority: "low",
+          category: "test",
+          timestamp: "2025-08-11T04:47:40.760Z",
+          status: "new",
+          read: false,
+          responded: false
+        },
+        {
+          id: "1754887660757",
+          name: "Zebadiah Henry",
+          text: "Hi team! I wanted to check on the progress of the INEX portal development. Everything looking good?",
+          email: "zeb@inexsystemsdesigns.com",
+          priority: "normal",
+          category: "client-feedback",
+          timestamp: "2025-08-11T04:47:40.757Z",
+          status: "new",
+          read: false,
+          responded: false
+        },
+        {
+          id: "1754887531321",
+          name: "Zebadiah Henry",
+          text: "Hi team! I wanted to check on the progress of the INEX portal development. Everything looking good?",
+          email: "zeb@inexsystemsdesigns.com",
+          priority: "normal",
+          category: "client-feedback",
+          timestamp: "2025-08-11T04:47:31.321Z",
+          status: "responded",
+          read: true,
+          responded: true,
+          lastUpdated: "2025-08-11T04:47:43.247Z",
+          responses: [
+            {
+              text: "Thank you for your message! We are working hard on the INEX portal development. Everything is progressing well and we should have Phase 1 completed soon.",
+              timestamp: "2025-08-11T04:47:43.247Z",
+              responder: "Development Team"
+            }
+          ]
+        }
+      ]
     };
     
-    try {
-      fs.writeFileSync(liveDataPath, JSON.stringify(updatedData, null, 2));
-      console.log('Status data updated in consolidated inex-live-data.json');
-      
-      // Also create a backup with timestamp
-      const backupFile = `inex-live-data-backup-${new Date().toISOString().split('T')[0]}.json`;
-      const backupPath = path.join(__dirname, '..', backupFile);
-      fs.writeFileSync(backupPath, JSON.stringify(updatedData, null, 2));
-      console.log('Backup created:', backupFile);
-      
-    } catch (writeError) {
-      console.error('Error saving consolidated data:', writeError);
-      return res.status(500).json({
-        success: false,
-        error: 'Failed to save consolidated data'
-      });
-    }
+    console.log('Status update processed successfully for Vercel deployment');
     
     return res.json({ 
       success: true, 
-      message: 'Status update received and saved successfully to consolidated file',
+      message: 'Status update received and processed successfully',
       data: updatedData
     });
     
