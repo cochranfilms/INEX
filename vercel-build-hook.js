@@ -10,7 +10,7 @@ const path = require('path');
 class INEXVercelIntegration {
   constructor() {
     this.progressDataPath = path.join(process.cwd(), 'inex-progress.json');
-    this.outputPath = path.join(process.cwd(), 'public', 'inex-live-data.json');
+    this.outputPath = path.join(process.cwd(), 'inex-live-data.json');
     this.buildTime = new Date().toISOString();
   }
 

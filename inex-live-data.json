@@ -1,0 +1,70 @@
+{
+  "currentPhase": "Design",
+  "overallProgress": 25,
+  "phases": {
+    "Discovery": {
+      "order": 1,
+      "progress": 100,
+      "status": "complete"
+    },
+    "Design": {
+      "order": 2,
+      "progress": 25,
+      "status": "active"
+    },
+    "Shell": {
+      "order": 3,
+      "progress": 0,
+      "status": "pending"
+    },
+    "Features": {
+      "order": 4,
+      "progress": 0,
+      "status": "pending"
+    },
+    "Integration": {
+      "order": 5,
+      "progress": 0,
+      "status": "pending"
+    },
+    "Testing": {
+      "order": 6,
+      "progress": 0,
+      "status": "pending"
+    },
+    "Launch": {
+      "order": 7,
+      "progress": 0,
+      "status": "pending"
+    }
+  },
+  "updates": [
+    {
+      "date": "Dec 18",
+      "message": "Phase: Design - Progress: 25%",
+      "status": "25%",
+      "commit": "test-com",
+      "phase": "Design"
+    }
+  ],
+  "lastCommit": "test-commit-123",
+  "lastUpdate": "2024-12-18T10:00:00.000Z",
+  "deployment": {
+    "environment": "main",
+    "triggeredBy": "test-user",
+    "timestamp": "2024-12-18T10:00:00.000Z"
+  },
+  "buildInfo": {
+    "buildTime": "2025-08-11T02:59:28.131Z",
+    "environment": "development",
+    "version": "unknown"
+  },
+  "api": {
+    "endpoints": {
+      "progress": "/api/inex/progress",
+      "updates": "/api/inex/updates",
+      "phases": "/api/inex/phases"
+    },
+    "lastSync": "2025-08-11T02:59:28.131Z"
+  }
+}

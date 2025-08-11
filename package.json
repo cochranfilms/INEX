@@ -12,6 +12,10 @@
     "firebase-admin": "^12.5.0",
     "node-fetch": "^3.3.2"
   },
+  "scripts": {
+    "build": "node vercel-build-hook.js",
+    "vercel-build": "node vercel-build-hook.js"
+  },
   "devDependencies": {
     "@playwright/test": "^1.54.2"
   }
