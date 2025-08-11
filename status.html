@@ -300,6 +300,17 @@
       ]
     };
 
+    // Initialize localStorage with default values if none exist
+    if (!localStorage.getItem('inex-project-progress')) {
+      localStorage.setItem('inex-project-progress', '5');
+    }
+    if (!localStorage.getItem('inex-project-phase')) {
+      localStorage.setItem('inex-project-phase', 'Phase 1');
+    }
+    if (!localStorage.getItem('inex-project-status')) {
+      localStorage.setItem('inex-project-status', 'Phase 1 (Prototype Polish) in progress. Working on INEX branding integration and basic UI framework. On track for Aug 22 completion.');
+    }
+
     // Theme persistence
     const root = document.documentElement;
     const btn = document.getElementById('themeToggle');
@@ -318,12 +329,12 @@
     const params = new URLSearchParams(location.search);
     
     // Read from localStorage (updated by management dashboard) or fall back to query params
-    const savedProgress = localStorage.getItem('inex-project-progress');
-    const savedPhase = localStorage.getItem('inex-project-phase');
-    const savedStatus = localStorage.getItem('inex-project-status');
+    const savedProgress = localStorage.getItem('inex-project-progress') || '5';
+    const savedPhase = localStorage.getItem('inex-project-phase') || 'Phase 1';
+    const savedStatus = localStorage.getItem('inex-project-status') || 'Phase 1 (Prototype Polish) in progress. Working on INEX branding integration and basic UI framework. On track for Aug 22 completion.';
     
-    const pct = Math.max(0, Math.min(100, parseInt(params.get('progress') || savedProgress || projectData.progress.toString(), 10)));
-    const phase = params.get('phase') || savedPhase || projectData.currentPhase;
+    const pct = Math.max(0, Math.min(100, parseInt(params.get('progress') || savedProgress || '5', 10)));
+    const phase = params.get('phase') || savedPhase || 'Phase 1';
     const eta = params.get('eta') || 'ETA: Sep 11-18, 2025 · Weekly updates posted below';
     const scope = params.get('scope') || 'Scope v1.0';
     const owner = params.get('owner') || 'Cochran Full Stack Solutions';
@@ -400,14 +411,21 @@
     // Listen for localStorage changes to update the page in real-time
     window.addEventListener('storage', function(e) {
       if (e.key === 'inex-project-progress') {
-        const progress = parseInt(e.newValue || '15');
+        const progress = parseInt(e.newValue || '5');
         document.querySelector('.ring').style.setProperty('--p', progress);
         document.getElementById('pct').textContent = progress + '%';
         document.getElementById('barFill').style.setProperty('--bar', progress + '%');
+        
+        // Update project data
+        projectData.progress = progress;
       }
       if (e.key === 'inex-project-phase') {
         const phase = e.newValue || 'Phase 1';
         document.getElementById('phaseLabel').textContent = phase;
+        
+        // Update project data
+        projectData.currentPhase = phase;
+        
         // Update active step
         const steps = Array.from(document.querySelectorAll('.step'));
         steps.forEach(s => {
@@ -422,6 +440,10 @@
             s.classList.add('complete');
           }
         });
+      }
+      if (e.key === 'inex-project-status') {
+        // Status updates could be displayed somewhere if needed
+        console.log('Status updated:', e.newValue);
       }
       if (e.key === 'inex-project-updates') {
         try {
@@ -438,6 +460,9 @@
             `;
             updatesTable.appendChild(newRow);
           });
+          
+          // Update project data
+          projectData.updates = updates;
         } catch (e) {
           console.log('Error parsing updates');
         }
@@ -469,9 +494,19 @@
           `;
           updatesTable.appendChild(newRow);
         });
+        
+        // Update project data
+        projectData.updates = updates;
       } catch (e) {
         console.log('No saved updates found');
       }
+    }
+
+    // Load saved status from localStorage
+    const savedStatus = localStorage.getItem('inex-project-status');
+    if (savedStatus) {
+      // Could display this somewhere if needed
+      console.log('Loaded saved status:', savedStatus);
     }
 
     // Add update functionality

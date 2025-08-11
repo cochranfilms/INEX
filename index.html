@@ -354,7 +354,7 @@
           <div class="body">
             <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin-bottom:1rem">
               <div style="text-align:center;padding:1rem;border:1px solid var(--border);border-radius:12px">
-                <div style="font-size:24px;font-weight:900;color:var(--maroon)" id="progressDisplay">15%</div>
+                <div style="font-size:24px;font-weight:900;color:var(--maroon)" id="progressDisplay">5%</div>
                 <div style="font-size:12px;color:var(--muted)">Overall Progress</div>
               </div>
               <div style="text-align:center;padding:1rem;border:1px solid var(--border);border-radius:12px">
@@ -383,6 +383,13 @@
               <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-top:1rem">
                 <button class="btn primary" onclick="deployStatusUpdate()">🚀 Deploy Live Update</button>
                 <button class="btn secondary" onclick="deployPhaseChange()">🔄 Deploy Phase Change</button>
+              </div>
+            </div>
+            <div style="margin-top:1rem;padding:1rem;background:rgba(255,178,0,.1);border:1px solid rgba(255,178,0,.2);border-radius:8px">
+              <strong>🔄 Manual Sync</strong><br>
+              <small>Use this button to manually sync data between the dashboard and status page:</small>
+              <div style="margin-top:1rem">
+                <button class="btn secondary" onclick="syncWithStatusPage()">🔄 Sync Status Page</button>
               </div>
             </div>
           </div>
@@ -456,23 +463,34 @@
   window.addEventListener('load', function() {
     // Wait a bit for the DOM to be fully ready
     setTimeout(() => {
-      const savedProgress = localStorage.getItem('inex-project-progress');
-      const savedPhase = localStorage.getItem('inex-project-phase');
-      const savedStatus = localStorage.getItem('inex-project-status');
+      const savedProgress = localStorage.getItem('inex-project-progress') || '5';
+      const savedPhase = localStorage.getItem('inex-project-phase') || 'Phase 1';
+      const savedStatus = localStorage.getItem('inex-project-status') || 'Phase 1 (Prototype Polish) in progress. Working on INEX branding integration and basic UI framework. On track for Aug 22 completion.';
       
       // Only update if elements exist (they only exist in the status view)
       const progressElement = document.getElementById('progressDisplay');
       const phaseElement = document.getElementById('phaseDisplay');
       const statusElement = document.getElementById('statusText');
       
-      if (savedProgress && progressElement) {
+      if (progressElement) {
         progressElement.textContent = savedProgress + '%';
       }
-      if (savedPhase && phaseElement) {
+      if (phaseElement) {
         phaseElement.textContent = savedPhase;
       }
-      if (savedStatus && statusElement) {
+      if (statusElement) {
         statusElement.textContent = savedStatus;
+      }
+      
+      // Initialize default values if none exist
+      if (!localStorage.getItem('inex-project-progress')) {
+        localStorage.setItem('inex-project-progress', '5');
+      }
+      if (!localStorage.getItem('inex-project-phase')) {
+        localStorage.setItem('inex-project-phase', 'Phase 1');
+      }
+      if (!localStorage.getItem('inex-project-status')) {
+        localStorage.setItem('inex-project-status', 'Phase 1 (Prototype Polish) in progress. Working on INEX branding integration and basic UI framework. On track for Aug 22 completion.');
       }
     }, 100);
   });
@@ -706,6 +724,47 @@
       console.error('Deployment error:', error);
       alert('❌ Deployment error: ' + error.message);
     }
+  }
+
+  // Manual Sync Function
+  function syncWithStatusPage() {
+    const progressElement = document.getElementById('progressDisplay');
+    const phaseElement = document.getElementById('phaseDisplay');
+    const statusElement = document.getElementById('statusText');
+
+    if (!progressElement || !phaseElement || !statusElement) {
+      alert('⚠️ Please navigate to the Status Management section first to use this feature.');
+      return;
+    }
+
+    const progress = progressElement.textContent.replace('%', '');
+    const phase = phaseElement.textContent;
+    const status = statusElement.textContent;
+
+    console.log('Syncing with status page:', { progress, phase, status });
+
+    // Update localStorage
+    localStorage.setItem('inex-project-progress', progress);
+    localStorage.setItem('inex-project-phase', phase);
+    localStorage.setItem('inex-project-status', status);
+
+    // Trigger storage events for real-time updates
+    window.dispatchEvent(new StorageEvent('storage', {
+      key: 'inex-project-progress',
+      newValue: progress
+    }));
+    
+    window.dispatchEvent(new StorageEvent('storage', {
+      key: 'inex-project-phase',
+      newValue: phase
+    }));
+    
+    window.dispatchEvent(new StorageEvent('storage', {
+      key: 'inex-project-status',
+      newValue: status
+    }));
+
+    alert('✅ Status page synced successfully! The status page should update automatically.');
   }
 
   // Messaging System Functions
