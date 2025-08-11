@@ -1,6 +1,35 @@
 import fs from 'fs';
 import path from 'path';
 
+const GITHUB_OWNER = 'cochranfilms';
+const GITHUB_REPO = 'INEX';
+const MESSAGES_FILE = 'inex-messages.json';
+
+async function fetchMessagesFromGitHub() {
+  const url = `https://raw.githubusercontent.com/${GITHUB_OWNER}/${GITHUB_REPO}/main/${MESSAGES_FILE}`;
+  const response = await fetch(url, { headers: { 'Cache-Control': 'no-cache' } });
+  if (!response.ok) return [];
+  const text = await response.text();
+  try { return JSON.parse(text); } catch { return []; }
+}
+
+async function commitMessagesToGitHub(updatedMessages) {
+  const token = process.env.GITHUB_TOKEN;
+  if (!token) throw new Error('Missing GITHUB_TOKEN for GitHub write access');
+  const contentsApi = `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${MESSAGES_FILE}`;
+  const getResp = await fetch(contentsApi, { headers: { Authorization: `token ${token}`, Accept: 'application/vnd.github.v3+json' } });
+  if (!getResp.ok) throw new Error(`GitHub GET contents failed: ${getResp.status}`);
+  const getJson = await getResp.json();
+  const sha = getJson.sha;
+  const content = Buffer.from(JSON.stringify(updatedMessages, null, 2)).toString('base64');
+  const putResp = await fetch(contentsApi, {
+    method: 'PUT',
+    headers: { Authorization: `token ${token}`, Accept: 'application/vnd.github.v3+json', 'Content-Type': 'application/json' },
+    body: JSON.stringify({ message: `chore: update ${MESSAGES_FILE} (${new Date().toISOString()})`, content, sha, branch: 'main' })
+  });
+  if (!putResp.ok) throw new Error(`GitHub PUT contents failed: ${putResp.status}`);
+}
+
 export default async function handler(req, res) {
   // Enable CORS for global access
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -12,21 +41,23 @@ export default async function handler(req, res) {
     return res.status(200).end();
   }
 
-  const messagesFile = 'inex-messages.json';
-  const messagesPath = path.join(process.cwd(), messagesFile);
+  const messagesPath = path.join(process.cwd(), MESSAGES_FILE);
 
   try {
-    // Ensure messages file exists
-    if (!fs.existsSync(messagesPath)) {
-      fs.writeFileSync(messagesPath, JSON.stringify([], null, 2));
-    }
+    const runningOnVercel = !!process.env.VERCEL;
 
     if (req.method === 'GET') {
       // Get messages with optional filters
       const { status, priority, category, limit = 50, offset = 0 } = req.query;
       
-      const messagesData = fs.readFileSync(messagesPath, 'utf8');
-      let messages = JSON.parse(messagesData);
+      let messages = [];
+      if (runningOnVercel) {
+        messages = await fetchMessagesFromGitHub();
+      } else {
+        if (!fs.existsSync(messagesPath)) fs.writeFileSync(messagesPath, JSON.stringify([], null, 2));
+        const messagesData = fs.readFileSync(messagesPath, 'utf8');
+        messages = JSON.parse(messagesData);
+      }
 
       // Apply filters
       if (status) {
@@ -43,6 +74,7 @@ export default async function handler(req, res) {
       const totalCount = messages.length;
       messages = messages.slice(parseInt(offset), parseInt(offset) + parseInt(limit));
 
+      res.setHeader('Cache-Control', 'no-store');
       res.status(200).json({
         success: true,
         messages: messages,
@@ -67,8 +99,14 @@ export default async function handler(req, res) {
         });
       }
 
-      const messagesData = fs.readFileSync(messagesPath, 'utf8');
-      const messages = JSON.parse(messagesData);
+      let messages = [];
+      if (runningOnVercel) {
+        messages = await fetchMessagesFromGitHub();
+      } else {
+        if (!fs.existsSync(messagesPath)) fs.writeFileSync(messagesPath, JSON.stringify([], null, 2));
+        const messagesData = fs.readFileSync(messagesPath, 'utf8');
+        messages = JSON.parse(messagesData);
+      }
 
       const messageIndex = messages.findIndex(msg => msg.id === id);
       if (messageIndex === -1) {
@@ -102,8 +140,12 @@ export default async function handler(req, res) {
       // Update timestamp
       messages[messageIndex].lastUpdated = new Date().toISOString();
 
-      // Save back to file
-      fs.writeFileSync(messagesPath, JSON.stringify(messages, null, 2));
+      // Save back
+      if (runningOnVercel) {
+        await commitMessagesToGitHub(messages);
+      } else {
+        fs.writeFileSync(messagesPath, JSON.stringify(messages, null, 2));
+      }
 
       res.status(200).json({
         success: true,
@@ -122,8 +164,14 @@ export default async function handler(req, res) {
         });
       }
 
-      const messagesData = fs.readFileSync(messagesPath, 'utf8');
-      const messages = JSON.parse(messagesData);
+      let messages = [];
+      if (runningOnVercel) {
+        messages = await fetchMessagesFromGitHub();
+      } else {
+        if (!fs.existsSync(messagesPath)) fs.writeFileSync(messagesPath, JSON.stringify([], null, 2));
+        const messagesData = fs.readFileSync(messagesPath, 'utf8');
+        messages = JSON.parse(messagesData);
+      }
 
       const messageIndex = messages.findIndex(msg => msg.id === id);
       if (messageIndex === -1) {
@@ -137,8 +185,12 @@ export default async function handler(req, res) {
       messages[messageIndex].status = 'archived';
       messages[messageIndex].archivedAt = new Date().toISOString();
 
-      // Save back to file
-      fs.writeFileSync(messagesPath, JSON.stringify(messages, null, 2));
+      // Save back
+      if (runningOnVercel) {
+        await commitMessagesToGitHub(messages);
+      } else {
+        fs.writeFileSync(messagesPath, JSON.stringify(messages, null, 2));
+      }
 
       res.status(200).json({
         success: true,

@@ -279,6 +279,28 @@
   </main>
 
   <script>
+    // Try to load live status JSON produced on the server/deploy
+    async function loadLiveStatusFromJson() {
+      try {
+        const response = await fetch('/inex-live-data.json', { cache: 'no-store' });
+        if (!response.ok) return;
+        const data = await response.json();
+        const pct = typeof data.progress === 'number' ? data.progress : parseInt((data?.current?.progress ?? '0'), 10) || 0;
+        const phase = data.phase || data?.currentPhase || 'Phase 1';
+        const eta = data.eta;
+
+        document.querySelector('.ring').style.setProperty('--p', pct);
+        document.getElementById('pct').textContent = pct + '%';
+        document.getElementById('phaseLabel').textContent = phase;
+        document.getElementById('barFill').style.setProperty('--bar', pct + '%');
+        if (eta) {
+          const etaEl = document.getElementById('eta');
+          if (etaEl) etaEl.textContent = eta;
+        }
+      } catch (_) {
+        // Silent fallback to localStorage values
+      }
+    }
     // Project tracking data - Phase 1: Prototype Polish
     const projectData = {
       currentPhase: 'Phase 1',
@@ -349,6 +371,10 @@
     document.getElementById('badgeOwner').textContent = 'Owner: ' + owner;
     document.getElementById('badgeClient').textContent = 'Client: ' + client;
     document.getElementById('barFill').style.setProperty('--bar', pct + '%');
+
+    // Override from live JSON if available, and refresh periodically
+    loadLiveStatusFromJson();
+    setInterval(loadLiveStatusFromJson, 30000);
 
     // Mark active step
     const steps = Array.from(document.querySelectorAll('.step'));
