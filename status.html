@@ -126,7 +126,7 @@
     <!-- Client Notice -->
     <div style="text-align:center;margin-bottom:20px;padding:1rem;background:linear-gradient(135deg, rgba(166,46,63,.1), rgba(255,178,0,.1));border:1px solid rgba(166,46,63,.2);border-radius:12px;max-width:800px;margin-left:auto;margin-right:auto">
       <strong>🎯 Welcome to INEX Project Status</strong><br>
-      <small>This page shows the current progress of your INEX-branded operations portal development. Updates are posted weekly by the development team.</small>
+      <small>This page shows the current progress of your INEX-branded operations portal development. Messages are automatically sent to GitHub in real-time - no manual workflow runs needed!</small>
     </div>
 
     <section class="grid grid-cols-3">
@@ -251,8 +251,9 @@
             </p>
             
             <!-- GitHub Pages Notice -->
-            <div id="githubPagesNotice" style="display:none;margin-bottom:16px;padding:12px;background:rgba(166,46,63,.1);border:1px solid rgba(166,46,63,.2);border-radius:8px;font-size:12px">
-              <strong>📝 Note:</strong> This site is hosted on GitHub Pages. To send a message, the development team needs to run the Messages workflow on GitHub. Your message will be queued and sent when they process it.
+            <div id="githubPagesNotice" style="display:none;margin-bottom:16px;padding:12px;background:rgba(0,150,136,.1);border:1px solid rgba(0,150,136,.2);border-radius:8px;font-size:12px">
+              <strong>✅ Automatic GitHub Integration Active</strong><br>
+              <small>This site automatically pushes messages to GitHub in real-time. When you send a message, it's immediately committed to the repository and visible to the development team.</small>
             </div>
             
             <form id="messageForm" style="display:grid;gap:12px">
@@ -284,7 +285,7 @@
     </div>
     <div style="text-align:center;margin:20px 0;padding:1rem;background:rgba(0,150,136,.1);border:1px solid rgba(0,150,136,.2);border-radius:8px;max-width:600px;margin-left:auto;margin-right:auto">
       <strong>🔄 Real-Time Updates</strong><br>
-      <small>This page automatically updates when changes are made in the management dashboard. No refresh needed!</small>
+      <small>This page automatically updates when changes are made in the management dashboard. Messages are automatically pushed to GitHub in real-time - no manual workflow runs needed!</small>
     </div>
   </main>
 
@@ -656,37 +657,35 @@
     // Load messages from API
     async function loadMessages() {
       try {
-        // On GitHub Pages, load directly from JSON file
-        if (!isDev) {
-          safeLog('debug', 'Loading messages from JSON file (GitHub Pages mode)');
-          const response = await safeFetch('/inex-messages.json');
-          if (!response.ok) {
-            throw new Error('Failed to load messages.json');
-          }
-          
-          const messages = await response.json();
+        // Always try the API endpoint first (both local and production)
+        safeLog('debug', 'Loading messages from API endpoint');
+        const response = await safeFetch(MESSAGES_API);
+        
+        if (response.ok) {
+          const data = await response.json();
+          const messages = data.messages || [];
           displayMessages(messages);
           
-          // Also save to localStorage as backup
+          // Save to localStorage as backup
           localStorage.setItem('inex-messages', JSON.stringify(messages));
+          safeLog('debug', `✅ Loaded ${messages.length} messages from API`);
           return;
         }
         
-        // Local development - try API endpoint
-        safeLog('debug', 'Loading messages from API (local development mode)');
-        const response = await safeFetch(MESSAGES_API);
-        if (!response.ok) {
-          safeLog('warn', 'Failed to fetch messages from API, falling back to localStorage');
-          loadMessagesFromLocalStorage();
+        // If API fails, try loading from JSON file as fallback
+        safeLog('warn', 'API failed, trying JSON file fallback');
+        const jsonResponse = await safeFetch('/inex-messages.json');
+        if (jsonResponse.ok) {
+          const messages = await jsonResponse.json();
+          displayMessages(messages);
+          localStorage.setItem('inex-messages', JSON.stringify(messages));
+          safeLog('debug', `✅ Loaded ${messages.length} messages from JSON file`);
           return;
         }
         
-        const data = await response.json();
-        const messages = data.messages || [];
-        displayMessages(messages);
-        
-        // Also save to localStorage as backup
-        localStorage.setItem('inex-messages', JSON.stringify(messages));
+        // Final fallback to localStorage
+        safeLog('warn', 'All remote sources failed, using localStorage fallback');
+        loadMessagesFromLocalStorage();
         
       } catch (error) {
         safeLog('warn', 'Failed to load messages, using localStorage fallback:', error.message);
@@ -746,41 +745,12 @@
       // Show loading state
       const submitBtn = messageForm.querySelector('button[type="submit"]');
       const originalText = submitBtn.innerHTML;
-      submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Sending...';
+      submitBtn.innerHTML = '📤 Sending...';
       submitBtn.disabled = true;
 
       try {
-        // On GitHub Pages, show instructions to use GitHub Actions
-        if (!isDev) {
-          showMessageSuccess('Message ready for GitHub Actions! To send this message, the development team needs to run the Messages workflow.');
-          
-          // Show detailed instructions
-          setTimeout(() => {
-            alert(`📤 Message Ready for GitHub Actions!
-
-Your message:
-"${text}"
-
-To send this message:
-1. Go to: https://github.com/cochranfilms/INEX/actions
-2. Click "Messages Workflow"
-3. Click "Run workflow"
-4. Fill in:
-   - Name: ${name}
-   - Text: ${text}
-   - Email: (optional)
-   - Priority: normal
-   - Category: client-feedback
-5. Click "Run workflow"
-
-The message will be added to inex-messages.json and appear on this page.`);
-          }, 1000);
-          
-          return;
-        }
-        
-        // Local development - try API first
-        safeLog('debug', 'Sending message via API (local development mode)');
+        // Always try the API endpoint first for automatic GitHub push
+        safeLog('debug', 'Sending message via API for automatic GitHub push');
         const response = await safeFetch(MESSAGES_API, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -793,18 +763,37 @@ The message will be added to inex-messages.json and appear on this page.`);
         });
 
         if (response.ok) {
-          // API success - reload messages
+          // API success - message automatically pushed to GitHub
+          const result = await response.json();
+          safeLog('debug', '✅ Message sent successfully via API:', result);
+          
+          // Reload messages to show the new one
           await loadMessages();
-          showMessageSuccess('Message sent successfully! The development team will see it immediately.');
+          
+          // Show success message
+          showMessageSuccess('Message sent successfully! It has been automatically pushed to GitHub and will appear on this page immediately.');
+          
+          // Reset form
+          textInput.value = '';
+          charCount.textContent = '0 characters';
+          
         } else {
-          // API failed - fallback to localStorage
-          throw new Error('API request failed');
+          // API failed - try to get error details
+          let errorMessage = 'Failed to send message';
+          try {
+            const errorData = await response.json();
+            errorMessage = errorData.error || errorMessage;
+          } catch (e) {
+            // Ignore JSON parse errors
+          }
+          
+          throw new Error(`API Error: ${errorMessage}`);
         }
         
       } catch (error) {
-        safeLog('warn', 'API failed, using localStorage fallback:', error.message);
+        safeLog('error', 'Failed to send message via API:', error.message);
         
-        // Fallback to localStorage
+        // Fallback to localStorage if API completely fails
         const message = {
           name: name,
           text: text,
@@ -819,13 +808,9 @@ The message will be added to inex-messages.json and appear on this page.`);
         localStorage.setItem('inex-messages', JSON.stringify(messages));
         displayMessages(messages);
         
-        showMessageSuccess('Message sent successfully! (Local mode)');
+        showMessageSuccess('Message saved locally (API unavailable). Please try again later.');
       }
 
-      // Reset form
-      textInput.value = '';
-      charCount.textContent = '0 characters';
-      
       // Reset button
       submitBtn.innerHTML = originalText;
       submitBtn.disabled = false;
