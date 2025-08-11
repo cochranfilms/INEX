@@ -245,6 +245,12 @@
             <p style="margin:0 0 12px 0;font-size:13px;color:var(--muted)">
               Send a message to the development team. Your message will be visible to both you and the developers.
             </p>
+            
+            <!-- GitHub Pages Notice -->
+            <div id="githubPagesNotice" style="display:none;margin-bottom:16px;padding:12px;background:rgba(166,46,63,.1);border:1px solid rgba(166,46,63,.2);border-radius:8px;font-size:12px">
+              <strong>📝 Note:</strong> This site is hosted on GitHub Pages. To send a message, the development team needs to run the Messages workflow on GitHub. Your message will be queued and sent when they process it.
+            </div>
+            
             <form id="messageForm" style="display:grid;gap:12px">
               <input type="text" id="messageName" placeholder="Your name (optional)" style="padding:8px 12px;border:1px solid var(--border);border-radius:8px;background:var(--panel);color:var(--panel-ink);font-size:13px">
               <textarea id="messageText" placeholder="Type your message here..." rows="3" style="padding:8px 12px;border:1px solid var(--border);border-radius:8px;background:var(--panel);color:var(--panel-ink);font-size:13px;resize:vertical"></textarea>
@@ -554,6 +560,7 @@
     const messagesList = document.getElementById('messagesList');
     const messageText = document.getElementById('messageText');
     const charCount = document.getElementById('charCount');
+    const githubPagesNotice = document.getElementById('githubPagesNotice');
 
     // API endpoint for messages - detect development vs production
     const isDev = window.location.hostname === 'localhost' || 
@@ -807,6 +814,13 @@ The message will be added to inex-messages.json and appear on this page.`);
 
     // Auto-refresh messages every 30 seconds
     setInterval(loadMessages, 30000);
+
+    // Toggle GitHub Pages notice visibility
+    if (!isDev) {
+      githubPagesNotice.style.display = 'block';
+    } else {
+      githubPagesNotice.style.display = 'none';
+    }
   </script>
 </body>
 </html>
