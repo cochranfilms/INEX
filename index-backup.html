@@ -265,157 +265,129 @@
   /* Views: 1.0 (light) dashboard */
   const V1 = {
     dashboard: `
-      <div class="header"><h1>Welcome, INEX Team</h1><span class="muted">Phase 1: Discovery — Starting fresh with development workflow</span></div>
+      <div class="header"><h1>Welcome, INEX Team</h1><span class="muted">At‑a‑glance metrics for conference room deployments</span></div>
       <section class="cards">
         <article class="card span-4">
-          <div class="head">Project Status</div>
+          <div class="head">Project Timeline</div>
           <div class="body">
-            <ul class="list"><li><strong>Phase 1: Discovery</strong> — In Progress ⏳</li><li><strong>Brand Guidelines</strong> — Planning 📅</li><li><strong>Design System</strong> — Not Started 📅</li></ul>
-            <div style="margin-top:.6rem;padding:.8rem;background:#f8f8f8;border-radius:8px;border:1px solid var(--border)">
-              <strong>Current Focus:</strong> Setting up development workflow and tracking system
-            </div>
-            <div style="margin-top:.5rem;display:flex;gap:.5rem;flex-wrap:wrap"><span class="pill">Phase 1</span><span class="pill">Discovery</span><span class="pill">Planning</span></div>
+            <ul class="list"><li><strong>RICE · Room 4A</strong> — Install complete ✅</li><li><strong>RICE · Room 2C</strong> — Audio tuning (Wed)</li><li><strong>RICE · Auditorium</strong> — Cabling in progress</li></ul>
+            <div id="spark-projects" style="margin-top:.6rem"></div>
+            <div style="margin-top:.5rem;display:flex;gap:.5rem;flex-wrap:wrap"><span class="pill">3 active sites</span><span class="pill">8 rooms this week</span></div>
           </div>
         </article>
         <article class="card span-4">
-          <div class="head">Development Tracker</div>
+          <div class="head">Open Tickets</div>
           <div class="body">
-            <ul class="list"><li>✅ Development workflow setup</li><li>✅ Status tracking system</li><li>⏳ Brand guidelines</li><li>📅 Design system</li></ul>
-            <div class="pill" style="margin-top:.6rem">Progress: 15%</div>
-            <div style="margin-top:.4rem;padding:.6rem;background:#f0f8ff;border-radius:6px;border:1px solid #e1f5fe">
-              <small>Linked to <a href="status.html" target="_blank">status.html</a> for real-time updates</small>
-            </div>
+            <ul class="list"><li>Mic echo · 3B <span class="tag warn">P2</span></li><li>Replace ClickShare dongle · 1A <span class="tag neutral">P3</span></li><li>Display sync delay · 5C <span class="tag neutral">P3</span></li></ul>
+            <div class="pill" style="margin-top:.6rem">Avg response 1h</div>
+            <div id="bars-tickets" style="margin-top:.4rem"></div>
           </div>
         </article>
         <article class="card span-4">
-          <div class="head">Next Steps</div>
+          <div class="head">Today’s Installs</div>
           <div class="body">
-            <ul class="list"><li>Finalize brand guidelines</li><li>Create design system</li><li>Build navigation shell</li><li>Implement dashboard KPIs</li></ul>
+            <ul class="list"><li>Team A → 2 sites · 9:00a</li><li>Team B → 1 site · 1:00p</li><li>ETA updates via tech mobile app</li></ul>
             <div style="margin-top:.75rem;display:flex;gap:.6rem;flex-wrap:wrap">
-              <a class="btn secondary" href="status.html" target="_blank">View Status</a><a class="btn primary" href="#/projects">Track Progress</a>
+              <a class="btn secondary" href="#/jobs">View Dispatch</a><a class="btn primary" href="#/jobs">New Ticket</a>
             </div>
           </div>
         </article>
         <article class="card span-8">
-          <div class="head">Development Workflow Overview</div>
+          <div class="head">ClickShare Alone vs. INEX Integrated</div>
           <div class="body" style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">
-            <div style="border:1px solid var(--border);border-radius:12px;padding:1rem"><span class="pill">Phase 1: Discovery</span>
-              <ul class="list" style="margin-top:.5rem"><li>Project setup & requirements</li><li>Brand research & guidelines</li><li>Design system planning</li><li>Development workflow</li><li>Status tracking system</li></ul>
+            <div style="border:1px solid var(--border);border-radius:12px;padding:1rem"><span class="pill">Off‑the‑Shelf</span>
+              <ul class="list" style="margin-top:.5rem"><li>Buy device, plug into TV</li><li>Basic sharing works</li><li>No acoustics plan</li><li>Ad‑hoc mounting; security not tuned</li><li>Every room feels different</li></ul>
             </div>
-            <div style="border:1px solid var(--border);border-radius:12px;padding:1rem"><span class="pill">Phase 2: Design</span>
-              <ul class="list" style="margin-top:.5rem"><li>Color palette & typography</li><li>Component library</li><li>Layout & navigation</li><li>Responsive design</li><li>Theme system</li></ul>
+            <div style="border:1px solid var(--border);border-radius:12px;padding:1rem"><span class="pill">INEX Integrated</span>
+              <ul class="list" style="margin-top:.5rem"><li>Room‑by‑room AV design</li><li>Pro mic/camera placement</li><li>IT‑aligned security</li><li>One‑click presets</li><li>Standardized UX + training</li></ul>
             </div>
           </div>
         </article>
         <article class="card span-4">
           <div class="head">Quick Actions</div>
           <div class="body" style="display:grid;gap:.6rem">
-            <a class="btn secondary" href="status.html" target="_blank">Project Status</a>
-            <a class="btn primary" href="#/projects">Track Progress</a>
-            <a class="btn primary" href="#/jobs">Development Log</a>
-            <a class="btn primary" href="#/inventory">Resources</a>
+            <a class="btn secondary" href="#/projects">Create Project</a>
+            <a class="btn primary" href="#/jobs">New Service Ticket</a>
+            <a class="btn primary" href="#/inventory">Add Inventory</a>
+            <a class="btn primary" href="#/careers">Post Job</a>
           </div>
         </article>
         <article class="card span-12">
-          <div class="head">Development Progress (Phase 1)</div>
-          <div class="body">
-            <div style="display:flex;align-items:center;gap:1rem;margin-bottom:1rem">
-              <div style="width:100px;height:100px;border-radius:50%;background:conic-gradient(#A62E3F 15%, #e6e6e6 0);display:grid;place-items:center;border:3px solid #f0f0f0">
-                <strong style="font-size:18px">15%</strong>
-              </div>
-              <div>
-                <strong>Current Phase: Discovery</strong><br>
-                <small class="muted">Setting up development workflow and tracking system</small>
-              </div>
-            </div>
-            <div style="background:#f8f8f8;border-radius:8px;padding:.8rem;border:1px solid var(--border)">
-              <strong>Linked Systems:</strong> 
-              <a href="status.html" target="_blank">status.html</a> (real-time updates) • 
-              <a href="dev-tracker.js" target="_blank">dev-tracker.js</a> (development tracking)
-            </div>
-          </div>
+          <div class="head">SLA Performance (6 weeks)</div>
+          <div class="body"><div id="spark-sla"></div></div>
         </article>
       </section>
-      <p class="footer">Phase 1: Discovery • Development workflow setup • © Cochran Full Stack Solutions</p>
+      <p class="footer">Demo UI · No live data · © Cochran Full Stack Solutions</p>
     `
   };
 
   /* Views: 2.0 (dark) dashboard — NEW layout */
   const V2 = {
     dashboard: `
-      <div class="v2head"><img src="inex-logo.png" alt="INEX"><strong>INEX v2.0</strong><span class="muted">• Phase 1: Discovery • Development Workflow Setup</span></div>
+      <div class="v2head"><img src="inex-logo.png" alt="INEX"><strong>INEX v2.0</strong><span class="muted">• Glass UI, KPI tiles, Operations Pulse, icon actions</span></div>
 
       <!-- KPI Tiles -->
       <section class="kpis">
         <div class="kpi">
-          <h3>Current Phase</h3>
-          <div class="val">Discovery <span class="delta up">Phase 1</span></div>
+          <h3>Active Projects</h3>
+          <div class="val">12 <span class="delta up">+2 this week</span></div>
           <div id="kpi-proj" style="margin-top:6px"></div>
         </div>
         <div class="kpi">
-          <h3>Progress</h3>
-          <div class="val">15% <span class="delta down">Discovery</span></div>
+          <h3>Tickets Open</h3>
+          <div class="val">7 <span class="delta down">‑3 vs last week</span></div>
           <div id="kpi-tix" style="margin-top:6px"></div>
         </div>
         <div class="kpi">
-          <h3>Tasks Complete</h3>
-          <div class="val">2 <span class="delta up">of 13</span></div>
+          <h3>SLA Met</h3>
+          <div class="val">94% <span class="delta up">+4%</span></div>
           <div id="kpi-sla" style="margin-top:6px"></div>
         </div>
         <div class="kpi">
-          <h3>Next Milestone</h3>
-          <div class="val">Design <span class="delta up">Phase 2</span></div>
+          <h3>Installs Today</h3>
+          <div class="val">3 <span class="delta up">on track</span></div>
           <div id="kpi-inst" style="margin-top:6px"></div>
         </div>
       </section>
 
       <!-- Operations Pulse -->
       <section class="card span-12" style="margin-top:1rem">
-        <div class="head">Development Progress (Phase 1: Discovery)</div>
+        <div class="head">Operations Pulse (last 10 days)</div>
         <div class="body">
           <div class="pulse" id="pulse-bars"></div>
-          <div style="margin-top:12px;display:flex;align-items:center;gap:12px">
-            <div style="width:80px;height:80px;border-radius:50%;background:conic-gradient(#A62E3F 15%, rgba(255,255,255,.12) 0);display:grid;place-items:center;border:2px solid var(--border)">
-              <strong style="font-size:16px;color:var(--accent)">15%</strong>
-            </div>
-            <div>
-              <strong>Current Focus:</strong> Setting up development workflow and tracking system<br>
-              <small class="muted">Linked to status.html for real-time updates</small>
-            </div>
-          </div>
         </div>
       </section>
 
       <!-- Icon-first quick actions -->
       <section class="card span-12" style="margin-top:1rem">
-        <div class="head">Development Actions</div>
+        <div class="head">Quick Actions</div>
         <div class="body">
           <div class="icon-actions">
-            ${iconAction('status.html','M4 12h16v2H4zM4 6h16v2H4zM4 18h10v2H4z','Project Status')}
-            ${iconAction('#/projects','M3 6h18v2H3zm0 5h18v2H3zm0 5h12v2H3z','Track Progress')}
-            ${iconAction('#/jobs','M4 7h16l-2 11H6L4 7zm4-3h8v2H8z','Development Log')}
-            ${iconAction('#/rma','M4 12a8 8 0 1116 0h-2a6 6 0 10-6 6v-3l4 4-4 4v-3a8 8 0 01-8-8z','Resources')}
-            ${iconAction('#/slas','M3 12h6l2 3 4-6 6 9H3z','Guidelines')}
-            ${iconAction('#/knowledge','M4 6h16v12H4z M8 10h8','Documentation')}
-            ${iconAction('#/clients','M4 18v-2a4 4 0 014-4h8a4 4 0 014 4v2H4z M12 6a3 3 0 110 6 3 3 0 010-6','Team')}
-            ${iconAction('#/careers','M6 6h12v12H6z M9 9h6v6H9z','Settings')}
+            ${iconAction('#/projects','M4 12h16v2H4zM4 6h16v2H4zM4 18h10v2H4z','Projects')}
+            ${iconAction('#/jobs','M3 6h18v2H3zm0 5h18v2H3zm0 5h12v2H3z','Dispatch')}
+            ${iconAction('#/inventory','M4 7h16l-2 11H6L4 7zm4-3h8v2H8z','Add Inventory')}
+            ${iconAction('#/rma','M4 12a8 8 0 1116 0h-2a6 6 0 10-6 6v-3l4 4-4 4v-3a8 8 0 01-8-8z','Create RMA')}
+            ${iconAction('#/slas','M3 12h6l2 3 4-6 6 9H3z','SLA Report')}
+            ${iconAction('#/knowledge','M4 6h16v12H4z M8 10h8','Guides')}
+            ${iconAction('#/clients','M4 18v-2a4 4 0 014-4h8a4 4 0 014 4v2H4z M12 6a3 3 0 110 6 3 3 0 010-6','Clients')}
+            ${iconAction('#/careers','M6 6h12v12H6z M9 9h6v6H9z','Post Role')}
           </div>
         </div>
       </section>
 
-      <!-- Development workflow overview -->
+      <!-- Narrative comparison condensed -->
       <section class="cards" style="margin-top:1rem">
         <article class="card span-6">
-          <div class="head">Phase 1: Discovery (Current)</div>
-          <div class="body"><ul class="list"><li>✅ Project setup & requirements</li><li>✅ Development workflow</li><li>✅ Status tracking system</li><li>⏳ Brand guidelines</li><li>📅 Design system planning</li></ul></div>
+          <div class="head">Off‑the‑Shelf (Alone)</div>
+          <div class="body"><ul class="list"><li>Basic screen sharing only</li><li>No acoustics plan</li><li>Ad‑hoc mounting</li><li>Security not tuned</li><li>Inconsistent UX</li></ul></div>
         </article>
         <article class="card span-6">
-          <div class="head">Phase 2: Design (Next)</div>
-          <div class="body"><ul class="list"><li>📅 Color palette & typography</li><li>📅 Component library</li><li>📅 Layout & navigation</li><li>📅 Responsive design</li><li>📅 Theme system</li></ul></div>
+          <div class="head">INEX Integrated (Standardized)</div>
+          <div class="body"><ul class="list"><li>Room‑by‑room AV architecture</li><li>Optimized mic/camera placement</li><li>IT‑aligned security</li><li>One‑click presets</li><li>Training & support</li></ul></div>
         </article>
       </section>
 
-      <p class="footer">Phase 1: Discovery • Development workflow setup • © Cochran Full Stack Solutions</p>
+      <p class="footer">Dark 2.0 layout • KPIs · Pulse · Icon Actions · © Cochran Full Stack Solutions</p>
     `
   };
 
@@ -642,20 +614,20 @@
       view.innerHTML = currentDash();
       // inject charts
       const themeDark = document.documentElement.getAttribute('data-theme') === 'dark';
-      // V1 charts - Phase 1 development workflow
+      // V1 charts
       const sp1 = document.getElementById('spark-projects');
-      if(sp1) sp1.innerHTML = spark("0,15 20,18 40,16 60,20 80,15 100,15", themeDark ? '#7cf5ff' : '#A62E3F');
+      if(sp1) sp1.innerHTML = spark("0,22 10,18 20,16 30,20 40,12 50,10 60,14 70,9 80,12 90,8 100,6", themeDark ? '#7cf5ff' : '#A62E3F');
       const barsWrap = document.getElementById('bars-tickets');
-      if(barsWrap) barsWrap.innerHTML = bars([15,18,16,20,15,15,15], themeDark ? '#7cf5ff' : '#A62E3F');
+      if(barsWrap) barsWrap.innerHTML = bars([35,48,18,64,50,72,38], themeDark ? '#7cf5ff' : '#A62E3F');
       const spSla = document.getElementById('spark-sla');
-      if(spSla) spSla.innerHTML = spark("0,15 20,18 40,16 60,20 80,15 100,15", themeDark ? '#FFB200' : '#7c2330');
+      if(spSla) spSla.innerHTML = spark("0,20 20,18 40,15 60,17 80,12 100,10", themeDark ? '#FFB200' : '#7c2330');
 
-      // V2 charts - Phase 1 development workflow
-      const kp = document.getElementById('kpi-proj'); if(kp) kp.innerHTML = spark("0,15 10,18 20,16 30,20 40,15 50,15 60,18 70,16 80,20 90,15 100,15","#7cf5ff");
-      const kt = document.getElementById('kpi-tix');  if(kt) kt.innerHTML = spark("0,15 20,18 40,20 60,18 80,15 100,15","#ff99aa");
-      const ks = document.getElementById('kpi-sla');  if(ks) ks.innerHTML = spark("0,15 20,18 40,16 60,18 80,15 100,15","#c0f57c");
-      const ki = document.getElementById('kpi-inst'); if(ki) ki.innerHTML = spark("0,15 25,18 50,16 75,18 100,15","#ffd97c");
-      const pulse = document.getElementById('pulse-bars'); if(pulse) pulse.innerHTML = bars([15,18,16,20,15,18,16,20,15,18], "#FFB200");
+      // V2 charts
+      const kp = document.getElementById('kpi-proj'); if(kp) kp.innerHTML = spark("0,18 10,16 20,15 30,17 40,12 50,10 60,12 70,9 80,11 90,8 100,6","#7cf5ff");
+      const kt = document.getElementById('kpi-tix');  if(kt) kt.innerHTML = spark("0,12 20,16 40,20 60,18 80,14 100,10","#ff99aa");
+      const ks = document.getElementById('kpi-sla');  if(ks) ks.innerHTML = spark("0,10 20,9 40,7 60,8 80,6 100,5","#c0f57c");
+      const ki = document.getElementById('kpi-inst'); if(ki) ki.innerHTML = spark("0,16 25,14 50,12 75,14 100,16","#ffd97c");
+      const pulse = document.getElementById('pulse-bars'); if(pulse) pulse.innerHTML = bars([48,55,62,58,71,65,54,68,76,72], "#FFB200");
     } else {
       view.innerHTML = Shared[route] || V1.dashboard;
     }
