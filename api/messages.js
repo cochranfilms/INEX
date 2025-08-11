@@ -1,4 +1,7 @@
 // Vercel API function for messages
+import { promises as fs } from 'fs';
+import path from 'path';
+
 export default async function handler(req, res) {
   // Set CORS headers
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -14,9 +17,6 @@ export default async function handler(req, res) {
     if (req.method === 'GET') {
       // GET /api/messages - Retrieve all messages from the JSON file
       try {
-        const fs = require('fs').promises;
-        const path = require('path');
-        
         // Read the current JSON file
         const jsonPath = path.join(process.cwd(), 'inex-live-data.json');
         const jsonData = await fs.readFile(jsonPath, 'utf8');
@@ -56,31 +56,48 @@ export default async function handler(req, res) {
     }
 
     if (req.method === 'POST') {
-      // POST /api/messages - Add new message and trigger GitHub workflow
+      // POST /api/messages - Add new message directly to JSON file
       const { name, text, email, priority, category, action, messages } = req.body;
       
       // Handle bulk sync action
       if (action === 'sync' && messages && Array.isArray(messages)) {
         try {
-          // Trigger GitHub workflow for bulk sync
-          await triggerGitHubWorkflow('messages', {
-            name: 'Bulk Sync',
-            text: `Syncing ${messages.length} messages from live site`,
-            email: 'system@inex.cochranfilms.com',
-            priority: 'normal',
-            category: 'system'
-          });
+          // Read existing data
+          const jsonPath = path.join(process.cwd(), 'inex-live-data.json');
+          let existingData = {};
+          
+          try {
+            const jsonData = await fs.readFile(jsonPath, 'utf8');
+            existingData = JSON.parse(jsonData);
+          } catch (fileError) {
+            console.log('No existing file, starting fresh');
+          }
+          
+          // Add all messages to the beginning
+          const existingMessages = existingData.messages || [];
+          const allMessages = [...messages, ...existingMessages];
+          
+          // Update the data
+          const updatedData = {
+            ...existingData,
+            messages: allMessages,
+            lastUpdated: new Date().toISOString()
+          };
+          
+          // Write back to file
+          await fs.writeFile(jsonPath, JSON.stringify(updatedData, null, 2));
           
           return res.status(200).json({
             success: true,
-            message: 'Messages sync workflow triggered successfully',
-            count: messages.length
+            message: 'Messages synced successfully',
+            count: allMessages.length,
+            messages: allMessages
           });
         } catch (error) {
-          console.error('Error triggering messages workflow:', error);
+          console.error('Error syncing messages:', error);
           return res.status(500).json({
             success: false,
-            error: 'Failed to trigger messages workflow: ' + error.message
+            error: 'Failed to sync messages: ' + error.message
           });
         }
       }
@@ -107,27 +124,44 @@ export default async function handler(req, res) {
       };
 
       try {
-        // Trigger GitHub workflow to add the message
-        await triggerGitHubWorkflow('messages', {
-          name: newMessage.name,
-          text: newMessage.text,
-          email: newMessage.email || '',
-          priority: newMessage.priority,
-          category: newMessage.category
-        });
+        // Read existing data
+        const jsonPath = path.join(process.cwd(), 'inex-live-data.json');
+        let existingData = {};
         
-        console.log('Message workflow triggered successfully:', newMessage);
+        try {
+          const jsonData = await fs.readFile(jsonPath, 'utf8');
+          existingData = JSON.parse(jsonData);
+        } catch (fileError) {
+          console.log('No existing file, starting fresh');
+        }
+        
+        // Add new message to beginning of messages array
+        const existingMessages = existingData.messages || [];
+        const updatedMessages = [newMessage, ...existingMessages];
+        
+        // Update the data
+        const updatedData = {
+          ...existingData,
+          messages: updatedMessages,
+          lastUpdated: new Date().toISOString()
+        };
+        
+        // Write back to file
+        await fs.writeFile(jsonPath, JSON.stringify(updatedData, null, 2));
+        
+        console.log('Message added successfully:', newMessage);
         
         return res.status(200).json({
           success: true,
-          message: 'Message workflow triggered successfully. Changes will be pushed to GitHub automatically.',
-          data: newMessage
+          message: 'Message added successfully',
+          data: newMessage,
+          allMessages: updatedMessages
         });
       } catch (error) {
-        console.error('Error triggering message workflow:', error);
+        console.error('Error adding message:', error);
         return res.status(500).json({
           success: false,
-          error: 'Failed to trigger message workflow: ' + error.message
+          error: 'Failed to add message: ' + error.message
         });
       }
     }
@@ -144,13 +178,48 @@ export default async function handler(req, res) {
       }
 
       try {
-        // For now, just return success since updating requires more complex workflow logic
-        // In a full implementation, you'd trigger a workflow to update the message
+        // Read existing data
+        const jsonPath = path.join(process.cwd(), 'inex-live-data.json');
+        const jsonData = await fs.readFile(jsonPath, 'utf8');
+        const existingData = JSON.parse(jsonData);
+        
+        // Find and update the message
+        const messages = existingData.messages || [];
+        const messageIndex = messages.findIndex(msg => msg.id === messageId);
+        
+        if (messageIndex === -1) {
+          return res.status(404).json({
+            success: false,
+            error: 'Message not found'
+          });
+        }
+        
+        // Update the message based on action
+        if (action === 'markRead') {
+          messages[messageIndex].read = true;
+        } else if (action === 'addResponse') {
+          messages[messageIndex].responded = true;
+          messages[messageIndex].response = {
+            text: responseText,
+            responder: responder || 'Developer',
+            timestamp: new Date().toISOString()
+          };
+        }
+        
+        // Update lastUpdated
+        const updatedData = {
+          ...existingData,
+          messages: messages,
+          lastUpdated: new Date().toISOString()
+        };
+        
+        // Write back to file
+        await fs.writeFile(jsonPath, JSON.stringify(updatedData, null, 2));
         
         return res.status(200).json({
           success: true,
-          message: 'Message update request received. Full update functionality coming soon.',
-          data: { messageId, action }
+          message: 'Message updated successfully',
+          data: messages[messageIndex]
         });
       } catch (error) {
         console.error('Error updating message:', error);
@@ -173,13 +242,35 @@ export default async function handler(req, res) {
       }
 
       try {
-        // For now, just return success since deletion requires more complex workflow logic
-        // In a full implementation, you'd trigger a workflow to delete the message
+        // Read existing data
+        const jsonPath = path.join(process.cwd(), 'inex-live-data.json');
+        const jsonData = await fs.readFile(jsonPath, 'utf8');
+        const existingData = JSON.parse(jsonData);
+        
+        // Filter out the message to delete
+        const messages = existingData.messages || [];
+        const updatedMessages = messages.filter(msg => msg.id !== messageId);
+        
+        if (updatedMessages.length === messages.length) {
+          return res.status(404).json({
+            success: false,
+            error: 'Message not found'
+          });
+        }
+        
+        // Update the data
+        const updatedData = {
+          ...existingData,
+          messages: updatedMessages,
+          lastUpdated: new Date().toISOString()
+        };
+        
+        // Write back to file
+        await fs.writeFile(jsonPath, JSON.stringify(updatedData, null, 2));
         
         return res.status(200).json({
           success: true,
-          message: 'Message deletion request received. Full deletion functionality coming soon.',
-          data: { messageId }
+          message: 'Message deleted successfully'
         });
       } catch (error) {
         console.error('Error deleting message:', error);
@@ -202,50 +293,5 @@ export default async function handler(req, res) {
       success: false,
       error: 'Internal server error: ' + error.message
     });
-  }
-}
-
-// Helper function to trigger GitHub workflows
-async function triggerGitHubWorkflow(workflowType, inputs) {
-  try {
-    // Get GitHub token from environment
-    const githubToken = process.env.GITHUB_TOKEN;
-    if (!githubToken) {
-      console.log('No GitHub token found, skipping workflow trigger');
-      return;
-    }
-
-    // GitHub API configuration
-    const owner = 'cochranfilms'; // GitHub organization name
-    const repo = 'INEX'; // Repository name
-    const workflowId = workflowType === 'messages' ? 'messages.yml' : 'status-update.yml';
-
-    // Trigger the workflow
-    const response = await fetch(
-      `https://api.github.com/repos/${owner}/${repo}/actions/workflows/${workflowId}/dispatches`,
-      {
-        method: 'POST',
-        headers: {
-          'Authorization': `token ${githubToken}`,
-          'Accept': 'application/vnd.github.v3+json',
-          'User-Agent': 'INEX-Portal-API'
-        },
-        body: JSON.stringify({
-          ref: 'main',
-          inputs: inputs
-        })
-      }
-    );
-
-    if (response.ok) {
-      console.log('✅ Successfully triggered GitHub workflow:', workflowType);
-    } else {
-      const errorData = await response.json();
-      console.error('❌ Failed to trigger GitHub workflow:', errorData);
-      throw new Error(`GitHub API error: ${response.status} ${response.statusText}`);
-    }
-  } catch (error) {
-    console.error('❌ Failed to trigger GitHub workflow:', error.message);
-    throw error; // Re-throw so the calling function can handle it
   }
 }
