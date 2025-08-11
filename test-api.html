@@ -1,160 +1,196 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>API Test Page</title>
-  <style>
-    body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; }
-    .test-section { margin: 20px 0; padding: 20px; border: 1px solid #ccc; border-radius: 8px; }
-    .success { color: green; }
-    .error { color: red; }
-    .info { color: blue; }
-    button { padding: 10px 20px; margin: 5px; cursor: pointer; }
-    pre { background: #f5f5f5; padding: 10px; border-radius: 4px; overflow-x: auto; }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>INEX API Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .test-section {
+            background: white;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .test-button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        .test-button:hover {
+            background: #0056b3;
+        }
+        .result {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 15px;
+            margin: 10px 0;
+            white-space: pre-wrap;
+            font-family: monospace;
+            font-size: 12px;
+        }
+        .success { border-color: #28a745; background: #d4edda; }
+        .error { border-color: #dc3545; background: #f8d7da; }
+        .info { border-color: #17a2b8; background: #d1ecf1; }
+    </style>
 </head>
 <body>
-  <h1>INEX Portal API Test Page</h1>
-  
-  <div class="test-section">
-    <h2>1. Health Check</h2>
-    <button onclick="testHealth()">Test /api/health</button>
-    <div id="healthResult"></div>
-  </div>
-  
-  <div class="test-section">
-    <h2>2. Status Update API</h2>
-    <button onclick="testStatusUpdate()">Test /api/status-update</button>
-    <div id="statusResult"></div>
-  </div>
-  
-  <div class="test-section">
-    <h2>3. Messages API</h2>
-    <button onclick="testMessages()">Test /api/messages (GET)</button>
-    <button onclick="testSendMessage()">Test /api/messages (POST)</button>
-    <div id="messagesResult"></div>
-  </div>
-  
-  <div class="test-section">
-    <h2>4. Current Status</h2>
-    <button onclick="loadCurrentStatus()">Load Current Status</button>
-    <div id="currentStatus"></div>
-  </div>
+    <h1>INEX API Test Page</h1>
+    
+    <div class="test-section">
+        <h2>API Health Check</h2>
+        <button class="test-button" onclick="testAPIHealth()">Test API Health</button>
+        <div id="healthResult" class="result"></div>
+    </div>
 
-  <script>
-    const API_BASE = window.location.hostname === 'localhost' ? 'http://localhost:3000' : window.location.origin;
-    
-    async function testHealth() {
-      const resultDiv = document.getElementById('healthResult');
-      resultDiv.innerHTML = '<span class="info">Testing...</span>';
-      
-      try {
-        const response = await fetch(`${API_BASE}/api/health`);
-        const data = await response.json();
+    <div class="test-section">
+        <h2>Messages API</h2>
+        <button class="test-button" onclick="testGetMessages()">Test GET /api/messages</button>
+        <button class="test-button" onclick="testPostMessage()">Test POST /api/messages</button>
+        <div id="messagesResult" class="result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>Status Update API</h2>
+        <button class="test-button" onclick="testStatusUpdate()">Test POST /api/status-update</button>
+        <div id="statusResult" class="result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>Message Manager API</h2>
+        <button class="test-button" onclick="testMessageManager()">Test GET /api/message-manager</button>
+        <div id="managerResult" class="result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>Direct JSON File Access</h2>
+        <button class="test-button" onclick="testDirectJSON()">Test Direct JSON Access</button>
+        <div id="jsonResult" class="result"></div>
+    </div>
+
+    <script>
+        const API_BASE = window.location.origin;
         
-        if (response.ok) {
-          resultDiv.innerHTML = `<span class="success">✅ Success!</span><pre>${JSON.stringify(data, null, 2)}</pre>`;
-        } else {
-          resultDiv.innerHTML = `<span class="error">❌ Error ${response.status}</span><pre>${JSON.stringify(data, null, 2)}</pre>`;
+        function logResult(elementId, content, type = 'info') {
+            const element = document.getElementById(elementId);
+            element.textContent = content;
+            element.className = `result ${type}`;
         }
-      } catch (error) {
-        resultDiv.innerHTML = `<span class="error">❌ Network Error: ${error.message}</span>`;
-      }
-    }
-    
-    async function testStatusUpdate() {
-      const resultDiv = document.getElementById('statusResult');
-      resultDiv.innerHTML = '<span class="info">Testing...</span>';
-      
-      try {
-        const response = await fetch(`${API_BASE}/api/status-update`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            progress: 15,
-            phase: 'Phase 1',
-            status: 'Testing API endpoint - progress updated to 15%'
-          })
-        });
-        
-        const data = await response.json();
-        
-        if (response.ok) {
-          resultDiv.innerHTML = `<span class="success">✅ Success!</span><pre>${JSON.stringify(data, null, 2)}</pre>`;
-        } else {
-          resultDiv.innerHTML = `<span class="error">❌ Error ${response.status}</span><pre>${JSON.stringify(data, null, 2)}</pre>`;
+
+        async function testAPIHealth() {
+            try {
+                const response = await fetch(`${API_BASE}/api/test`);
+                const data = await response.json();
+                logResult('healthResult', `✅ API Health Check Success:\n${JSON.stringify(data, null, 2)}`, 'success');
+            } catch (error) {
+                logResult('healthResult', `❌ API Health Check Failed:\n${error.message}`, 'error');
+            }
         }
-      } catch (error) {
-        resultDiv.innerHTML = `<span class="error">❌ Network Error: ${error.message}</span>`;
-      }
-    }
-    
-    async function testMessages() {
-      const resultDiv = document.getElementById('messagesResult');
-      resultDiv.innerHTML = '<span class="info">Testing...</span>';
-      
-      try {
-        const response = await fetch(`${API_BASE}/api/messages`);
-        const data = await response.json();
-        
-        if (response.ok) {
-          resultDiv.innerHTML = `<span class="success">✅ Success!</span><pre>${JSON.stringify(data, null, 2)}</pre>`;
-        } else {
-          resultDiv.innerHTML = `<span class="error">❌ Error ${response.status}</span><pre>${JSON.stringify(data, null, 2)}</pre>`;
+
+        async function testGetMessages() {
+            try {
+                const response = await fetch(`${API_BASE}/api/messages`);
+                const data = await response.json();
+                logResult('messagesResult', `✅ GET Messages Success:\n${JSON.stringify(data, null, 2)}`, 'success');
+            } catch (error) {
+                logResult('messagesResult', `❌ GET Messages Failed:\n${error.message}`, 'error');
+            }
         }
-      } catch (error) {
-        resultDiv.innerHTML = `<span class="error">❌ Network Error: ${error.message}</span>`;
-      }
-    }
-    
-    async function testSendMessage() {
-      const resultDiv = document.getElementById('messagesResult');
-      resultDiv.innerHTML = '<span class="info">Testing...</span>';
-      
-      try {
-        const response = await fetch(`${API_BASE}/api/messages`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            name: 'API Test',
-            text: 'This is a test message from the API test page',
-            priority: 'normal',
-            category: 'test'
-          })
-        });
-        
-        const data = await response.json();
-        
-        if (response.ok) {
-          resultDiv.innerHTML = `<span class="success">✅ Success!</span><pre>${JSON.stringify(data, null, 2)}</pre>`;
-        } else {
-          resultDiv.innerHTML = `<span class="error">❌ Error ${response.status}</span><pre>${JSON.stringify(data, null, 2)}</pre>`;
+
+        async function testPostMessage() {
+            try {
+                const testMessage = {
+                    name: 'API Test User',
+                    text: 'This is a test message from the API test page',
+                    email: 'test@example.com',
+                    priority: 'normal',
+                    category: 'test'
+                };
+
+                const response = await fetch(`${API_BASE}/api/messages`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(testMessage)
+                });
+
+                const data = await response.json();
+                logResult('messagesResult', `✅ POST Message Success:\n${JSON.stringify(data, null, 2)}`, 'success');
+            } catch (error) {
+                logResult('messagesResult', `❌ POST Message Failed:\n${error.message}`, 'error');
+            }
         }
-      } catch (error) {
-        resultDiv.innerHTML = `<span class="error">❌ Network Error: ${error.message}</span>`;
-      }
-    }
-    
-    async function loadCurrentStatus() {
-      const resultDiv = document.getElementById('currentStatus');
-      resultDiv.innerHTML = '<span class="info">Loading...</span>';
-      
-      try {
-        const response = await fetch('/inex-live-data.json');
-        if (response.ok) {
-          const data = await response.json();
-          resultDiv.innerHTML = `<span class="success">✅ Current Status Loaded</span><pre>${JSON.stringify(data, null, 2)}</pre>`;
-        } else {
-          resultDiv.innerHTML = `<span class="error">❌ No status file found (${response.status})</span>`;
+
+        async function testStatusUpdate() {
+            try {
+                const testStatus = {
+                    progress: 75,
+                    phase: 'Testing',
+                    status: 'In Progress'
+                };
+
+                const response = await fetch(`${API_BASE}/api/status-update`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(testStatus)
+                });
+
+                const data = await response.json();
+                logResult('statusResult', `✅ Status Update Success:\n${JSON.stringify(data, null, 2)}`, 'success');
+            } catch (error) {
+                logResult('statusResult', `❌ Status Update Failed:\n${error.message}`, 'error');
+            }
         }
-      } catch (error) {
-        resultDiv.innerHTML = `<span class="error">❌ Error: ${error.message}</span>`;
-      }
-    }
-    
-    // Auto-test health on page load
-    window.addEventListener('load', testHealth);
-  </script>
+
+        async function testMessageManager() {
+            try {
+                const response = await fetch(`${API_BASE}/api/message-manager`);
+                const data = await response.json();
+                logResult('managerResult', `✅ Message Manager Success:\n${JSON.stringify(data, null, 2)}`, 'success');
+            } catch (error) {
+                logResult('managerResult', `❌ Message Manager Failed:\n${error.message}`, 'error');
+            }
+        }
+
+        async function testDirectJSON() {
+            try {
+                const messagesResponse = await fetch('/inex-messages.json');
+                const messages = await messagesResponse.json();
+                
+                const statusResponse = await fetch('/inex-live-data.json');
+                const status = await statusResponse.json();
+                
+                const result = {
+                    messages: {
+                        count: messages.length,
+                        sample: messages.slice(0, 2)
+                    },
+                    status: status
+                };
+                
+                logResult('jsonResult', `✅ Direct JSON Access Success:\n${JSON.stringify(result, null, 2)}`, 'success');
+            } catch (error) {
+                logResult('jsonResult', `❌ Direct JSON Access Failed:\n${error.message}`, 'error');
+            }
+        }
+
+        // Auto-run health check on page load
+        window.addEventListener('load', testAPIHealth);
+    </script>
 </body>
 </html>

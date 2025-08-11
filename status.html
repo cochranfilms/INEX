@@ -245,8 +245,8 @@
       <article class="card">
         <div class="head">💬 Message Developer</div>
         <div class="body">
-          <div style="margin-bottom:16px">
-            <p style="margin:0 0 12px 0;font-size:13px;color:var(--muted)">
+          <div style="margin-bottom:20px">
+            <p style="margin:0 0 16px 0;font-size:14px;color:var(--muted);line-height:1.5">
               Send a message to the development team. Your message will be visible to both you and the developers.
             </p>
             
@@ -256,21 +256,34 @@
               <small>This site automatically pushes messages to GitHub in real-time. When you send a message, it's immediately committed to the repository and visible to the development team.</small>
             </div>
             
-            <form id="messageForm" style="display:grid;gap:12px">
-              <input type="text" id="messageName" placeholder="Your name (optional)" style="padding:8px 12px;border:1px solid var(--border);border-radius:8px;background:var(--panel);color:var(--panel-ink);font-size:13px">
-              <textarea id="messageText" placeholder="Type your message here..." rows="3" style="padding:8px 12px;border:1px solid var(--border);border-radius:8px;background:var(--panel);color:var(--panel-ink);font-size:13px;resize:vertical"></textarea>
-              <div style="display:flex;justify-content:space-between;align-items:center">
-                <small style="color:var(--muted);font-size:11px" id="charCount">0 characters</small>
-                <button type="submit" class="btn primary" style="justify-self:end;padding:8px 16px;font-size:13px">📤 Send Message</button>
+            <form id="messageForm" style="display:grid;gap:16px">
+              <div style="display:grid;gap:8px">
+                <label for="messageName" style="font-size:12px;font-weight:600;color:var(--panel-ink);text-transform:uppercase;letter-spacing:0.5px">Your Name</label>
+                <input type="text" id="messageName" placeholder="Anonymous (optional)" style="padding:12px 16px;border:2px solid var(--border);border-radius:12px;background:var(--panel);color:var(--panel-ink);font-size:14px;transition:all 0.2s ease;outline:none" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'">
+              </div>
+              
+              <div style="display:grid;gap:8px">
+                <label for="messageText" style="font-size:12px;font-weight:600;color:var(--panel-ink);text-transform:uppercase;letter-spacing:0.5px">Message</label>
+                <textarea id="messageText" placeholder="Type your message here..." rows="4" style="padding:12px 16px;border:2px solid var(--border);border-radius:12px;background:var(--panel);color:var(--panel-ink);font-size:14px;resize:vertical;transition:all 0.2s ease;outline:none;line-height:1.5" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'"></textarea>
+              </div>
+              
+              <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0">
+                <small style="color:var(--muted);font-size:12px;font-weight:500" id="charCount">0 characters</small>
+                <button type="submit" class="btn primary" style="padding:12px 24px;font-size:14px;font-weight:700;border-radius:12px;box-shadow:0 4px 12px rgba(166,46,63,0.3);transition:all 0.2s ease" onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 6px 20px rgba(166,46,63,0.4)'" onmouseout="this.style.transform='translateY(0)';this.style.boxShadow='0 4px 12px rgba(166,46,63,0.3)'">📤 Send Message</button>
               </div>
             </form>
           </div>
           
-          <div style="border-top:1px solid var(--border);padding-top:16px">
-            <h4 style="margin:0 0 12px 0;font-size:14px;color:var(--accent)">📨 Recent Messages</h4>
-            <div id="messagesList" style="max-height:300px;overflow-y:auto">
-              <div style="text-align:center;padding:20px;color:var(--muted);font-size:13px">
-                No messages yet. Send the first one!
+          <div style="border-top:2px solid var(--border);padding-top:20px">
+            <h4 style="margin:0 0 16px 0;font-size:16px;color:var(--accent);font-weight:700;display:flex;align-items:center;gap:8px">
+              <span>📨</span>
+              <span>Recent Messages</span>
+            </h4>
+            <div id="messagesList" style="max-height:400px;overflow-y:auto;padding-right:8px">
+              <div style="text-align:center;padding:40px 20px;color:var(--muted);font-size:14px;background:rgba(255,255,255,0.02);border-radius:12px;border:2px dashed var(--border)">
+                <div style="font-size:24px;margin-bottom:8px">💬</div>
+                <div style="font-weight:600;margin-bottom:4px">No messages yet</div>
+                <div>Send the first message to get started!</div>
               </div>
             </div>
           </div>
@@ -339,26 +352,52 @@
       }
     }
 
-    // Try to load live status JSON produced on the server/deploy
+    // Load live status from consolidated JSON file
     async function loadLiveStatusFromJson() {
       try {
         const response = await safeFetch('/inex-live-data.json');
         if (!response.ok) return;
         const data = await response.json();
-        const pct = typeof data.progress === 'number' ? data.progress : parseInt((data?.current?.progress ?? '0'), 10) || 0;
-        const phase = data.phase || data?.currentPhase || 'Phase 1';
-        const eta = data.eta;
+        
+        // Extract all data from consolidated JSON
+        const pct = typeof data.progress === 'number' ? data.progress : 5;
+        const phase = data.phase || 'Phase 1';
+        const eta = data.eta || 'ETA: Sep 11-18, 2025 · Weekly updates posted below';
+        const scope = data.scope || 'Scope v1.0';
+        const owner = data.owner || 'Cochran Full Stack Solutions';
+        const client = data.client || 'INEX';
+        const nextActions = data.nextActions || [];
+        const updates = data.updates || [];
+        const phases = data.phases || [];
 
+        // Update progress and phase displays
         document.querySelector('.ring').style.setProperty('--p', pct);
         document.getElementById('pct').textContent = pct + '%';
         document.getElementById('phaseLabel').textContent = phase;
         document.getElementById('barFill').style.setProperty('--bar', pct + '%');
-        if (eta) {
-          const etaEl = document.getElementById('eta');
-          if (etaEl) etaEl.textContent = eta;
+        document.getElementById('eta').textContent = eta;
+        document.getElementById('badgeScope').textContent = scope;
+        document.getElementById('badgeOwner').textContent = 'Owner: ' + owner;
+        document.getElementById('badgeClient').textContent = 'Client: ' + client;
+
+        // Update next actions
+        const nextActionsList = document.getElementById('nextActions');
+        if (nextActionsList && nextActions.length > 0) {
+          nextActionsList.innerHTML = nextActions.map(action => `<li>${action}</li>`).join('');
         }
+
+        // Update timeline steps
+        updateTimelineSteps(phases, phase);
+
+        // Update development tracker
+        updateDevelopmentTracker(phases);
+
+        // Update updates table
+        updateUpdatesTable(updates);
+
+        safeLog('debug', '✅ Consolidated JSON data loaded successfully');
       } catch (error) {
-        safeLog('debug', 'Live status load failed, using fallback:', error.message);
+        safeLog('debug', 'Consolidated JSON load failed, using fallback:', error.message);
         // Silent fallback to localStorage values
       }
     }
@@ -445,7 +484,74 @@
       }
     }, CONFIG.autoRefreshInterval);
 
-    // Mark active step
+    // Helper function to update timeline steps
+    function updateTimelineSteps(phases, currentPhase) {
+      const steps = Array.from(document.querySelectorAll('.step'));
+      steps.forEach(s => {
+        const stepPhase = s.dataset.phase;
+        
+        s.classList.remove('active', 'complete');
+        
+        if (stepPhase === currentPhase) {
+          s.classList.add('active');
+        } else if (phases.find(p => p.name === stepPhase)?.status === 'complete') {
+          s.classList.add('complete');
+        }
+      });
+    }
+
+    // Helper function to update development tracker
+    function updateDevelopmentTracker(phases) {
+      const phase1 = phases.find(p => p.name === 'Phase 1');
+      if (phase1 && phase1.tasks) {
+        const devItems = document.getElementById('devItems');
+        if (devItems) {
+          devItems.innerHTML = phase1.tasks.map(task => `
+            <div class="dev-item">
+              <input type="checkbox" class="dev-checkbox" id="dev-${task.id}" data-task="${task.id}" ${task.status === 'complete' ? 'checked' : ''}>
+              <label for="dev-${task.id}" class="dev-label">${task.name}</label>
+              <span class="dev-status status-${task.status === 'complete' ? 'complete' : task.status === 'in-progress' ? 'progress' : 'pending'}">${task.status === 'complete' ? 'Complete' : task.status === 'in-progress' ? 'In Progress' : 'Pending'}</span>
+            </div>
+          `).join('');
+          
+          // Reattach event listeners
+          attachDevTrackerListeners();
+        }
+      }
+    }
+
+    // Helper function to update updates table
+    function updateUpdatesTable(updates) {
+      const updatesTable = document.getElementById('updates');
+      if (updatesTable && updates.length > 0) {
+        updatesTable.innerHTML = updates.map(update => `
+          <tr>
+            <td>${update.date}</td>
+            <td>${update.update}</td>
+            <td><span class="pill">${update.status}</span></td>
+          </tr>
+        `).join('');
+      }
+    }
+
+    // Helper function to attach dev tracker event listeners
+    function attachDevTrackerListeners() {
+      const devCheckboxes = document.querySelectorAll('.dev-checkbox');
+      devCheckboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', function() {
+          const task = this.dataset.task;
+          const status = this.checked ? 'complete' : 'pending';
+          
+          // Update progress based on completed tasks
+          updateProgress();
+          
+          // Save to localStorage
+          localStorage.setItem(`inex-dev-${task}`, status);
+        });
+      });
+    }
+
+    // Mark active step (initial load)
     const steps = Array.from(document.querySelectorAll('.step'));
     steps.forEach(s => {
       const stepPhase = s.dataset.phase;
@@ -654,7 +760,7 @@
       charCount.textContent = `${textLength} characters`;
     });
 
-    // Load messages from API
+    // Load messages from consolidated JSON file
     async function loadMessages() {
       try {
         // Always try the API endpoint first (both local and production)
@@ -672,14 +778,15 @@
           return;
         }
         
-        // If API fails, try loading from JSON file as fallback
-        safeLog('warn', 'API failed, trying JSON file fallback');
-        const jsonResponse = await safeFetch('/inex-messages.json');
+        // If API fails, try loading from consolidated JSON file as fallback
+        safeLog('warn', 'API failed, trying consolidated JSON file fallback');
+        const jsonResponse = await safeFetch('/inex-live-data.json');
         if (jsonResponse.ok) {
-          const messages = await jsonResponse.json();
+          const liveData = await jsonResponse.json();
+          const messages = liveData.messages || [];
           displayMessages(messages);
           localStorage.setItem('inex-messages', JSON.stringify(messages));
-          safeLog('debug', `✅ Loaded ${messages.length} messages from JSON file`);
+          safeLog('debug', `✅ Loaded ${messages.length} messages from consolidated JSON file`);
           return;
         }
         
@@ -688,7 +795,7 @@
         loadMessagesFromLocalStorage();
         
       } catch (error) {
-        safeLog('warn', 'Failed to load messages, using localStorage fallback:', error.message);
+        safeLog('warn', 'Failed to load messages, using consolidated JSON fallback:', error.message);
         loadMessagesFromLocalStorage();
       }
     }
@@ -700,29 +807,203 @@
       displayMessages(messages);
     }
 
-    // Display messages
+    // Display messages with enhanced design
     function displayMessages(messages) {
       if (messages.length === 0) {
         messagesList.innerHTML = `
-          <div style="text-align:center;padding:20px;color:var(--muted);font-size:13px">
-            No messages yet. Send the first one!
+          <div style="text-align:center;padding:40px 20px;color:var(--muted);font-size:14px;background:rgba(255,255,255,0.02);border-radius:12px;border:2px dashed var(--border)">
+            <div style="font-size:24px;margin-bottom:8px">💬</div>
+            <div style="font-weight:600;margin-bottom:4px">No messages yet</div>
+            <div>Send the first message to get started!</div>
           </div>
         `;
         return;
       }
 
       messagesList.innerHTML = messages.map(msg => `
-        <div style="padding:12px;border:1px solid var(--border);border-radius:8px;margin-bottom:8px;background:rgba(255,255,255,.02)">
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
-            <strong style="font-size:13px;color:var(--accent)">${msg.name || 'Anonymous'}</strong>
-            <small style="color:var(--muted);font-size:11px">${formatTimestamp(msg.timestamp)}</small>
+        <div style="
+          padding: 20px;
+          border: 1px solid var(--border);
+          border-radius: 16px;
+          margin-bottom: 16px;
+          background: rgba(255,255,255,.04);
+          box-shadow: 0 4px 16px rgba(0,0,0,.08);
+          transition: all 0.3s ease;
+          position: relative;
+          overflow: hidden;
+        " onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 8px 24px rgba(0,0,0,.12)'" onmouseout="this.style.transform='translateY(0)';this.style.boxShadow='0 4px 16px rgba(0,0,0,.08)'">
+          
+          <!-- Priority indicator bar -->
+          ${msg.priority && msg.priority !== 'normal' ? `
+            <div style="
+              position: absolute;
+              top: 0;
+              left: 0;
+              right: 0;
+              height: 4px;
+              background: ${msg.priority === 'urgent' ? 'linear-gradient(90deg, #f44336, #ff5722)' : 
+                           msg.priority === 'high' ? 'linear-gradient(90deg, #ff9800, #ffc107)' :
+                           'linear-gradient(90deg, #4caf50, #8bc34a)'};
+            "></div>
+          ` : ''}
+          
+          <!-- Message header -->
+          <div style="
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+            gap: 12px;
+          ">
+            <div style="display: flex; align-items: center; gap: 12px;">
+              <div style="
+                width: 40px;
+                height: 40px;
+                border-radius: 50%;
+                background: linear-gradient(135deg, var(--accent), var(--maroon));
+                display: grid;
+                place-items: center;
+                color: white;
+                font-weight: 700;
+                font-size: 16px;
+                box-shadow: 0 2px 8px rgba(255,178,0,0.3);
+              ">${(msg.name || 'A').charAt(0).toUpperCase()}</div>
+              <div>
+                <strong style="
+                  font-size: 16px;
+                  color: var(--panel-ink);
+                  font-weight: 700;
+                  display: block;
+                ">${msg.name || 'Anonymous'}</strong>
+                ${msg.email ? `<small style="color: var(--muted); font-size: 12px;">${msg.email}</small>` : ''}
+              </div>
+            </div>
+            
+            <div style="display: flex; align-items: center; gap: 8px;">
+              ${msg.priority && msg.priority !== 'normal' ? `
+                <span style="
+                  padding: 4px 12px;
+                  border-radius: 20px;
+                  font-size: 11px;
+                  font-weight: 700;
+                  text-transform: uppercase;
+                  letter-spacing: 0.5px;
+                  ${msg.priority === 'urgent' ? 'background: rgba(244,67,54,.15); color: #f44336; border: 1px solid rgba(244,67,54,.3);' : 
+                    msg.priority === 'high' ? 'background: rgba(255,152,0,.15); color: #ff9800; border: 1px solid rgba(255,152,0,.3);' :
+                    'background: rgba(76,175,80,.15); color: #4caf50; border: 1px solid rgba(76,175,80,.3);'}
+                ">${msg.priority}</span>
+              ` : ''}
+              <small style="
+                color: var(--muted);
+                font-size: 12px;
+                background: rgba(255,255,255,.08);
+                padding: 6px 10px;
+                border-radius: 8px;
+                font-weight: 500;
+                white-space: nowrap;
+              ">${formatTimestamp(msg.timestamp)}</small>
+            </div>
           </div>
-          <div style="font-size:13px;line-height:1.4">${msg.text}</div>
+          
+          <!-- Message content -->
+          <div style="
+            font-size: 14px;
+            line-height: 1.6;
+            color: var(--panel-ink);
+            margin-bottom: 16px;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+            padding: 16px;
+            background: rgba(255,255,255,.02);
+            border-radius: 12px;
+            border-left: 4px solid var(--accent);
+          ">${msg.text}</div>
+          
+          <!-- Responses -->
           ${msg.responses && msg.responses.length > 0 ? `
-            <div style="margin-top:8px;padding-top:8px;border-top:1px solid var(--border);font-size:12px;color:var(--muted)">
-              <strong>Response:</strong> ${msg.responses[msg.responses.length - 1].text}
+            <div style="
+              margin-top: 16px;
+              padding: 16px;
+              background: linear-gradient(135deg, rgba(166,46,63,.08), rgba(255,178,0,.08));
+              border: 1px solid rgba(166,46,63,.15);
+              border-radius: 12px;
+              position: relative;
+            ">
+              <div style="
+                position: absolute;
+                top: -8px;
+                left: 16px;
+                background: var(--panel);
+                padding: 0 8px;
+                font-size: 11px;
+                font-weight: 700;
+                color: var(--accent);
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+              ">Response</div>
+              <div style="
+                font-size: 13px;
+                line-height: 1.5;
+                color: var(--panel-ink);
+                font-style: italic;
+              ">${msg.responses[msg.responses.length - 1].text}</div>
+              <div style="
+                margin-top: 8px;
+                font-size: 11px;
+                color: var(--muted);
+                display: flex;
+                align-items: center;
+                gap: 6px;
+              ">
+                <span>👤</span>
+                <span>${msg.responses[msg.responses.length - 1].responder || 'Development Team'}</span>
+                <span>•</span>
+                <span>${formatTimestamp(msg.responses[msg.responses.length - 1].timestamp)}</span>
+              </div>
             </div>
           ` : ''}
+          
+          <!-- Status indicators -->
+          <div style="
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-top: 16px;
+            padding-top: 16px;
+            border-top: 1px solid var(--border);
+          ">
+            <span style="
+              display: flex;
+              align-items: center;
+              gap: 6px;
+              font-size: 12px;
+              color: var(--muted);
+            ">
+              <span style="
+                width: 8px;
+                height: 8px;
+                border-radius: 50%;
+                background: ${msg.read ? '#4caf50' : '#ff9800'};
+              "></span>
+              ${msg.read ? 'Read' : 'Unread'}
+            </span>
+            <span style="
+              display: flex;
+              align-items: center;
+              gap: 6px;
+              font-size: 12px;
+              color: var(--muted);
+            ">
+              <span style="
+                width: 8px;
+                height: 8px;
+                border-radius: 50%;
+                background: ${msg.responded ? '#4caf50' : '#f44336'};
+              "></span>
+              ${msg.responded ? 'Responded' : 'No Response'}
+            </span>
+          </div>
         </div>
       `).join('');
     }
