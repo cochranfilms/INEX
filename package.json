@@ -13,8 +13,6 @@
     "firebase-admin": "^12.5.0"
   },
   "scripts": {
-    "build": "node vercel-build-hook.js",
-    "vercel-build": "node vercel-build-hook.js",
     "start": "node server.js",
     "dev": "node server.js"
   },
