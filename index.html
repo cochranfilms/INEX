@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>INEX Systems Portal — Concept Demo (Light 1.0 / Dark 2.0)</title>
-<meta name="description" content="INEX x Cochran — concept portal with light/dark modes. Dark = a true 2.0 redesign with new layout, KPIs, pulse chart, and icon actions." />
+<title>INEX Systems Portal — Operations Dashboard</title>
+<meta name="description" content="INEX Systems & Designs — Professional operations portal with light/dark modes, project management, and system monitoring." />
 <link rel="icon" type="image/svg+xml" href="vite.svg" />
 <link rel="alternate icon" type="image/x-icon" href="vite.ico" />
 <style>
@@ -128,10 +128,10 @@
   <div class="brand">
     <img src="inex-logo.png" alt="INEX Systems & Designs Logo" />
     <span>INEX Systems Portal</span>
-            <small>· Concept by Cochran Full Stack Solutions</small>
+            <small>· Operations Portal</small>
   </div>
   <div class="spacer"></div>
-  <button class="pitch-btn" id="openPitch">🎤 Pitch Mode</button>
+  <button class="pitch-btn" id="openPitch">📋 System Overview</button>
   <a class="toggle" id="themeToggle" href="#"><span class="dot"></span><span id="themeLabel">2.0 Dark</span></a>
 </header>
 
@@ -161,8 +161,8 @@
     <button class="pitch-close" id="closePitch">✕ Close</button>
     <div class="pitch-head">
       <img src="inex-logo.png" alt="INEX Logo">
-      <h2 id="pitchTitle" style="margin:0;font-size:18px;">INEX Systems Portal — Pitch Mode</h2>
-              <span style="opacity:.85;font-weight:700;margin-left:.5rem">by Cochran Full Stack Solutions</span>
+      <h2 id="pitchTitle" style="margin:0;font-size:18px;">INEX Systems Portal — Overview</h2>
+              <span style="opacity:.85;font-weight:700;margin-left:.5rem">Operations Dashboard</span>
     </div>
     <div class="pitch-scroll">
       <div class="pitch-grid">
@@ -211,26 +211,20 @@
         <div class="p-card">
           <div class="p-head">What We’ve Done · What You Get · What 2.0 Enables</div>
           <div class="p-body">
-            <h4 style="margin:.2rem 0 .5rem 0">✅ Delivered Now</h4>
+            <h4 style="margin:.2rem 0 .5rem 0">✅ Core Features</h4>
             <ul class="list">
-              <li>INEX branding, <strong>Light 1.0 / Dark 2.0</strong> (persists).</li>
-              <li>In‑view routing across Projects, Jobs, Inventory, RMA, SLAs, Knowledge, Clients, Careers, Settings.</li>
-              <li>Inline SVG charts (no libs) for a productized dashboard feel.</li>
+              <li>Professional INEX branding with <strong>Light 1.0 / Dark 2.0</strong> themes.</li>
+              <li>Complete navigation across Projects, Jobs, Inventory, RMA, SLAs, Knowledge, Clients, Careers, Settings.</li>
+              <li>Interactive dashboard with KPI widgets and operational overview.</li>
             </ul>
-            <h4 style="margin:1rem 0 .5rem 0">💡 Immediate Wins</h4>
+            <h4 style="margin:1rem 0 .5rem 0">💡 Business Benefits</h4>
             <ul class="list">
-              <li>One portal experience → faster training & less app sprawl.</li>
-              <li>Exec framing: ClickShare’s room simplicity extends into ops.</li>
-              <li>White‑label ready per enterprise (tokens + logo swap).</li>
-            </ul>
-            <h4 style="margin:1rem 0 .5rem 0">🛣️ 2.0 Roadmap</h4>
-            <ul class="list">
-              <li>Mock <code>/api</code> → live connectors (Sheets/CSV/QuickBooks/Stripe).</li>
-              <li>“Schedule a Walkthrough” to calendar; press‑ready PDF export.</li>
-              <li>Auth shell (Firebase/Clerk), SLA/RMA reports, client portal.</li>
+              <li>Unified portal experience for faster operations and training.</li>
+              <li>Professional interface that matches ClickShare's quality standards.</li>
+              <li>Ready for enterprise deployment and team adoption.</li>
             </ul>
             <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:8px">
-              <a class="btn secondary" href="https://inex.cochranfilms.com/?utm_source=pitch&utm_medium=overlay&utm_campaign=inex_demo" target="_blank">🌐 Open Live Demo</a>
+              <a class="btn secondary" href="https://inex.cochranfilms.com/?utm_source=overview&utm_medium=overlay&utm_campaign=inex_portal" target="_blank">🌐 Open Portal</a>
               <a class="btn ghost" href="#/dashboard">Back to Dashboard</a>
             </div>
           </div>
@@ -240,7 +234,6 @@
   </div>
 </div>
 
-  <script src="dev-tracker.js"></script>
   <script>
   /* SVG helpers */
   const spark = (points, stroke="#7cf5ff") => `
@@ -265,113 +258,124 @@
   /* Views: 1.0 (light) dashboard */
   const V1 = {
     dashboard: `
-      <div class="header"><h1>Welcome, INEX Team</h1><span class="muted">Phase 1: Discovery — Starting fresh with development workflow</span></div>
+      <div class="header"><h1>Welcome, INEX Team</h1><span class="muted">Operations Dashboard — Real-time project and system status</span></div>
       <section class="cards">
         <article class="card span-4">
-          <div class="head">Project Status</div>
+          <div class="head">Quick Actions</div>
           <div class="body">
-            <ul class="list"><li><strong>Phase 1: Discovery</strong> — In Progress ⏳</li><li><strong>Brand Guidelines</strong> — Planning 📅</li><li><strong>Design System</strong> — Not Started 📅</li></ul>
-            <div style="margin-top:.6rem;padding:.8rem;background:#f8f8f8;border-radius:8px;border:1px solid var(--border)">
-              <strong>Current Focus:</strong> Setting up development workflow and tracking system
-            </div>
-            <div style="margin-top:.5rem;display:flex;gap:.5rem;flex-wrap:wrap"><span class="pill">Phase 1</span><span class="pill">Discovery</span><span class="pill">Planning</span></div>
-          </div>
-        </article>
-        <article class="card span-4">
-          <div class="head">Development Tracker</div>
-          <div class="body">
-            <ul class="list"><li>✅ Development workflow setup</li><li>✅ Status tracking system</li><li>⏳ Brand guidelines</li><li>📅 Design system</li></ul>
-            <div class="pill" style="margin-top:.6rem">Progress: 15%</div>
-            <div style="margin-top:.4rem;padding:.6rem;background:#f0f8ff;border-radius:6px;border:1px solid #e1f5fe">
-              <small>Linked to <a href="status.html" target="_blank">status.html</a> for real-time updates</small>
+            <div style="display:grid;gap:.6rem">
+              <a class="btn primary" href="#/projects">View Projects</a>
+              <a class="btn secondary" href="#/jobs">Schedule Jobs</a>
+              <a class="btn primary" href="#/inventory">Check Inventory</a>
+              <a class="btn secondary" href="#/rma">RMA Requests</a>
             </div>
           </div>
         </article>
         <article class="card span-4">
-          <div class="head">Next Steps</div>
+          <div class="head">System Status</div>
           <div class="body">
-            <ul class="list"><li>Finalize brand guidelines</li><li>Create design system</li><li>Build navigation shell</li><li>Implement dashboard KPIs</li></ul>
-            <div style="margin-top:.75rem;display:flex;gap:.6rem;flex-wrap:wrap">
-              <a class="btn secondary" href="status.html" target="_blank">View Status</a><a class="btn primary" href="#/projects">Track Progress</a>
-            </div>
+            <ul class="list">
+              <li><strong>All Systems</strong> — Operational ✅</li>
+              <li><strong>ClickShare Network</strong> — Online ✅</li>
+              <li><strong>Audio Systems</strong> — Operational ✅</li>
+              <li><strong>Support Tickets</strong> — 3 Active</li>
+            </ul>
+          </div>
+        </article>
+        <article class="card span-4">
+          <div class="head">Recent Activity</div>
+          <div class="body">
+            <ul class="list">
+              <li>RICE Auditorium — ClickShare installed</li>
+              <li>Room 2C — Audio tuning completed</li>
+              <li>New support ticket — Mic echo in 3B</li>
+              <li>Inventory update — 6 CX-50 units available</li>
+            </ul>
           </div>
         </article>
         <article class="card span-8">
-          <div class="head">Development Workflow Overview</div>
+          <div class="head">Operations Overview</div>
           <div class="body" style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">
-            <div style="border:1px solid var(--border);border-radius:12px;padding:1rem"><span class="pill">Phase 1: Discovery</span>
-              <ul class="list" style="margin-top:.5rem"><li>Project setup & requirements</li><li>Brand research & guidelines</li><li>Design system planning</li><li>Development workflow</li><li>Status tracking system</li></ul>
+            <div style="border:1px solid var(--border);border-radius:12px;padding:1rem">
+              <span class="pill">Active Projects</span>
+              <ul class="list" style="margin-top:.5rem">
+                <li>RICE Auditorium modernization</li>
+                <li>Room 2C audio tuning</li>
+                <li>ClickShare network expansion</li>
+              </ul>
             </div>
-            <div style="border:1px solid var(--border);border-radius:12px;padding:1rem"><span class="pill">Phase 2: Design</span>
-              <ul class="list" style="margin-top:.5rem"><li>Color palette & typography</li><li>Component library</li><li>Layout & navigation</li><li>Responsive design</li><li>Theme system</li></ul>
+            <div style="border:1px solid var(--border);border-radius:12px;padding:1rem">
+              <span class="pill">This Week</span>
+              <ul class="list" style="margin-top:.5rem">
+                <li>3 scheduled installations</li>
+                <li>2 support tickets</li>
+                <li>Inventory audit</li>
+              </ul>
             </div>
           </div>
         </article>
         <article class="card span-4">
-          <div class="head">Quick Actions</div>
+          <div class="head">Support & Resources</div>
           <div class="body" style="display:grid;gap:.6rem">
-            <a class="btn secondary" href="status.html" target="_blank">Project Status</a>
-            <a class="btn primary" href="#/projects">Track Progress</a>
-            <a class="btn primary" href="#/jobs">Development Log</a>
-            <a class="btn primary" href="#/inventory">Resources</a>
+            <a class="btn secondary" href="#/knowledge">Knowledge Base</a>
+            <a class="btn primary" href="#/rma">RMA Requests</a>
+            <a class="btn secondary" href="#/slas">SLA Dashboard</a>
           </div>
         </article>
         <article class="card span-12">
-          <div class="head">Development Progress (Phase 1)</div>
+          <div class="head">Current Operations</div>
           <div class="body">
             <div style="display:flex;align-items:center;gap:1rem;margin-bottom:1rem">
               <div style="width:100px;height:100px;border-radius:50%;background:conic-gradient(#A62E3F 15%, #e6e6e6 0);display:grid;place-items:center;border:3px solid #f0f0f0">
                 <strong style="font-size:18px">15%</strong>
               </div>
               <div>
-                <strong>Current Phase: Discovery</strong><br>
-                <small class="muted">Setting up development workflow and tracking system</small>
+                <strong>Current Focus: Project Setup</strong><br>
+                <small class="muted">Requirements gathering and system planning</small>
               </div>
             </div>
             <div style="background:#f8f8f8;border-radius:8px;padding:.8rem;border:1px solid var(--border)">
-              <strong>Linked Systems:</strong> 
-              <a href="status.html" target="_blank">status.html</a> (real-time updates) • 
-              <a href="dev-tracker.js" target="_blank">dev-tracker.js</a> (development tracking)
+              <strong>Status:</strong> All systems operational. Projects progressing on schedule.
             </div>
           </div>
         </article>
       </section>
-      <p class="footer">Phase 1: Discovery • Development workflow setup • © Cochran Full Stack Solutions</p>
+      <p class="footer">INEX Systems Portal • Operations Dashboard • © Cochran Full Stack Solutions</p>
     `
   };
 
-  /* Views: 2.0 (dark) dashboard — NEW layout */
+  /* Views: 2.0 (dark) dashboard — Clean business focus */
   const V2 = {
     dashboard: `
-      <div class="v2head"><img src="inex-logo.png" alt="INEX"><strong>INEX v2.0</strong><span class="muted">• Phase 1: Discovery • Development Workflow Setup</span></div>
+      <div class="v2head"><img src="inex-logo.png" alt="INEX"><strong>INEX Operations</strong><span class="muted">• Real-time dashboard • Live project tracking</span></div>
 
       <!-- KPI Tiles -->
       <section class="kpis">
         <div class="kpi">
-          <h3>Current Phase</h3>
-          <div class="val">Discovery <span class="delta up">Phase 1</span></div>
+          <h3>Active Projects</h3>
+          <div class="val">3 <span class="delta up">Active</span></div>
           <div id="kpi-proj" style="margin-top:6px"></div>
         </div>
         <div class="kpi">
-          <h3>Progress</h3>
-          <div class="val">15% <span class="delta down">Discovery</span></div>
+          <h3>Support Tickets</h3>
+          <div class="val">3 <span class="delta down">Open</span></div>
           <div id="kpi-tix" style="margin-top:6px"></div>
         </div>
         <div class="kpi">
-          <h3>Tasks Complete</h3>
-          <div class="val">2 <span class="delta up">of 13</span></div>
+          <h3>System Status</h3>
+          <div class="val">100% <span class="delta up">Online</span></div>
           <div id="kpi-sla" style="margin-top:6px"></div>
         </div>
         <div class="kpi">
-          <h3>Next Milestone</h3>
-          <div class="val">Design <span class="delta up">Phase 2</span></div>
+          <h3>This Week</h3>
+          <div class="val">5 <span class="delta up">Scheduled</span></div>
           <div id="kpi-inst" style="margin-top:6px"></div>
         </div>
       </section>
 
-      <!-- Operations Pulse -->
+      <!-- Operations Overview -->
       <section class="card span-12" style="margin-top:1rem">
-        <div class="head">Development Progress (Phase 1: Discovery)</div>
+        <div class="head">Operations Overview</div>
         <div class="body">
           <div class="pulse" id="pulse-bars"></div>
           <div style="margin-top:12px;display:flex;align-items:center;gap:12px">
@@ -379,43 +383,29 @@
               <strong style="font-size:16px;color:var(--accent)">15%</strong>
             </div>
             <div>
-              <strong>Current Focus:</strong> Setting up development workflow and tracking system<br>
-              <small class="muted">Linked to status.html for real-time updates</small>
+              <strong>Current Focus:</strong> Project setup and requirements gathering<br>
+              <small class="muted">All systems operational and projects on schedule</small>
             </div>
           </div>
         </div>
       </section>
 
-      <!-- Icon-first quick actions -->
+      <!-- Quick Actions -->
       <section class="card span-12" style="margin-top:1rem">
-        <div class="head">Development Actions</div>
+        <div class="head">Quick Actions</div>
         <div class="body">
-          <div class="icon-actions">
-            ${iconAction('status.html','M4 12h16v2H4zM4 6h16v2H4zM4 18h10v2H4z','Project Status')}
-            ${iconAction('#/projects','M3 6h18v2H3zm0 5h18v2H3zm0 5h12v2H3z','Track Progress')}
-            ${iconAction('#/jobs','M4 7h16l-2 11H6L4 7zm4-3h8v2H8z','Development Log')}
-            ${iconAction('#/rma','M4 12a8 8 0 1116 0h-2a6 6 0 10-6 6v-3l4 4-4 4v-3a8 8 0 01-8-8z','Resources')}
-            ${iconAction('#/slas','M3 12h6l2 3 4-6 6 9H3z','Guidelines')}
-            ${iconAction('#/knowledge','M4 6h16v12H4z M8 10h8','Documentation')}
-            ${iconAction('#/clients','M4 18v-2a4 4 0 014-4h8a4 4 0 014 4v2H4z M12 6a3 3 0 110 6 3 3 0 010-6','Team')}
-            ${iconAction('#/careers','M6 6h12v12H6z M9 9h6v6H9z','Settings')}
+          <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(200px, 1fr));gap:1rem">
+            <a class="btn primary" href="#/projects">📁 View Projects</a>
+            <a class="btn secondary" href="#/jobs">🗓️ Schedule Jobs</a>
+            <a class="btn primary" href="#/inventory">📦 Check Inventory</a>
+            <a class="btn secondary" href="#/rma">↩️ RMA Requests</a>
+            <a class="btn primary" href="#/knowledge">📚 Knowledge Base</a>
+            <a class="btn secondary" href="#/slas">⏱️ SLA Dashboard</a>
           </div>
         </div>
       </section>
 
-      <!-- Development workflow overview -->
-      <section class="cards" style="margin-top:1rem">
-        <article class="card span-6">
-          <div class="head">Phase 1: Discovery (Current)</div>
-          <div class="body"><ul class="list"><li>✅ Project setup & requirements</li><li>✅ Development workflow</li><li>✅ Status tracking system</li><li>⏳ Brand guidelines</li><li>📅 Design system planning</li></ul></div>
-        </article>
-        <article class="card span-6">
-          <div class="head">Phase 2: Design (Next)</div>
-          <div class="body"><ul class="list"><li>📅 Color palette & typography</li><li>📅 Component library</li><li>📅 Layout & navigation</li><li>📅 Responsive design</li><li>📅 Theme system</li></ul></div>
-        </article>
-      </section>
-
-      <p class="footer">Phase 1: Discovery • Development workflow setup • © Cochran Full Stack Solutions</p>
+      <p class="footer">INEX Systems Portal • Operations Dashboard • © Cochran Full Stack Solutions</p>
     `
   };
 
@@ -688,62 +678,6 @@
   closePitch.addEventListener('click', closeOverlay);
   overlay.addEventListener('click', (e)=>{ if(e.target === overlay) closeOverlay(); });
   window.addEventListener('keydown', (e)=>{ if(e.key === 'Escape' && overlay.classList.contains('show')) closeOverlay(); });
-
-  // INEX Development Workflow Integration
-  if (typeof window.inexTracker !== 'undefined') {
-    // Track dashboard view changes
-    function trackViewChange(route) {
-      if (route === 'dashboard') {
-        window.inexTracker.addUpdate('Dashboard view accessed');
-      } else if (route === 'projects') {
-        window.inexTracker.addUpdate('Projects view accessed');
-      } else if (route === 'jobs') {
-        window.inexTracker.addUpdate('Jobs view accessed');
-      } else if (route === 'inventory') {
-        window.inexTracker.addUpdate('Inventory view accessed');
-      }
-    }
-
-    // Track theme changes
-    function trackThemeChange(theme) {
-      window.inexTracker.addUpdate(`Theme changed to ${theme} mode`);
-    }
-
-    // Override render function to track view changes
-    const originalRender = render;
-    render = function() {
-      const route = location.hash.replace('#/','') || 'dashboard';
-      setActive(route);
-      
-      // Track the view change
-      trackViewChange(route);
-      
-      // Call original render
-      originalRender();
-    };
-
-    // Override theme toggle to track changes
-    const originalThemeToggle = btn.addEventListener;
-    btn.addEventListener('click', (e)=>{
-      e.preventDefault();
-      const next = root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
-      root.setAttribute('data-theme', next);
-      localStorage.setItem('inex-theme', next);
-      label.textContent = next === 'dark' ? '1.0 Light' : '2.0 Dark';
-      
-      // Track theme change
-      trackThemeChange(next);
-      
-      render(); // re-render with the correct dashboard variant
-    });
-
-    // Track initial load
-    window.addEventListener('load', () => {
-      window.inexTracker.addUpdate('INEX Portal loaded - development mode active');
-    });
-
-    console.log('🎯 INEX Development Tracker integrated with portal');
-  }
 
 </script>
 </body>
