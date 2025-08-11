@@ -1,6 +1,6 @@
-const { test, expect } = require('@playwright/test');
-const fs = require('fs');
-const path = require('path');
+import { test, expect } from '@playwright/test';
+import fs from 'fs';
+import path from 'path';
 
 const BASE_URL = process.env.BASE_URL || 'http://localhost:4321';
 const pagesToCheck = [

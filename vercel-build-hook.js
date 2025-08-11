@@ -4,8 +4,13 @@
  * Runs during Vercel build/deployment process
  */
 
-const fs = require('fs');
-const path = require('path');
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+// Get __dirname equivalent for ES modules
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 class INEXVercelIntegration {
   constructor() {
@@ -259,9 +264,9 @@ class INEXVercelIntegration {
 }
 
 // Execute if this file is run directly
-if (require.main === module) {
+if (import.meta.url === `file://${process.argv[1]}`) {
   const integration = new INEXVercelIntegration();
   integration.execute().catch(console.error);
 }
 
-module.exports = INEXVercelIntegration;
+export default INEXVercelIntegration;

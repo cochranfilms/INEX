@@ -1,4 +1,4 @@
-const http = require('http');
+import http from 'http';
 
 const testUrls = [
   '/',
@@ -79,8 +79,8 @@ async function runTests() {
 }
 
 // Run tests if this file is executed directly
-if (require.main === module) {
+if (import.meta.url === `file://${process.argv[1]}`) {
   runTests();
 }
 
-module.exports = { testUrl, runTests };
+export default { testUrl, runTests };
