@@ -41,19 +41,25 @@ jobs:
       
     - name: Verify jq is available
       run: |
+        if ! command -v jq &> /dev/null; then
+          echo "Installing jq..."
+          sudo apt-get update && sudo apt-get install -y jq
+        fi
         jq --version
         echo "jq is available for JSON manipulation"
       
     - name: Add new message
       run: |
-        # Read existing messages or create empty array
-        if [ -f "inex-messages.json" ]; then
-          messages=$(cat inex-messages.json)
+        # Read existing data or create default structure
+        if [ -f "inex-live-data.json" ]; then
+          echo "Reading existing inex-live-data.json..."
+          existing_data=$(cat inex-live-data.json)
         else
-          messages="[]"
+          echo "Creating new inex-live-data.json..."
+          existing_data='{}'
         fi
         
-        # Create new message object with proper escaping
+        # Create new message object
         new_message=$(jq -n \
           --arg name "${{ inputs.name }}" \
           --arg text "${{ inputs.text }}" \
@@ -61,8 +67,9 @@ jobs:
           --arg priority "${{ inputs.priority }}" \
           --arg category "${{ inputs.category }}" \
           --arg timestamp "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+          --arg now "$(date +%s)000" \
           '{
-            id: ($now | tostring),
+            id: $now,
             name: $name,
             text: $text,
             email: $email,
@@ -72,32 +79,40 @@ jobs:
             status: "new",
             read: false,
             responded: false
-          }' --arg now "$(date +%s)000")
+          }')
         
-        # Add new message to beginning of array (newest first) using jq for safe JSON manipulation
-        if [ "$messages" = "[]" ]; then
-          # First message - create new array
-          echo "[$new_message]" > inex-messages.json
+        # Add new message to beginning of messages array
+        if echo "$existing_data" | jq -e '.messages' > /dev/null 2>&1; then
+          # Messages array exists, add to beginning
+          echo "Adding message to existing messages array..."
+          updated_data=$(echo "$existing_data" | jq --argjson msg "$new_message" '.messages |= [$msg] + .')
         else
-          # Insert at beginning of existing array using jq
-          echo "$messages" | jq --argjson msg "$new_message" '. |= [$msg] + .' > inex-messages.json
+          # No messages array, create it with the new message
+          echo "Creating new messages array with first message..."
+          updated_data=$(echo "$existing_data" | jq --argjson msg "$new_message" '.messages = [$msg]')
         fi
         
+        # Update lastUpdated timestamp
+        updated_data=$(echo "$updated_data" | jq --arg lastUpdated "$(date -u +%Y-%m-%dT%H:%M:%SZ)" '.lastUpdated = $lastUpdated')
+        
+        # Write the updated data back to file
+        echo "$updated_data" > inex-live-data.json
+        
         # Validate the JSON file was created correctly
-        if [ -f "inex-messages.json" ]; then
-          echo "✅ inex-messages.json created successfully"
-          echo "📝 Message count: $(jq 'length' inex-messages.json)"
-          echo "📄 File size: $(wc -c < inex-messages.json) bytes"
+        if [ -f "inex-live-data.json" ]; then
+          echo "✅ inex-live-data.json updated successfully"
+          echo "📝 Message count: $(jq '.messages | length' inex-live-data.json)"
+          echo "📄 File size: $(wc -c < inex-live-data.json) bytes"
           
           # Validate JSON syntax
-          if jq empty inex-messages.json 2>/dev/null; then
+          if jq empty inex-live-data.json 2>/dev/null; then
             echo "✅ JSON syntax is valid"
           else
             echo "❌ JSON syntax error detected"
             exit 1
           fi
         else
-          echo "❌ Failed to create inex-messages.json"
+          echo "❌ Failed to update inex-live-data.json"
           exit 1
         fi
         
@@ -105,6 +120,6 @@ jobs:
       run: |
         git config --local user.email "github-actions[bot]@users.noreply.github.com"
         git config --local user.name "github-actions[bot]"
-        git add inex-messages.json
+        git add inex-live-data.json
         git commit -m "Add new message from ${{ inputs.name }}: ${{ inputs.text }}"
         git push origin main

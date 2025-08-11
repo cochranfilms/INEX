@@ -30,15 +30,30 @@ jobs:
       
     - name: Update status data
       run: |
-        # Create the status data
-        cat > inex-live-data.json << EOF
-        {
-          "progress": ${{ inputs.progress }},
-          "phase": "${{ inputs.phase }}",
-          "status": "${{ inputs.status }}",
-          "lastUpdated": "${{ github.event.head_commit.timestamp || github.event.head_commit.committer.date || github.event.head_commit.author.date || '2025-08-11T00:00:00Z' }}"
-        }
-        EOF
+        # Check if jq is available
+        if ! command -v jq &> /dev/null; then
+          echo "Installing jq..."
+          sudo apt-get update && sudo apt-get install -y jq
+        fi
+        
+        # Read existing data or create default structure
+        if [ -f "inex-live-data.json" ]; then
+          echo "Reading existing inex-live-data.json..."
+          existing_data=$(cat inex-live-data.json)
+        else
+          echo "Creating new inex-live-data.json..."
+          existing_data='{}'
+        fi
+        
+        # Update the status fields while preserving other data
+        updated_data=$(echo "$existing_data" | jq --arg progress "${{ inputs.progress }}" \
+          --arg phase "${{ inputs.phase }}" \
+          --arg status "${{ inputs.status }}" \
+          --arg lastUpdated "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+          '.progress = ($progress | tonumber) | .phase = $phase | .status = $status | .lastUpdated = $lastUpdated')
+        
+        # Write the updated data back to file
+        echo "$updated_data" > inex-live-data.json
         
         # Display the updated content
         echo "Updated inex-live-data.json:"
