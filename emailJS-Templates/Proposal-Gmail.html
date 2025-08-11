@@ -491,6 +491,95 @@
             font-weight: 400;
         }
         
+        /* Welcome Video Section Styles */
+        .welcome-video-section {
+            background: linear-gradient(135deg, #2d2d2d 0%, #1a1a1a 100%);
+            padding: 40px 30px;
+            text-align: center;
+            border-bottom: 1px solid #404040;
+        }
+        
+        .video-container {
+            max-width: 500px;
+            margin: 0 auto;
+            position: relative;
+        }
+        
+        .video-thumbnail {
+            display: block;
+            text-decoration: none;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+            transition: all 0.3s ease;
+            position: relative;
+        }
+        
+        .video-thumbnail:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.6);
+        }
+        
+        .thumbnail-image {
+            width: 100%;
+            height: auto;
+            display: block;
+            border-radius: 16px;
+        }
+        
+        .video-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, rgba(166, 46, 63, 0.8) 0%, rgba(124, 35, 48, 0.9) 100%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: all 0.3s ease;
+            border-radius: 16px;
+        }
+        
+        .video-thumbnail:hover .video-overlay {
+            opacity: 1;
+        }
+        
+        .play-button {
+            font-size: 48px;
+            color: #ffffff;
+            margin-bottom: 20px;
+            text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+        
+        .video-text {
+            text-align: center;
+            color: #ffffff;
+        }
+        
+        .video-title {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+        }
+        
+        .video-subtitle {
+            font-size: 16px;
+            font-weight: 400;
+            opacity: 0.9;
+            text-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
+        }
+        
         /* Responsive design */
         @media only screen and (max-width: 600px) {
             .email-container {
@@ -501,6 +590,21 @@
             }
             .header {
                 padding: 30px 20px !important;
+            }
+            .welcome-video-section {
+                padding: 30px 20px !important;
+            }
+            .video-container {
+                max-width: 100% !important;
+            }
+            .video-title {
+                font-size: 20px !important;
+            }
+            .video-subtitle {
+                font-size: 14px !important;
+            }
+            .play-button {
+                font-size: 36px !important;
             }
             .feature-item {
                 display: block !important;
@@ -519,6 +623,22 @@
                 <div style="font-size: 28px; font-weight: 700; margin-bottom: 8px; letter-spacing: 1px;">Cochran Full Stack Solutions</div>
             </div>
             <div class="tagline">From concept to code, we've got it covered.</div>
+        </div>
+        
+        <!-- Welcome Video Section -->
+        <div class="welcome-video-section">
+            <div class="video-container">
+                <a href="https://www.youtube.com/watch?v=nkhRUsST_uI" target="_blank" class="video-thumbnail">
+                    <div class="video-overlay">
+                        <div class="play-button">▶</div>
+                        <div class="video-text">
+                            <div class="video-title">Welcome to INEX Portal</div>
+                            <div class="video-subtitle">A personal message from Cody</div>
+                        </div>
+                    </div>
+                    <img src="https://img.youtube.com/vi/nkhRUsST_uI/maxresdefault.jpg" alt="Welcome Video Thumbnail" class="thumbnail-image" />
+                </a>
+            </div>
         </div>
         
         <!-- Main Content -->

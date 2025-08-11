@@ -341,9 +341,9 @@
         if (!root || document.getElementById('authGate')) return;
         const gate = document.createElement('div');
         gate.id = 'authGate';
-        gate.style.cssText = 'grid-column:1/-1;background:rgba(255,255,255,.04);border:1px solid #3a3b41;border-radius:12px;padding:10px 12px;display:flex;gap:8px;align-items:center;flex-wrap:wrap';
+        gate.style.cssText = 'grid-column:1/-1;background:rgba(255,178,0,.08);border:2px solid #FFB200;border-radius:12px;padding:12px 16px;display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:16px;box-shadow:0 4px 12px rgba(255,178,0,.15)';
         gate.innerHTML = `
-          <span class="muted" style="font-weight:800">Restricted Access</span>
+          <span style="color:#FFB200;font-weight:800;font-size:14px;">🔐 Restricted Access - Sign In Required</span>
           <input id="authEmail" class="sig-input" placeholder="Email" style="max-width:240px">
           ${hasFirebase ? '<input id="authPass" class="sig-input" placeholder="Password" type="password" style="max-width:180px">' : ''}
           <button id="authLoginBtn" class="btn btn-secondary"><i class="fa-solid fa-right-to-bracket"></i> Sign In</button>
@@ -1099,7 +1099,7 @@
       };
       clientInput.addEventListener('input', updatePreview);
       updatePreview();
-      setTimeout(()=>{ try { clientInput.focus(); } catch(_){} }, 0);
+      // Removed auto-focus to prevent scrolling to bottom before auth
     }
     
     // CEO signature preview updates
@@ -1220,6 +1220,10 @@
     hydrateAllowedFromJson()
       .then(()=> initFirebasePublic())
       .then(()=>{ try{ completeSignInIfNeeded(); }catch(_){} return ensureTestAuthGate(); })
+      .then(()=>{
+        // Ensure page is at top so user sees auth gate first
+        window.scrollTo(0, 0);
+      })
       .catch(()=>{});
 </script>
   
