@@ -6,6 +6,46 @@
   <title>INEX Systems & Designs — Agreement</title>
   <link rel="icon" href="vite.ico" />
   
+  <!-- Force scroll to top on page load -->
+  <script>
+    // Immediately scroll to top when page loads to prevent auto-scroll to bottom
+    function forceScrollToTop() {
+      window.scrollTo(0, 0);
+      document.documentElement.scrollTop = 0;
+      document.body.scrollTop = 0;
+    }
+    
+    // Remove any hash fragments that might cause scrolling
+    if (window.location.hash) {
+      history.replaceState(null, null, window.location.pathname + window.location.search);
+    }
+    
+    // Try multiple approaches to ensure scroll to top
+    forceScrollToTop();
+    
+    // Also try to scroll to top as soon as possible
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', forceScrollToTop);
+    }
+    
+    // Ensure scroll to top after page fully loads
+    window.addEventListener('load', forceScrollToTop);
+    
+    // Additional safety: scroll to top after a short delay to catch any late scroll events
+    setTimeout(forceScrollToTop, 100);
+    setTimeout(forceScrollToTop, 500);
+    
+    // Prevent any scroll events from moving the page away from top
+    let scrollPrevented = false;
+    window.addEventListener('scroll', function() {
+      if (!scrollPrevented && (window.pageYOffset > 0 || document.documentElement.scrollTop > 0)) {
+        scrollPrevented = true;
+        forceScrollToTop();
+        setTimeout(() => { scrollPrevented = false; }, 100);
+      }
+    }, { passive: false });
+  </script>
+  
   <!-- Fonts & Icons -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -63,11 +103,13 @@
       --white: #ffffff;
     }
     html, body { height: 100%; }
+    html { scroll-behavior: auto; }
     body {
       margin: 0; color: var(--white); background: radial-gradient(1200px 600px at 15% -10%, rgba(166,46,63,.08), transparent 60%),
                  radial-gradient(1200px 600px at 85% 110%, rgba(255,178,0,.08), transparent 60%),
                  #000; font: 14px/1.65 Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial;
       -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale;
+      scroll-behavior: auto;
     }
     .wrap { max-width: 1080px; margin: 36px auto; padding: 0 18px; }
     .doc { background: linear-gradient(180deg, rgba(255,255,255,.02), rgba(255,255,255,.0)); border: 1px solid var(--border); border-radius: 18px; box-shadow: var(--shadow); overflow: hidden; }
@@ -1154,7 +1196,7 @@
           // No Firebase available: require allowlist verification via gate
           if (!window.__accessGranted) {
             alert('Please verify your email to continue.');
-            try { document.getElementById('authGate')?.scrollIntoView({ behavior: 'smooth' }); } catch(_){ }
+            // Removed scrollIntoView to prevent unwanted scrolling
             finalizeBtn.disabled = false; finalizeBtn.innerHTML = '<i class="fa-solid fa-file-signature"></i> Sign & Send Contract';
             return;
           }
@@ -1221,8 +1263,7 @@
       .then(()=> initFirebasePublic())
       .then(()=>{ try{ completeSignInIfNeeded(); }catch(_){} return ensureTestAuthGate(); })
       .then(()=>{
-        // Ensure page is at top so user sees auth gate first
-        window.scrollTo(0, 0);
+        // Page scroll to top is now handled at the beginning of the page load
       })
       .catch(()=>{});
 </script>

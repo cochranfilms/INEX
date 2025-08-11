@@ -136,15 +136,123 @@ htmlFiles.forEach(file => {
 
 // Test endpoint to verify server is working
 app.get('/api/health', (req, res) => {
-  res.json({ 
+  res.json({
     success: true, 
     message: 'INEX Portal API is running',
     timestamp: new Date().toISOString(),
-    endpoints: ['/api/status-update', '/api/messages', '/api/health']
+    endpoints: ['/api/status-update', '/api/messages', '/api/health', '/api/live-data', '/api/message-manager']
   });
 });
 
+// GET endpoint for live data
+app.get('/api/live-data', (req, res) => {
+  try {
+    const liveDataFile = 'inex-live-data.json';
+    const liveDataPath = path.join(__dirname, liveDataFile);
+    
+    // Ensure live data file exists
+    if (!fs.existsSync(liveDataPath)) {
+      const defaultData = {
+        progress: 5,
+        phase: "Discovery",
+        phaseName: "Discovery Phase",
+        status: "Requirements gathering in progress - initial stakeholder interviews completed",
+        lastUpdated: new Date().toISOString(),
+        eta: "Sep 11-18, 2025",
+        scope: "Scope v1.0",
+        owner: "Cochran Full Stack Solutions",
+        client: "INEX",
+        phases: [],
+        updates: [],
+        nextActions: [],
+        messages: []
+      };
+      fs.writeFileSync(liveDataPath, JSON.stringify(defaultData, null, 2));
+    }
+    
+    const liveData = fs.readFileSync(liveDataPath, 'utf8');
+    const data = JSON.parse(liveData);
+    
+    res.json({
+      success: true,
+      data: data,
+      lastUpdated: data.lastUpdated || new Date().toISOString()
+    });
+    
+  } catch (error) {
+    console.error('Error reading live data:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Internal server error reading live data'
+    });
+  }
+});
+
 // API Endpoints
+app.put('/api/live-data', (req, res) => {
+  try {
+    const updateData = req.body;
+    
+    // Validate input
+    if (!updateData || typeof updateData !== 'object') {
+      return res.status(400).json({ 
+        success: false, 
+        error: 'Invalid data. Must be an object.' 
+      });
+    }
+    
+    const liveDataFile = 'inex-live-data.json';
+    const liveDataPath = path.join(__dirname, liveDataFile);
+    
+    // Read existing live data
+    let existingData = {};
+    try {
+      if (fs.existsSync(liveDataPath)) {
+        const existingFile = fs.readFileSync(liveDataPath, 'utf8');
+        existingData = JSON.parse(existingFile);
+      }
+    } catch (readError) {
+      console.log('No existing data found, starting fresh');
+    }
+    
+    // Update the data with new values
+    const updatedData = {
+      ...existingData,
+      ...updateData,
+      lastUpdated: new Date().toISOString()
+    };
+    
+    try {
+      fs.writeFileSync(liveDataPath, JSON.stringify(updatedData, null, 2));
+      console.log('Live data updated in inex-live-data.json');
+      
+      // Also create a backup with timestamp
+      const backupFile = `inex-live-data-backup-${new Date().toISOString().split('T')[0]}.json`;
+      fs.writeFileSync(backupFile, JSON.stringify(updatedData, null, 2));
+      console.log('Backup created:', backupFile);
+    } catch (writeError) {
+      console.error('Error saving live data:', writeError);
+      return res.status(500).json({
+        success: false,
+        error: 'Failed to save live data'
+      });
+    }
+    
+    res.json({ 
+      success: true, 
+      message: 'Live data updated successfully',
+      data: updatedData
+    });
+    
+  } catch (error) {
+    console.error('Error updating live data:', error);
+    res.status(500).json({ 
+      success: false, 
+      error: 'Internal server error updating live data' 
+    });
+  }
+});
+
 app.post('/api/status-update', (req, res) => {
   try {
     const { progress, phase, status } = req.body;
