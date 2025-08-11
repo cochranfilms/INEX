@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "buildCommand": "node vercel-build-hook.js",
+  "buildCommand": null,
   "outputDirectory": ".",
   "functions": {
     "api/messages.js": {
@@ -8,30 +8,19 @@
     },
     "api/status-update.js": {
       "maxDuration": 30
+    },
+    "api/message-manager.js": {
+      "maxDuration": 30
     }
   },
-
   "env": {
     "NODE_ENV": "production"
   },
   "github": {
-    "enabled": false,
+    "enabled": true,
     "silent": false
   },
   "headers": [
-    {
-      "source": "/inex-messages.json",
-      "headers": [
-        {
-          "key": "Cache-Control",
-          "value": "no-cache, no-store, must-revalidate"
-        },
-        {
-          "key": "Access-Control-Allow-Origin",
-          "value": "*"
-        }
-      ]
-    },
     {
       "source": "/inex-live-data.json",
       "headers": [
