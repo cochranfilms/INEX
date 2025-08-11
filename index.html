@@ -433,54 +433,44 @@
         </article>
       </div>
     `,
-    status: `
+        status: `
       <div class="header"><h1>Status Management</h1><span class="muted">Update project status and progress for client visibility</span></div>
+      
+      <!-- Current Status Overview Section -->
       <div class="cards">
         <article class="card span-8">
           <div class="head">Current Status Overview</div>
           <div class="body">
             <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin-bottom:1rem">
-              <div style="text-align:center;padding:1rem;border:1px solid var(--border);border-radius:12px">
+              <div style="text-align:center;padding:1rem;border:1px solid var(--border);border-radius:12px;background:var(--panel)">
                 <div style="font-size:24px;font-weight:900;color:var(--maroon)" id="progressDisplay">5%</div>
                 <div style="font-size:12px;color:var(--muted)">Overall Progress</div>
               </div>
-              <div style="text-align:center;padding:1rem;border:1px solid var(--border);border-radius:12px">
+              <div style="text-align:center;padding:1rem;border:1px solid var(--border);border-radius:12px;background:var(--panel)">
                 <div style="font-size:24px;font-weight:900;color:var(--accent)" id="tasksDisplay">1/3</div>
                 <div style="font-size:12px;color:var(--muted)">Phases Complete</div>
               </div>
-              <div style="text-align:center;padding:1rem;border:1px solid var(--border);border-radius:12px">
-                <div style="font-size:24px;font-weight:900;color:var(--muted)" id="phaseDisplay">Phase 1</div>
+              <div style="text-align:center;padding:1rem;border:1px solid var(--border);border-radius:12px;background:var(--panel)">
+                <div style="font-size:24px;font-weight:900;color:var(--muted)" id="phaseDisplay">Discovery</div>
                 <div style="font-size:12px;color:var(--muted)">Current Phase</div>
               </div>
-              <div style="text-align:center;padding:1rem;border:1px solid var(--border);border-radius:12px">
+              <div style="text-align:center;padding:1rem;border:1px solid var(--border);border-radius:12px;background:var(--panel)">
                 <div style="font-size:24px;font-weight:900;color:var(--muted)" id="etaDisplay">Aug 22</div>
                 <div style="font-size:12px;color:var(--muted)">Phase 1 End</div>
               </div>
             </div>
+            
             <div style="background:#f8f8f8;border-radius:8px;padding:1rem;border:1px solid var(--border);margin-bottom:1rem">
-              <strong>Current Status:</strong> <span id="statusText">Phase 1 (Prototype Polish) in progress. Working on INEX branding integration and basic UI framework. On track for Aug 22 completion.</span>
+              <strong>Current Status:</strong> <span id="statusText">Project initiated - gathering requirements.</span>
             </div>
+            
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">
               <button class="btn primary" onclick="updateStatus()">Update Status</button>
               <a class="btn secondary" href="status.html" target="_blank">View Public Status</a>
             </div>
-            <div style="margin-top:1rem;padding:1rem;background:rgba(0,150,136,.1);border:1px solid rgba(0,150,136,.2);border-radius:8px">
-              <strong>🚀 Live Deployment Controls</strong><br>
-              <small>These buttons will automatically update both local status AND deploy to Zebediah's status page via GitHub API:</small>
-              <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-top:1rem">
-                <button class="btn primary" onclick="deployStatusUpdate()">🚀 Deploy Status Update</button>
-                <button class="btn secondary" onclick="deployPhaseChange()">🔄 Deploy Phase Change</button>
-              </div>
-            </div>
-            <div style="margin-top:1rem;padding:1rem;background:rgba(255,178,0,.1);border:1px solid rgba(255,178,0,.2);border-radius:8px">
-              <strong>🔄 Automatic Sync</strong><br>
-              <small>The system now automatically syncs data between the dashboard and status page via GitHub API:</small>
-              <div style="margin-top:1rem">
-                <button class="btn secondary" onclick="syncWithStatusPage()">🔄 Manual Sync (Backup)</button>
-              </div>
-            </div>
           </div>
         </article>
+        
         <article class="card span-4">
           <div class="head">Quick Actions</div>
           <div class="body">
@@ -491,43 +481,66 @@
             </div>
           </div>
         </article>
-      </section>
+      </div>
+
+      <!-- Live Deployment Controls Section -->
+      <div class="cards" style="margin-top:1rem">
+        <article class="card span-8">
+          <div class="head">🚀 Live Deployment Controls</div>
+          <div class="body">
+            <p style="margin:0 0 1rem 0;color:var(--muted);font-size:14px">
+              These buttons will automatically update both local status AND deploy to Zebediah's status page via GitHub API:
+            </p>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">
+              <button class="btn primary" onclick="deployStatusUpdate()">🚀 Deploy Status Update</button>
+              <button class="btn secondary" onclick="deployPhaseChange()">🔄 Deploy Phase Change</button>
+            </div>
+          </div>
+        </article>
+      </div>
+
+      <!-- Automatic Sync Section -->
+      <div class="cards" style="margin-top:1rem">
+        <article class="card span-8">
+          <div class="head">🔄 Automatic Sync</div>
+          <div class="body">
+            <p style="margin:0 0 1rem 0;color:var(--muted);font-size:14px">
+              The system now automatically syncs data between the dashboard and status page via GitHub API:
+            </p>
+            <div>
+              <button class="btn secondary" onclick="syncWithStatusPage()">🔄 Manual Sync (Backup)</button>
+            </div>
+          </div>
+        </article>
+      </div>
 
       <!-- Communication Section -->
-      <section class="cards" style="margin-top:1rem">
+      <div class="cards" style="margin-top:1rem">
         <article class="card span-8">
           <div class="head">💬 Message Developer</div>
           <div class="body">
-            <div style="margin-bottom:20px">
-              <p style="margin:0 0 16px 0;font-size:14px;color:var(--muted);line-height:1.5">
-                Send a message to the development team. Your message will be visible to both you and the developers.
-              </p>
-              
-              <!-- GitHub Pages Notice -->
-              <div id="githubPagesNotice" style="display:none;margin-bottom:16px;padding:12px;background:rgba(0,150,136,.1);border:1px solid rgba(0,150,136,.2);border-radius:8px;font-size:12px">
-                <strong>✅ Automatic GitHub Integration Active</strong><br>
-                <small>This site automatically pushes messages to GitHub. When you send a message, it's immediately committed to the repository and visible to the development team.</small>
+            <p style="margin:0 0 16px 0;font-size:14px;color:var(--muted);line-height:1.5">
+              Send a message to the development team. Your message will be visible to both you and the developers.
+            </p>
+            
+            <form id="messageForm" style="display:grid;gap:16px">
+              <div style="display:grid;gap:8px">
+                <label for="messageName" style="font-size:12px;font-weight:600;color:var(--panel-ink);text-transform:uppercase;letter-spacing:0.5px">YOUR NAME</label>
+                <input type="text" id="messageName" placeholder="Anonymous" style="padding:12px 16px;border:2px solid var(--border);border-radius:12px;background:var(--panel);color:var(--panel-ink);font-size:14px;transition:all 0.2s ease;outline:none" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'">
               </div>
               
-              <form id="messageForm" style="display:grid;gap:16px">
-                <div style="display:grid;gap:8px">
-                  <label for="messageName" style="font-size:12px;font-weight:600;color:var(--panel-ink);text-transform:uppercase;letter-spacing:0.5px">Your Name</label>
-                  <input type="text" id="messageName" placeholder="Anonymous (optional)" style="padding:12px 16px;border:2px solid var(--border);border-radius:12px;background:var(--panel);color:var(--panel-ink);font-size:14px;transition:all 0.2s ease;outline:none" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'">
-                </div>
-                
-                <div style="display:grid;gap:8px">
-                  <label for="messageText" style="font-size:12px;font-weight:600;color:var(--panel-ink);text-transform:uppercase;letter-spacing:0.5px">Message</label>
-                  <textarea id="messageText" placeholder="Type your message here..." rows="4" style="padding:12px 16px;border:2px solid var(--border);border-radius:12px;background:var(--panel);color:var(--panel-ink);font-size:14px;resize:vertical;transition:all 0.2s ease;outline:none;line-height:1.5" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'"></textarea>
-                </div>
-                
-                <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0">
-                  <small style="color:var(--muted);font-size:12px;font-weight:500" id="charCount">0 characters</small>
-                  <button type="submit" class="btn primary" style="padding:12px 24px;font-size:14px;font-weight:700;border-radius:12px;box-shadow:0 4px 12px rgba(166,46,63,0.3);transition:all 0.2s ease" onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 6px 20px rgba(166,46,63,0.4)'" onmouseout="this.style.transform='translateY(0)';this.style.boxShadow='0 4px 12px rgba(166,46,63,0.3)'">📤 Send Message</button>
-                </div>
-              </form>
-            </div>
+              <div style="display:grid;gap:8px">
+                <label for="messageText" style="font-size:12px;font-weight:600;color:var(--panel-ink);text-transform:uppercase;letter-spacing:0.5px">MESSAGE</label>
+                <textarea id="messageText" placeholder="Type your message here..." rows="4" style="padding:12px 16px;border:2px solid var(--border);border-radius:12px;background:var(--panel);color:var(--panel-ink);font-size:14px;resize:vertical;transition:all 0.2s ease;outline:none;line-height:1.5" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'"></textarea>
+              </div>
+              
+              <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0">
+                <small style="color:var(--muted);font-size:12px;font-weight:500" id="charCount">0 characters</small>
+                <button type="submit" class="btn primary" style="padding:12px 24px;font-size:14px;font-weight:700;border-radius:12px;box-shadow:0 4px 12px rgba(166,46,63,0.3);transition:all 0.2s ease" onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 6px 20px rgba(166,46,63,0.4)'" onmouseout="this.style.transform='translateY(0)';this.style.boxShadow='0 4px 12px rgba(166,46,63,0.3)'">📤 Send Message</button>
+              </div>
+            </form>
             
-            <div style="border-top:2px solid var(--border);padding-top:20px">
+            <div style="border-top:2px solid var(--border);padding-top:20px;margin-top:20px">
               <h4 style="margin:0 0 16px 0;font-size:16px;color:var(--accent);font-weight:700;display:flex;align-items:center;gap:8px">
                 <span>📨</span>
                 <span>Recent Messages</span>
@@ -551,48 +564,17 @@
               <button class="btn secondary" onclick="clearMessages()">Clear All</button>
               <button class="btn primary" onclick="refreshMessages()">🔄 Refresh</button>
             </div>
-            <div style="
-              margin-top:1rem;
-              padding:.8rem;
-              background:rgba(0,150,136,.1);
-              border:1px solid rgba(0,150,136,.2);
-              border-radius:8px;
-              font-size:12px;
-              word-wrap:break-word;
-              white-space:normal;
-              overflow-wrap:break-word;
-            ">
-              <div style="
-                display:flex;
-                align-items:center;
-                gap:6px;
-                margin-bottom:6px;
-                flex-wrap:wrap;
-              ">
+            
+            <div style="margin-top:1rem;padding:.8rem;background:rgba(0,150,136,.1);border:1px solid rgba(0,150,136,.2);border-radius:8px;font-size:12px;">
+              <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px;">
                 <div style="font-size:16px;flex-shrink:0">🚀</div>
-                <strong style="
-                  font-size:12px;
-                  color:var(--panel-ink);
-                  white-space:normal;
-                  word-wrap:break-word;
-                  overflow-wrap:break-word;
-                  word-break:normal;
-                ">GitHub Integration</strong>
+                <strong style="font-size:12px;color:var(--panel-ink);">GitHub Integration</strong>
               </div>
-              <p style="
-                font-size:11px;
-                color:var(--muted);
-                line-height:1.3;
-                margin:0;
-                white-space:normal;
-                word-wrap:break-word;
-                overflow-wrap:break-word;
-                word-break:normal;
-              ">Messages are automatically pushed to GitHub and visible immediately.</p>
+              <p style="font-size:11px;color:var(--muted);line-height:1.3;margin:0;">Messages are automatically pushed to GitHub and visible immediately.</p>
             </div>
           </div>
         </article>
-      </section>
+      </div>
     `
   };
 
@@ -604,25 +586,15 @@
     const route = location.hash.replace('#/','') || 'dashboard';
     setActive(route);
     view.innerHTML = Views[route] || Views.dashboard;
-    // After rendering, initialize status displays
-    if (route === 'status') {
+    
+    // After rendering, initialize status and update displays
+    setTimeout(async () => {
+      await initializeStatus();
       updateAllStatusDisplays();
-    }
+    }, 50);
   }
   window.addEventListener('hashchange', render);
   window.addEventListener('load', render);
-  
-  // Load saved status data when dashboard loads
-  window.addEventListener('load', function() {
-    // Wait a bit for the DOM to be fully ready
-    setTimeout(async () => {
-      // Initialize status from JSON files ONLY
-      await initializeStatus();
-      
-      // Update all progress displays to ensure consistency
-      updateAllStatusDisplays();
-    }, 100);
-  });
 
   /* Theme toggle + persistence */
   const root = document.documentElement;
@@ -674,23 +646,26 @@
 
   // Centralized Status Management System - JSON ONLY
   let currentStatus = {
-    progress: 5,
-    phase: 'Phase 1',
-    phaseName: 'Prototype Polish',
-    status: 'Phase 1 (Prototype Polish) in progress. Working on INEX branding integration and basic UI framework. On track for Aug 22 completion.',
+    progress: 0,
+    phase: 'Discovery',
+    phaseName: 'Discovery Phase',
+    status: 'Project initiated - gathering requirements',
     lastUpdated: new Date().toISOString()
   };
 
   // Initialize status from consolidated JSON file ONLY
   async function initializeStatus() {
     try {
+      console.log('🔄 Initializing status from JSON...');
       // Load from consolidated live data JSON
       const response = await fetch('inex-live-data.json');
       if (response.ok) {
         const liveData = await response.json();
-        currentStatus.progress = liveData.progress || 5;
-        currentStatus.phase = liveData.phase || 'Phase 1';
-        currentStatus.status = liveData.status || 'Phase 1 (Prototype Polish) in progress. Working on INEX branding integration and basic UI framework. On track for Aug 22 completion.';
+        console.log('📄 Loaded live data:', liveData);
+        
+        currentStatus.progress = liveData.progress || 0;
+        currentStatus.phase = liveData.phase || 'Discovery';
+        currentStatus.status = liveData.status || 'Project initiated - gathering requirements';
         currentStatus.lastUpdated = liveData.lastUpdated || new Date().toISOString();
         console.log('✅ Status loaded from consolidated JSON:', currentStatus);
       } else {
@@ -701,13 +676,21 @@
     }
     
     // Update all displays
+    console.log('🔄 Calling updateAllStatusDisplays...');
     updateAllStatusDisplays();
   }
 
   // Update all status displays across all views
   function updateAllStatusDisplays() {
+    console.log('🔄 Updating status displays with:', currentStatus);
+    
+    // Check if we're on the status page
+    const isStatusPage = location.hash.includes('status') || location.hash === '';
+    console.log('🔍 Current route:', location.hash, 'Is status page:', isStatusPage);
+    
     // Update progress displays
     const progressElements = document.querySelectorAll('#progressDisplay, #dashboardProgressRing, #statusProgress');
+    console.log('🔍 Found progress elements:', progressElements.length, progressElements);
     progressElements.forEach(el => {
       if (el.id === 'dashboardProgressRing') {
         el.style.setProperty('--progress', currentStatus.progress + '%');
@@ -718,14 +701,18 @@
 
     // Update phase displays
     const phaseElements = document.querySelectorAll('#phaseDisplay');
+    console.log('🔍 Found phase elements:', phaseElements.length, phaseElements);
     phaseElements.forEach(el => {
       el.textContent = currentStatus.phase;
+      console.log('✅ Updated phase display:', el.id, 'to', currentStatus.phase);
     });
 
     // Update status text
     const statusElements = document.querySelectorAll('#statusText');
+    console.log('🔍 Found status text elements:', statusElements.length, statusElements);
     statusElements.forEach(el => {
       el.textContent = currentStatus.status;
+      console.log('✅ Updated status text:', el.id, 'to', currentStatus.status);
     });
 
     // Update dashboard progress ring
@@ -735,6 +722,8 @@
       progressRing.style.setProperty('--progress', currentStatus.progress + '%');
       progressText.textContent = currentStatus.progress + '%';
     }
+    
+    console.log('✅ All status displays updated');
   }
 
   // Save status to JSON via API ONLY (no localStorage)
