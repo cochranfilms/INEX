@@ -261,9 +261,15 @@
                   window.location.hostname === '127.0.0.1' ||
                   window.location.port !== '';
     
-    const API_BASE = isDev ? 'http://localhost:3000' : window.location.origin;
-    const MESSAGES_API = `${API_BASE}/api/messages`;
-    const MESSAGE_MANAGER_API = `${API_BASE}/api/message-manager`;
+    // Prefer a reachable API base (try origin, then flip www/non-www if needed)
+    let API_BASE = isDev ? 'http://localhost:3000' : window.location.origin;
+    const candidateBases = isDev ? [API_BASE] : [
+      window.location.origin,
+      window.location.origin.replace('://inex.', '://www.inex.'),
+      window.location.origin.replace('://www.inex.', '://inex.'),
+    ].filter((v, i, a) => v && a.indexOf(v) === i);
+    let MESSAGES_API = `${API_BASE}/api/messages`;
+    let MESSAGE_MANAGER_API = `${API_BASE}/api/message-manager`;
     
     // Ensure we're using the correct protocol and port
     console.log('Development mode:', isDev);
@@ -271,9 +277,26 @@
     console.log('Messages API:', MESSAGES_API);
     console.log('Message Manager API:', MESSAGE_MANAGER_API);
 
+    // Probe API base if not in dev
+    async function detectApiBase() {
+      if (isDev) return; 
+      for (const base of candidateBases) {
+        try {
+          const resp = await fetch(`${base}/api/messages`, { method: 'GET', cache: 'no-store' });
+          if (resp.ok || resp.status === 200) {
+            API_BASE = base;
+            MESSAGES_API = `${API_BASE}/api/messages`;
+            MESSAGE_MANAGER_API = `${API_BASE}/api/message-manager`;
+            console.log('Selected API Base:', API_BASE);
+            return;
+          }
+        } catch (_) {}
+      }
+    }
+
     // Initialize dashboard
     document.addEventListener('DOMContentLoaded', function() {
-      loadMessages();
+      detectApiBase().finally(loadMessages);
       setupEventListeners();
       setupFilters();
     });
@@ -304,7 +327,11 @@
     // Load messages from API
     async function loadMessages() {
       try {
-        const response = await fetch(MESSAGES_API, { cache: 'no-store' });
+        let response = await fetch(MESSAGES_API, { cache: 'no-store' });
+        if (response.status === 404 && !isDev) {
+          await detectApiBase();
+          response = await fetch(MESSAGES_API, { cache: 'no-store' });
+        }
         if (!response.ok) throw new Error('Failed to fetch messages');
         
         const data = await response.json();
@@ -451,7 +478,7 @@
       }
       
       try {
-        const response = await fetch(MESSAGE_MANAGER_API, {
+        let response = await fetch(MESSAGE_MANAGER_API, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -461,6 +488,14 @@
             priority: priorityUpdate
           })
         });
+        if ((response.status === 404 || response.status === 405) && !isDev) {
+          await detectApiBase();
+          response = await fetch(MESSAGE_MANAGER_API, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ id: selectedMessageId, response: responseText, status: statusUpdate, priority: priorityUpdate })
+          });
+        }
         
         if (!response.ok) throw new Error('Failed to send response');
         
@@ -488,7 +523,7 @@
         const message = messages.find(m => m.id === messageId);
         const newReadStatus = !message.read;
         
-        const response = await fetch(MESSAGE_MANAGER_API, {
+        let response = await fetch(MESSAGE_MANAGER_API, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -496,6 +531,14 @@
             read: newReadStatus
           })
         });
+        if ((response.status === 404 || response.status === 405) && !isDev) {
+          await detectApiBase();
+          response = await fetch(MESSAGE_MANAGER_API, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ id: messageId, read: newReadStatus })
+          });
+        }
         
         if (!response.ok) throw new Error('Failed to update message');
         
@@ -512,11 +555,19 @@
       if (!confirm('Are you sure you want to archive this message?')) return;
       
       try {
-        const response = await fetch(MESSAGE_MANAGER_API, {
+        let response = await fetch(MESSAGE_MANAGER_API, {
           method: 'DELETE',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ id: messageId })
         });
+        if ((response.status === 404 || response.status === 405) && !isDev) {
+          await detectApiBase();
+          response = await fetch(MESSAGE_MANAGER_API, {
+            method: 'DELETE',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ id: messageId })
+          });
+        }
         
         if (!response.ok) throw new Error('Failed to archive message');
         
@@ -537,7 +588,7 @@
         const unreadMessages = messages.filter(m => !m.read);
         
         for (const message of unreadMessages) {
-          await fetch(MESSAGE_MANAGER_API, {
+          let resp = await fetch(MESSAGE_MANAGER_API, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -545,6 +596,14 @@
               read: true
             })
           });
+          if ((resp.status === 404 || resp.status === 405) && !isDev) {
+            await detectApiBase();
+            await fetch(MESSAGE_MANAGER_API, {
+              method: 'PUT',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ id: message.id, read: true })
+            });
+          }
         }
         
         await loadMessages();

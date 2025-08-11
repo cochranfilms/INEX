@@ -455,6 +455,10 @@
     const route = location.hash.replace('#/','') || 'dashboard';
     setActive(route);
     view.innerHTML = Views[route] || Views.dashboard;
+    // After rendering, if we're on the status view, try to sync from live JSON
+    if (route === 'status') {
+      loadLiveStatusFromJson();
+    }
   }
   window.addEventListener('hashchange', render);
   window.addEventListener('load', render);
@@ -521,6 +525,34 @@
   window.addEventListener('keydown', (e)=>{ if(e.key === 'Escape' && overlay.classList.contains('show')) closeOverlay(); });
 
   // Status Management Functions
+  // Load live status from JSON so the status view reflects deploy-time updates
+  async function loadLiveStatusFromJson() {
+    try {
+      const response = await fetch('/inex-live-data.json', { cache: 'no-store' });
+      if (!response.ok) return;
+      const data = await response.json();
+      const progress = typeof data.progress === 'number' ? data.progress : parseInt((data?.current?.progress ?? '0'), 10) || 0;
+      const phase = data.phase || data?.currentPhase || null;
+      const status = data.status || data?.current?.status || null;
+      if (!isNaN(progress)) {
+        const el = document.getElementById('progressDisplay');
+        if (el) el.textContent = `${progress}%`;
+        localStorage.setItem('inex-project-progress', String(progress));
+      }
+      if (phase) {
+        const el = document.getElementById('phaseDisplay');
+        if (el) el.textContent = phase;
+        localStorage.setItem('inex-project-phase', phase);
+      }
+      if (status) {
+        const el = document.getElementById('statusText');
+        if (el) el.textContent = status;
+        localStorage.setItem('inex-project-status', status);
+      }
+    } catch (_) {
+      // ignore; fallback to localStorage defaults
+    }
+  }
   function updateStatus() {
     const newProgress = prompt('Enter new progress percentage (0-100):', '5');
     if (newProgress !== null && !isNaN(newProgress)) {
