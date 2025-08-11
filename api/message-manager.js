@@ -1,16 +1,4 @@
-const GITHUB_OWNER = 'cochranfilms';
-const GITHUB_REPO = 'INEX';
-const MESSAGES_FILE = 'inex-messages.json';
-
-async function fetchMessagesFromGitHub() {
-  const url = `https://raw.githubusercontent.com/${GITHUB_OWNER}/${GITHUB_REPO}/main/${MESSAGES_FILE}`;
-  const response = await fetch(url, { headers: { 'Cache-Control': 'no-cache' } });
-  if (!response.ok) return [];
-  const text = await response.text();
-  try { return JSON.parse(text); } catch { return []; }
-}
-
-module.exports = async function handler(req, res) {
+module.exports = function handler(req, res) {
   // Enable CORS for global access
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
@@ -21,20 +9,60 @@ module.exports = async function handler(req, res) {
     return res.status(200).end();
   }
 
-  try {
-    const runningOnVercel = !!process.env.VERCEL;
+  // Default messages data for Vercel deployment
+  const defaultMessages = [
+    {
+      id: "1754906153138",
+      name: "API Test",
+      text: "Testing the comprehensive messaging system integration",
+      email: null,
+      priority: "high",
+      category: "test",
+      timestamp: "2025-08-11T09:55:53.138Z",
+      status: "new",
+      read: false,
+      responded: false
+    },
+    {
+      id: "1754892665931",
+      name: "Test User",
+      text: "This is a test message",
+      email: null,
+      priority: "normal",
+      category: "general",
+      timestamp: "2025-08-11T06:11:05.931Z",
+      status: "new",
+      read: false,
+      responded: false
+    },
+    {
+      id: "1754887660763",
+      name: "Urgent Client",
+      text: "We have an urgent request for additional features. Please respond ASAP.",
+      email: "urgent@client.com",
+      priority: "urgent",
+      category: "feature-request",
+      timestamp: "2025-08-11T04:47:40.763Z",
+      status: "responded",
+      read: true,
+      responded: true,
+      lastUpdated: "2025-08-11T04:47:40.767Z",
+      responses: [
+        {
+          text: "Thank you for your message! We are working on your request.",
+          timestamp: "2025-08-11T04:47:40.767Z",
+          responder: "Development Team"
+        }
+      ]
+    }
+  ];
 
+  try {
     if (req.method === 'GET') {
       // Get messages with optional filters
       const { status, priority, category, limit = 50, offset = 0 } = req.query;
       
-      let messages = [];
-      if (runningOnVercel) {
-        messages = await fetchMessagesFromGitHub();
-      } else {
-        // For local development, return empty array
-        messages = [];
-      }
+      let messages = [...defaultMessages];
 
       // Apply filters
       if (status) {
