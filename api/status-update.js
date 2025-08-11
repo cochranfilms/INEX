@@ -13,7 +13,8 @@ export default async function handler(req, res) {
     return res.status(405).json({ 
       error: 'Method not allowed', 
       method: req.method,
-      allowed: ['POST'] 
+      allowed: ['POST'],
+      message: 'This endpoint only accepts POST requests. Please use POST method to update status.'
     });
   }
 
@@ -36,7 +37,18 @@ export default async function handler(req, res) {
       console.error('GitHub token not found in environment variables');
       return res.status(500).json({ 
         error: 'GitHub token not configured',
-        details: 'Please set GITHUB_TOKEN environment variable'
+        details: 'Please set GITHUB_TOKEN environment variable in Vercel dashboard',
+        help: 'Go to Vercel Dashboard > Project Settings > Environment Variables and add GITHUB_TOKEN'
+      });
+    }
+
+    // Ensure fetch is available (Node 18+ has it built-in)
+    if (typeof fetch === 'undefined') {
+      console.error('Fetch is not available in this environment');
+      return res.status(500).json({ 
+        error: 'Fetch not available',
+        details: 'This API requires Node.js 18+ or a fetch polyfill',
+        nodeVersion: process.version
       });
     }
 
@@ -70,7 +82,8 @@ export default async function handler(req, res) {
         error: 'Failed to trigger GitHub Actions workflow',
         details: error,
         status: response.status,
-        statusText: response.statusText
+        statusText: response.statusText,
+        help: 'Check GitHub token permissions and repository access'
       });
     }
 
@@ -78,7 +91,8 @@ export default async function handler(req, res) {
     res.status(200).json({ 
       success: true, 
       message: 'Status update triggered successfully',
-      data: { progress, phase, status, update, update_status }
+      data: { progress, phase, status, update, update_status },
+      nextSteps: 'GitHub Actions workflow has been triggered. Check the Actions tab in your repository for progress.'
     });
 
   } catch (error) {
@@ -86,7 +100,8 @@ export default async function handler(req, res) {
     res.status(500).json({ 
       error: 'Internal server error',
       details: error.message,
-      stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
+      stack: process.env.NODE_ENV === 'development' ? error.stack : undefined,
+      help: 'Check server logs for more details'
     });
   }
 }

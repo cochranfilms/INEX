@@ -5,12 +5,11 @@
   "description": "INEX Systems & Designs portal and proposal",
   "license": "MIT",
   "engines": {
-    "node": "22.x"
+    "node": "18.x"
   },
   "dependencies": {
     "express": "^4.18.2",
-    "firebase-admin": "^12.5.0",
-    "node-fetch": "^3.3.2"
+    "firebase-admin": "^12.5.0"
   },
   "scripts": {
     "build": "node vercel-build-hook.js",

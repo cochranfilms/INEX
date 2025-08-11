@@ -115,7 +115,7 @@
     <!-- Client Notice -->
     <div style="text-align:center;margin-bottom:20px;padding:1rem;background:linear-gradient(135deg, rgba(166,46,63,.1), rgba(255,178,0,.1));border:1px solid rgba(166,46,63,.2);border-radius:12px;max-width:800px;margin-left:auto;margin-right:auto">
       <strong>🎯 Welcome to INEX Project Status</strong><br>
-      <small>This page shows the current progress of your operations portal development. Updates are posted weekly by the development team.</small>
+      <small>This page shows the current progress of your INEX-branded operations portal development. Updates are posted weekly by the development team.</small>
     </div>
 
     <section class="grid grid-cols-3">
@@ -127,7 +127,7 @@
             <div class="ring" style="--p:5"><div class="ring-inner"><strong id="pct">5%</strong></div></div>
             <div>
               <div style="font-weight:900;font-size:18px">Current Phase: <span id="phaseLabel">Discovery</span></div>
-              <div class="muted" id="eta">ETA: Jan 2025 · Weekly updates posted below</div>
+              <div class="muted" id="eta">ETA: Feb 2025 · Weekly updates posted below</div>
               <div style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap">
                 <span class="pill" id="badgeScope">Scope v1.0</span>
                 <span class="pill" id="badgeOwner">Owner: Cochran Full Stack Solutions</span>
@@ -145,9 +145,7 @@
           <ul class="list">
             <li>Project kickoff & requirements — <strong>In Progress</strong> ⏳</li>
             <li>Branding & design tokens — <strong>Planned</strong> 📅</li>
-            <li>Basic shell & navigation — <strong>Planned</strong> 📅</li>
-            <li>Dashboard & KPIs — <strong>Planned</strong> 📅</li>
-            <li>Core features & views — <strong>Planned</strong> 📅</li>
+            <li>Portal modules & features — <strong>Planned</strong> 📅</li>
             <li>Testing & deployment — <strong>Planned</strong> 📅</li>
           </ul>
         </div>
@@ -159,7 +157,7 @@
         <div class="body">
           <ul class="list" id="nextActions">
             <li>Complete project requirements gathering</li>
-            <li>Define brand guidelines & color palette</li>
+            <li>Define INEX brand guidelines & color palette</li>
             <li>Create project timeline & milestones</li>
           </ul>
         </div>
@@ -173,12 +171,9 @@
         <div class="bar"><span id="barFill" style="--bar:5%"></span></div>
         <div class="steps" id="steps">
           <div class="step active" data-phase="Discovery"><span class="dot"></span><strong>Discovery</strong><small>Kickoff + scope</small></div>
-          <div class="step" data-phase="Design"><span class="dot"></span><strong>Design</strong><small>Tokens & layout</small></div>
-          <div class="step" data-phase="Shell"><span class="dot"></span><strong>Shell</strong><small>Nav + routing</small></div>
-          <div class="step" data-phase="Features"><span class="dot"></span><strong>Features</strong><small>Dashboard + views</small></div>
-          <div class="step" data-phase="Integration"><span class="dot"></span><strong>Integration</strong><small>Data + APIs</small></div>
-          <div class="step" data-phase="Testing"><span class="dot"></span><strong>Testing</strong><small>QA + polish</small></div>
-          <div class="step" data-phase="Launch"><span class="dot"></span><strong>Launch</strong><small>Deploy + handoff</small></div>
+          <div class="step" data-phase="Design & Setup"><span class="dot"></span><strong>Design & Setup</strong><small>Branding + layout</small></div>
+          <div class="step" data-phase="Development & Testing"><span class="dot"></span><strong>Development & Testing</strong><small>Core features + QA</small></div>
+          <div class="step" data-phase="Deployment & Training"><span class="dot"></span><strong>Deployment & Training</strong><small>Deploy + handoff</small></div>
         </div>
       </div>
     </section>
@@ -197,12 +192,12 @@
             </div>
             <div class="dev-item">
               <input type="checkbox" class="dev-checkbox" id="dev2" data-task="brand-research">
-              <label for="dev2" class="dev-label">Brand research & initial concepts</label>
+              <label for="dev2" class="dev-label">INEX brand research & initial concepts</label>
               <span class="dev-status status-pending">Pending</span>
             </div>
             <div class="dev-item">
               <input type="checkbox" class="dev-checkbox" id="dev3" data-task="scope-definition">
-              <label for="dev3" class="dev-label">Scope definition & project planning</label>
+              <label for="dev3" class="dev-label">Portal scope definition & project planning</label>
               <span class="dev-status status-pending">Pending</span>
             </div>
             <div class="dev-item">
@@ -239,6 +234,10 @@
     </section>
 
     <p class="muted" style="text-align:center;margin:20px 0">Shareable link • Add query params like <code>?progress=25&phase=Design</code> to reflect live status.</p>
+    <div style="text-align:center;margin:20px 0;padding:1rem;background:rgba(166,46,63,.1);border:1px solid rgba(166,46,63,.2);border-radius:8px;max-width:800px;margin-left:auto;margin-right:auto">
+      <strong>📋 Project Scope</strong><br>
+      <small>INEX-branded Operations Portal: Dashboard, Jobs/Dispatch, Inventory, RMA/Warranties, SLAs/Reports, Knowledge, Clients, Careers, Settings. Dark/Light themes with SVG charts and mock data layer.</small>
+    </div>
     <div style="text-align:center;margin:20px 0;padding:1rem;background:rgba(0,150,136,.1);border:1px solid rgba(0,150,136,.2);border-radius:8px;max-width:600px;margin-left:auto;margin-right:auto">
       <strong>🔄 Real-Time Updates</strong><br>
       <small>This page automatically updates when changes are made in the management dashboard. No refresh needed!</small>
@@ -252,12 +251,9 @@
       progress: 5,
       phases: [
         { name: 'Discovery', progress: 5, status: 'active', tasks: ['requirements', 'scope', 'timeline'] },
-        { name: 'Design', progress: 0, status: 'pending', tasks: ['branding', 'tokens', 'layout'] },
-        { name: 'Shell', progress: 0, status: 'pending', tasks: ['navigation', 'routing', 'themes'] },
-        { name: 'Features', progress: 0, status: 'pending', tasks: ['dashboard', 'kpis', 'views'] },
-        { name: 'Integration', progress: 0, status: 'pending', tasks: ['apis', 'data', 'auth'] },
-        { name: 'Testing', progress: 0, status: 'pending', tasks: ['qa', 'performance', 'accessibility'] },
-        { name: 'Launch', progress: 0, status: 'pending', tasks: ['deploy', 'handoff', 'training'] }
+        { name: 'Design & Setup', progress: 0, status: 'pending', tasks: ['branding', 'tokens', 'layout'] },
+        { name: 'Development & Testing', progress: 0, status: 'pending', tasks: ['core features', 'testing', 'polish'] },
+        { name: 'Deployment & Training', progress: 0, status: 'pending', tasks: ['deploy', 'handoff', 'training'] }
       ],
       updates: [
         { date: 'Dec 15', update: 'Project kickoff initiated', status: 'In Progress' },
@@ -266,7 +262,7 @@
       ],
       nextActions: [
         'Complete project requirements gathering',
-        'Define brand guidelines & color palette',
+        'Define INEX brand guidelines & color palette',
         'Create project timeline & milestones'
       ]
     };
@@ -295,7 +291,7 @@
     
     const pct = Math.max(0, Math.min(100, parseInt(params.get('progress') || savedProgress || projectData.progress.toString(), 10)));
     const phase = params.get('phase') || savedPhase || projectData.currentPhase;
-    const eta = params.get('eta') || 'ETA: Jan 2025 · Weekly updates posted below';
+    const eta = params.get('eta') || 'ETA: Feb 2025 · Weekly updates posted below';
     const scope = params.get('scope') || 'Scope v1.0';
     const owner = params.get('owner') || 'Cochran Full Stack Solutions';
     const client = params.get('client') || 'INEX';

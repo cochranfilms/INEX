@@ -96,16 +96,13 @@ class INEXVercelIntegration {
    */
   processProgressData(rawData) {
     const processed = {
-      currentPhase: 'Design',
-      overallProgress: 15,
+      currentPhase: 'Discovery',
+      overallProgress: 5,
       phases: {
-        'Discovery': { order: 1, progress: 15, status: 'complete' },
-        'Design': { order: 2, progress: 0, status: 'active' },
-        'Shell': { order: 3, progress: 0, status: 'pending' },
-        'Features': { order: 4, progress: 0, status: 'pending' },
-        'Integration': { order: 5, progress: 0, status: 'pending' },
-        'Testing': { order: 6, progress: 0, status: 'pending' },
-        'Launch': { order: 7, progress: 0, status: 'pending' }
+        'Discovery': { order: 1, progress: 5, status: 'active' },
+        'Design & Setup': { order: 2, progress: 0, status: 'pending' },
+        'Development & Testing': { order: 3, progress: 0, status: 'pending' },
+        'Deployment & Training': { order: 4, progress: 0, status: 'pending' }
       },
       updates: [],
       lastCommit: rawData.commit || 'unknown',
@@ -237,16 +234,13 @@ class INEXVercelIntegration {
    */
   async createDefaultData() {
     const defaultData = {
-      currentPhase: 'Design',
-      overallProgress: 15,
+      currentPhase: 'Discovery',
+      overallProgress: 5,
       phases: {
-        'Discovery': { order: 1, progress: 15, status: 'complete' },
-        'Design': { order: 2, progress: 0, status: 'active' },
-        'Shell': { order: 3, progress: 0, status: 'pending' },
-        'Features': { order: 4, progress: 0, status: 'pending' },
-        'Integration': { order: 5, progress: 0, status: 'pending' },
-        'Testing': { order: 6, progress: 0, status: 'pending' },
-        'Launch': { order: 7, progress: 0, status: 'pending' }
+        'Discovery': { order: 1, progress: 5, status: 'active' },
+        'Design & Setup': { order: 2, progress: 0, status: 'pending' },
+        'Development & Testing': { order: 3, progress: 0, status: 'pending' },
+        'Deployment & Training': { order: 4, progress: 0, status: 'pending' }
       },
       updates: [],
       lastCommit: 'initial',

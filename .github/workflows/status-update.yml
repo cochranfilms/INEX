@@ -58,6 +58,9 @@ jobs:
           sed -i "s/Current Status:.*</Current Status: ${{ github.event.inputs.status }}</g" status.html
         fi
         
+        # Update ETA to match proposal timeline (Feb 2025)
+        sed -i "s/ETA:.*2025/ETA: Feb 2025/g" status.html
+        
         echo "Status files updated successfully"
         
     - name: Verify changes
