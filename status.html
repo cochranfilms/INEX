@@ -391,20 +391,27 @@
         // Use the unified auth system
         if (window.inexAuth && window.inexAuth.isAuthenticated()) return; // already signed in & allowed
         
+        // Don't create if already exists
+        if (document.getElementById('authGate')) return;
+        
         // Create a lightweight banner with email+password inputs
-        const root = document.querySelector('.head');
-        if (!root || document.getElementById('authGate')) return;
+        const main = document.querySelector('main');
+        if (!main) return;
+        
         const gate = document.createElement('div');
         gate.id = 'authGate';
-        gate.style.cssText = 'grid-column:1/-1;background:rgba(255,178,0,.08);border:2px solid #FFB200;border-radius:12px;padding:12px 16px;display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:16px;box-shadow:0 4px 12px rgba(255,178,0,.15)';
+        gate.style.cssText = 'background:rgba(255,178,0,.08);border:2px solid #FFB200;border-radius:12px;padding:12px 16px;display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:16px;box-shadow:0 4px 12px rgba(255,178,0,.15);justify-content:center;text-align:center';
         gate.innerHTML = `
           <span style="color:#FFB200;font-weight:800;font-size:14px;">🔐 Restricted Access - Sign In Required</span>
-          <input id="authEmail" class="sig-input" placeholder="Email" style="max-width:240px">
-          <input id="authPass" class="sig-input" placeholder="Password" type="password" style="max-width:180px">
-          <button id="authLoginBtn" class="btn btn-secondary"><i class="fa-solid fa-right-to-bracket"></i> Sign In</button>
-          <span id="authStatus" class="muted" style="margin-left:6px"></span>
+          <input id="authEmail" placeholder="Email" style="max-width:240px;padding:8px 12px;border:1px solid #FFB200;border-radius:6px;background:white;color:black">
+          <input id="authPass" placeholder="Password" type="password" style="max-width:180px;padding:8px 12px;border:1px solid #FFB200;border-radius:6px;background:white;color:black">
+          <button id="authLoginBtn" style="background:#FFB200;color:black;border:none;padding:8px 16px;border-radius:6px;font-weight:600;cursor:pointer"><i class="fa-solid fa-right-to-bracket"></i> Sign In</button>
+          <span id="authStatus" style="margin-left:6px;color:#666;font-size:12px"></span>
         `;
-        root.parentNode.insertBefore(gate, root.nextSibling);
+        
+        // Insert at the top of main content
+        main.insertBefore(gate, main.firstChild);
+        
         const status = gate.querySelector('#authStatus');
         gate.querySelector('#authLoginBtn').addEventListener('click', async ()=>{
           const e = gate.querySelector('#authEmail').value.trim();
@@ -422,7 +429,11 @@
             console.warn('auth error', err?.message);
           }
         });
-      }catch(_){ }
+        
+        console.log('✅ Auth gate created and inserted');
+      }catch(err){ 
+        console.error('Failed to create auth gate:', err);
+      }
     }
     
     // Update authentication UI based on user state
@@ -1551,6 +1562,7 @@
           }
           
           // Show minimal auth gate if needed
+          console.log('🔐 Calling ensureTestAuthGate...');
           ensureTestAuthGate();
           
           console.log('✅ INEX Status Page initialized with unified auth system');
