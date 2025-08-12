@@ -156,18 +156,7 @@
   </header>
 
   <main>
-    <!-- Firebase Authentication Banner -->
-    <div id="authBanner" style="text-align:center;margin-bottom:20px;padding:1rem;background:linear-gradient(135deg, rgba(166,46,63,.1), rgba(255,178,0,.1));border:1px solid rgba(166,46,63,.2);border-radius:12px;max-width:800px;margin-left:auto;margin-right:auto;display:none">
-      <strong>🔐 Authentication Required</strong><br>
-      <small>Please sign in to send messages and track your communications with the development team.</small>
-      <div style="margin-top:12px;display:flex;gap:8px;justify-content:center;flex-wrap:wrap">
-        <input id="authEmail" type="email" placeholder="Your email" style="padding:8px 12px;border:1px solid var(--border);border-radius:8px;background:var(--panel);color:var(--panel-ink);font-size:14px;min-width:200px">
-        <input id="authPassword" type="password" placeholder="Password" style="padding:8px 12px;border:1px solid var(--border);border-radius:8px;background:var(--panel);color:var(--panel-ink);font-size:14px;min-width:150px">
-        <button id="authLoginBtn" class="btn primary" style="padding:8px 16px;font-size:14px">🔐 Sign In</button>
-        <button id="authSignupBtn" class="btn secondary" style="padding:8px 16px;font-size:14px">📝 Create Account</button>
-      </div>
-      <div id="authStatus" style="margin-top:8px;font-size:12px;color:var(--muted)"></div>
-    </div>
+    <!-- Minimal Authentication Gate (will be inserted by JavaScript) -->
 
     <!-- Client Notice -->
     <div style="text-align:center;margin-bottom:20px;padding:1rem;background:linear-gradient(135deg, rgba(166,46,63,.1), rgba(255,178,0,.1));border:1px solid rgba(166,46,63,.2);border-radius:12px;max-width:800px;margin-left:auto;margin-right:auto">
@@ -395,18 +384,59 @@
     // INEX Unified Authentication System Integration
     // The auth-system.js handles all Firebase authentication automatically
     
+    // Minimal inline email/password gate (for Cody + Zeb testing)
+    // If you have created accounts in Firebase Auth, this will allow immediate sign-in.
+    async function ensureTestAuthGate(){
+      try{
+        // Use the unified auth system
+        if (window.inexAuth && window.inexAuth.isAuthenticated()) return; // already signed in & allowed
+        
+        // Create a lightweight banner with email+password inputs
+        const root = document.querySelector('.head');
+        if (!root || document.getElementById('authGate')) return;
+        const gate = document.createElement('div');
+        gate.id = 'authGate';
+        gate.style.cssText = 'grid-column:1/-1;background:rgba(255,178,0,.08);border:2px solid #FFB200;border-radius:12px;padding:12px 16px;display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:16px;box-shadow:0 4px 12px rgba(255,178,0,.15)';
+        gate.innerHTML = `
+          <span style="color:#FFB200;font-weight:800;font-size:14px;">🔐 Restricted Access - Sign In Required</span>
+          <input id="authEmail" class="sig-input" placeholder="Email" style="max-width:240px">
+          <input id="authPass" class="sig-input" placeholder="Password" type="password" style="max-width:180px">
+          <button id="authLoginBtn" class="btn btn-secondary"><i class="fa-solid fa-right-to-bracket"></i> Sign In</button>
+          <span id="authStatus" class="muted" style="margin-left:6px"></span>
+        `;
+        root.parentNode.insertBefore(gate, root.nextSibling);
+        const status = gate.querySelector('#authStatus');
+        gate.querySelector('#authLoginBtn').addEventListener('click', async ()=>{
+          const e = gate.querySelector('#authEmail').value.trim();
+          const p = gate.querySelector('#authPass').value;
+          if (!e) { status.textContent = 'Enter your email'; return; }
+          if (!p) { status.textContent = 'Enter password'; return; }
+          
+          try{
+            status.textContent = 'Signing in…';
+            await window.inexAuth.signIn(e, p);
+            status.textContent = 'Signed in';
+            gate.style.display = 'none';
+          }catch(err){
+            status.textContent = 'Sign-in failed: ' + err.message;
+            console.warn('auth error', err?.message);
+          }
+        });
+      }catch(_){ }
+    }
+    
     // Update authentication UI based on user state
     function updateAuthUI() {
-      const authBanner = document.getElementById('authBanner');
       const userInfo = document.getElementById('userInfo');
       const messageForm = document.getElementById('messageForm');
       const userInfoContent = document.getElementById('userInfoContent');
       const signOutBtn = document.getElementById('signOutBtn');
+      const authGate = document.getElementById('authGate');
 
       if (window.inexAuth && window.inexAuth.isAuthenticated()) {
         const user = window.inexAuth.getCurrentUser();
         // User is signed in
-        if (authBanner) authBanner.style.display = 'none';
+        if (authGate) authGate.style.display = 'none';
         if (userInfo) {
           userInfo.style.display = 'block';
           if (userInfoContent) {
@@ -423,69 +453,14 @@
         if (messageForm) messageForm.style.display = 'grid';
       } else {
         // User is signed out
-        if (authBanner) authBanner.style.display = 'block';
+        if (authGate) authGate.style.display = 'block';
         if (userInfo) userInfo.style.display = 'none';
         if (signOutBtn) signOutBtn.style.display = 'none';
         if (messageForm) messageForm.style.display = 'grid';
       }
     }
 
-    // Handle sign in using the unified system
-    async function handleSignIn() {
-      try {
-        const email = document.getElementById('authEmail').value.trim();
-        const password = document.getElementById('authPassword').value;
-        const status = document.getElementById('authStatus');
-        
-        if (!email || !password) {
-          status.textContent = 'Please enter both email and password';
-          return;
-        }
-        
-        status.textContent = 'Signing in...';
-        await window.inexAuth.signIn(email, password);
-        status.textContent = 'Sign in successful!';
-        
-        // Clear form
-        document.getElementById('authEmail').value = '';
-        document.getElementById('authPassword').value = '';
-        
-      } catch (error) {
-        console.error('Sign in error:', error);
-        status.textContent = 'Sign in failed: ' + error.message;
-      }
-    }
 
-    // Handle sign up using the unified system
-    async function handleSignUp() {
-      try {
-        const email = document.getElementById('authEmail').value.trim();
-        const password = document.getElementById('authPassword').value;
-        const status = document.getElementById('authStatus');
-        
-        if (!email || !password) {
-          status.textContent = 'Please enter both email and password';
-          return;
-        }
-        
-        if (password.length < 6) {
-          status.textContent = 'Password must be at least 6 characters';
-          return;
-        }
-        
-        status.textContent = 'Creating account...';
-        await window.inexAuth.signUp(email, password);
-        status.textContent = 'Account created successfully!';
-        
-        // Clear form
-        document.getElementById('authEmail').value = '';
-        document.getElementById('authPassword').value = '';
-        
-      } catch (error) {
-        console.error('Sign up error:', error);
-        status.textContent = 'Account creation failed: ' + error.message;
-      }
-    }
 
     // Handle sign out using the unified system
     async function handleSignOut() {
@@ -1569,40 +1544,14 @@
           // Add auth state listener to update UI
           window.inexAuth.addAuthStateListener(updateAuthUI);
           
-          // Add event listeners for auth buttons
-          const authLoginBtn = document.getElementById('authLoginBtn');
-          const authSignupBtn = document.getElementById('authSignupBtn');
+          // Add event listener for sign out button
           const signOutBtn = document.getElementById('signOutBtn');
-          
-          if (authLoginBtn) {
-            authLoginBtn.addEventListener('click', handleSignIn);
-          }
-          
-          if (authSignupBtn) {
-            authSignupBtn.addEventListener('click', handleSignUp);
-          }
-          
           if (signOutBtn) {
             signOutBtn.addEventListener('click', handleSignOut);
           }
           
-          // Add enter key support for auth form
-          const authEmail = document.getElementById('authEmail');
-          const authPassword = document.getElementById('authPassword');
-          
-          if (authEmail && authPassword) {
-            authEmail.addEventListener('keypress', function(e) {
-              if (e.key === 'Enter') {
-                authPassword.focus();
-              }
-            });
-            
-            authPassword.addEventListener('keypress', function(e) {
-              if (e.key === 'Enter') {
-                handleSignIn();
-              }
-            });
-          }
+          // Show minimal auth gate if needed
+          ensureTestAuthGate();
           
           console.log('✅ INEX Status Page initialized with unified auth system');
         } else {
