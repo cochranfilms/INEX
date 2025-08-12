@@ -444,8 +444,19 @@
       const signOutBtn = document.getElementById('signOutBtn');
       const authGate = document.getElementById('authGate');
 
+      console.log('🔍 updateAuthUI called with elements:', {
+        userInfo: !!userInfo,
+        messageForm: !!messageForm,
+        userInfoContent: !!userInfoContent,
+        signOutBtn: !!signOutBtn,
+        authGate: !!authGate,
+        isAuthenticated: window.inexAuth?.isAuthenticated()
+      });
+
       if (window.inexAuth && window.inexAuth.isAuthenticated()) {
         const user = window.inexAuth.getCurrentUser();
+        console.log('👤 User authenticated:', user?.email);
+        
         // User is signed in
         if (authGate) authGate.style.display = 'none';
         if (userInfo) {
@@ -459,7 +470,9 @@
         }
         if (signOutBtn) {
           signOutBtn.style.display = 'inline-block';
-          console.log('Sign out button should now be visible in status.html');
+          console.log('✅ Sign out button should now be visible in status.html');
+        } else {
+          console.log('❌ Sign out button element not found!');
         }
         if (messageForm) messageForm.style.display = 'grid';
       } else {
@@ -1564,6 +1577,10 @@
           // Show minimal auth gate if needed
           console.log('🔐 Calling ensureTestAuthGate...');
           ensureTestAuthGate();
+          
+          // Force update UI after initialization
+          console.log('🔄 Forcing UI update...');
+          updateAuthUI();
           
           console.log('✅ INEX Status Page initialized with unified auth system');
         } else {
