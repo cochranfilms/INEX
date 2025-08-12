@@ -1685,93 +1685,111 @@
       // INEX Unified Authentication System Integration
     // The auth-system.js handles all Firebase authentication automatically
     
-    // Minimal inline email/password gate (for Cody + Zeb testing)
-    // If you have created accounts in Firebase Auth, this will allow immediate sign-in.
-    async function ensureTestAuthGate(){
+    // Admin-only authentication gate for index.html
+    // This page is restricted to admin users only
+    async function ensureAdminAuthGate(){
       try{
-        // Use the unified auth system
-        if (window.inexAuth && window.inexAuth.isAuthenticated()) return; // already signed in & allowed
+        // Check if admin is already authenticated on this page
+        const adminAuthKey = 'inex-admin-authenticated';
+        if (localStorage.getItem(adminAuthKey) === 'true') return;
         
         // Don't create if already exists
         if (document.getElementById('authGate')) return;
         
-        // Create a lightweight banner with email+password inputs
+        // Create admin authentication banner
         const main = document.querySelector('main');
         if (!main) return;
         
         const gate = document.createElement('div');
         gate.id = 'authGate';
-        gate.style.cssText = 'background:rgba(255,178,0,.08);border:2px solid #FFB200;border-radius:12px;padding:12px 16px;display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:16px;box-shadow:0 4px 12px rgba(255,178,0,.15);justify-content:center;text-align:center';
+        gate.style.cssText = 'background:rgba(166,46,63,.08);border:2px solid #A62E3F;border-radius:12px;padding:16px;display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:20px;box-shadow:0 4px 12px rgba(166,46,63,.15);justify-content:center;text-align:center';
         gate.innerHTML = `
-          <span style="color:#FFB200;font-weight:800;font-size:14px;">🔐 Restricted Access - Sign In Required</span>
-          <input id="authEmail" placeholder="Email" style="max-width:240px;padding:8px 12px;border:1px solid #FFB200;border-radius:6px;background:white;color:black">
-          <input id="authPass" placeholder="Password" type="password" style="max-width:180px;padding:8px 12px;border:1px solid #FFB200;border-radius:6px;background:white;color:black">
-          <button id="authLoginBtn" style="background:#FFB200;color:black;border:none;padding:8px 16px;border-radius:6px;font-weight:600;cursor:pointer"><i class="fa-solid fa-right-to-bracket"></i> Sign In</button>
-          <span id="authStatus" style="margin-left:6px;color:#666;font-size:12px"></span>
+          <span style="color:#A62E3F;font-weight:800;font-size:16px;">🔐 ADMIN ACCESS REQUIRED</span>
+          <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+            <input id="adminEmail" placeholder="Admin Email" style="max-width:240px;padding:8px 12px;border:1px solid #A62E3F;border-radius:6px;background:white;color:black">
+            <input id="adminPass" placeholder="Admin Password" type="password" style="max-width:180px;padding:8px 12px;border:1px solid #A62E3F;border-radius:6px;background:white;color:black">
+            <button id="adminLoginBtn" style="background:#A62E3F;color:white;border:none;padding:8px 16px;border-radius:6px;font-weight:600;cursor:pointer"><i class="fa-solid fa-shield-halved"></i> Admin Login</button>
+          </div>
+          <span id="adminAuthStatus" style="margin-left:6px;color:#666;font-size:12px"></span>
         `;
         
         // Insert at the top of main content
         main.insertBefore(gate, main.firstChild);
         
-        const status = gate.querySelector('#authStatus');
-        gate.querySelector('#authLoginBtn').addEventListener('click', async ()=>{
-          const e = gate.querySelector('#authEmail').value.trim();
-          const p = gate.querySelector('#authPass').value;
-          if (!e) { status.textContent = 'Enter your email'; return; }
-          if (!p) { status.textContent = 'Enter password'; return; }
+        const status = gate.querySelector('#adminAuthStatus');
+        gate.querySelector('#adminLoginBtn').addEventListener('click', async ()=>{
+          const email = gate.querySelector('#adminEmail').value.trim();
+          const password = gate.querySelector('#adminPass').value;
           
-          try{
-            status.textContent = 'Signing in…';
-            await window.inexAuth.signIn(e, p);
-            status.textContent = 'Signed in';
+          if (!email || !password) { 
+            status.textContent = 'Please enter both email and password'; 
+            return; 
+          }
+          
+          // Check admin credentials
+          if (email === 'info@cochranfilms.com' && password === 'Cochranfilms2@') {
+            status.textContent = 'Admin access granted';
+            status.style.color = '#22c55e';
+            
+            // Set admin authentication for this page
+            localStorage.setItem(adminAuthKey, 'true');
+            
+            // Hide auth gate
             gate.style.display = 'none';
-          }catch(err){
-            status.textContent = 'Sign-in failed: ' + err.message;
-            console.warn('auth error', err?.message);
+            
+            // Update UI to show admin is logged in
+            updateAdminUI();
+            
+            console.log('✅ Admin authenticated on index.html');
+          } else {
+            status.textContent = 'Invalid admin credentials';
+            status.style.color = '#dc2626';
+            console.log('❌ Invalid admin credentials attempted');
           }
         });
         
-        console.log('✅ Auth gate created and inserted');
+        console.log('✅ Admin auth gate created and inserted');
       }catch(err){ 
-        console.error('Failed to create auth gate:', err);
+        console.error('Failed to create admin auth gate:', err);
       }
     }
     
-        // Update authentication UI based on user state
-    function updateAuthUI() {
+        // Update admin UI based on authentication state
+    function updateAdminUI() {
       const userInfo = document.getElementById('userInfo');
       const messageForm = document.getElementById('messageForm');
       const userInfoContent = document.getElementById('userInfoContent');
       const signOutBtn = document.getElementById('signOutBtn');
       const authGate = document.getElementById('authGate');
 
-      if (window.inexAuth && window.inexAuth.isAuthenticated()) {
-        const user = window.inexAuth.getCurrentUser();
-        // User is signed in
+      // Check if admin is authenticated on this page
+      const adminAuthKey = 'inex-admin-authenticated';
+      const isAdminAuthenticated = localStorage.getItem(adminAuthKey) === 'true';
+
+      if (isAdminAuthenticated) {
+        // Admin is signed in
         if (authGate) authGate.style.display = 'none';
         if (userInfo) {
           userInfo.style.display = 'block';
           if (userInfoContent) {
             userInfoContent.innerHTML = `
-              <strong>👤 Signed in as: ${user.email}</strong><br>
-              <small>Your messages will be automatically attributed to your account.</small>
+              <strong>👑 Admin Access Granted</strong><br>
+              <small>You have full access to the INEX dashboard.</small>
             `;
           }
         }
         if (signOutBtn) signOutBtn.style.display = 'inline-block';
         if (messageForm) messageForm.style.display = 'grid';
         
-        // Auto-populate name field with user's display name or email
-        const nameInput = document.getElementById('messageName');
-        if (nameInput) {
-          nameInput.value = user.displayName || user.email.split('@')[0] || '';
-        }
+        console.log('✅ Admin UI updated - user authenticated');
       } else {
-        // User is signed out
+        // Admin is signed out
         if (authGate) authGate.style.display = 'block';
         if (userInfo) userInfo.style.display = 'none';
         if (signOutBtn) signOutBtn.style.display = 'none';
         if (messageForm) messageForm.style.display = 'grid';
+        
+        console.log('❌ Admin UI updated - user not authenticated');
       }
     }
 
@@ -1779,14 +1797,20 @@
 
 
 
-  // Handle sign out using the unified system
-  async function handleSignOut() {
+  // Handle admin sign out
+  async function handleAdminSignOut() {
     try {
-      console.log('Sign out button clicked in index.html');
-      await window.inexAuth.signOut();
-      console.log('User signed out successfully from index.html');
+      console.log('Admin sign out button clicked in index.html');
+      
+      // Clear admin authentication for this page
+      localStorage.removeItem('inex-admin-authenticated');
+      
+      // Update UI to show admin is signed out
+      updateAdminUI();
+      
+      console.log('Admin signed out successfully from index.html');
     } catch (error) {
-      console.error('Sign out error:', error);
+      console.error('Admin sign out error:', error);
     }
   }
 
@@ -1795,18 +1819,18 @@
     // Wait for the unified auth system to be ready
     const waitForAuth = () => {
       if (window.inexAuth && window.inexAuth.isInitialized) {
-        // Add auth state listener to update UI
-        window.inexAuth.addAuthStateListener(updateAuthUI);
-        
-        // Add event listener for sign out button
+        // Add event listener for admin sign out button
         const signOutBtn = document.getElementById('signOutBtn');
         if (signOutBtn) {
-          signOutBtn.addEventListener('click', handleSignOut);
+          signOutBtn.addEventListener('click', handleAdminSignOut);
         }
         
-        // Show minimal auth gate if needed
-        console.log('🔐 Calling ensureTestAuthGate...');
-        ensureTestAuthGate();
+        // Show admin auth gate if needed
+        console.log('🔐 Calling ensureAdminAuthGate...');
+        ensureAdminAuthGate();
+        
+        // Update admin UI based on current state
+        updateAdminUI();
         
         // Initialize other components
         initializeThemeToggle();
@@ -1814,7 +1838,7 @@
         loadMessages();
         loadDevMessages();
         
-        console.log('✅ INEX Dashboard initialized with unified auth system');
+        console.log('✅ INEX Dashboard initialized with admin-only auth system');
       } else {
         setTimeout(waitForAuth, 100);
       }
