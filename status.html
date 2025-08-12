@@ -470,9 +470,11 @@
           
           // Ensure userInfoContent exists and has content
           if (userInfoContent) {
+            const displayName = user.displayName || user.email.split('@')[0] || 'User';
             userInfoContent.innerHTML = `
-              <strong>👤 Signed in as: ${user.email}</strong><br>
-              <small>You have access to all status page features.</small>
+              <strong>👤 Signed in as: ${displayName}</strong><br>
+              <small>Email: ${user.email}</small><br>
+              <small>Your messages will be automatically attributed to your account.</small>
             `;
             console.log('✅ User info content updated');
           } else {
@@ -480,9 +482,11 @@
             // Create userInfoContent if it doesn't exist
             const newUserInfoContent = document.createElement('div');
             newUserInfoContent.id = 'userInfoContent';
+            const displayName = user.displayName || user.email.split('@')[0] || 'User';
             newUserInfoContent.innerHTML = `
-              <strong>👤 Signed in as: ${user.email}</strong><br>
-              <small>You have access to all status page features.</small>
+              <strong>👤 Signed in as: ${displayName}</strong><br>
+              <small>Email: ${user.email}</small><br>
+              <small>Your messages will be automatically attributed to your account.</small>
             `;
             userInfo.appendChild(newUserInfoContent);
           }
@@ -508,6 +512,14 @@
         }
         
         if (messageForm) messageForm.style.display = 'grid';
+        
+        // Auto-populate name field with Firebase user information
+        const nameInput = document.getElementById('messageName');
+        if (nameInput) {
+          const firebaseName = user.displayName || user.email.split('@')[0] || '';
+          nameInput.value = firebaseName;
+          console.log('✅ Auto-populated name field with Firebase user:', firebaseName);
+        }
       } else {
         // User is signed out
         if (authGate) authGate.style.display = 'block';
@@ -1254,20 +1266,21 @@
     messageForm.addEventListener('submit', async function(e) {
       e.preventDefault();
       
-      // Check if user is authenticated
-      if (!currentUser) {
-        alert('Please sign in to send messages');
+      // Check if user is authenticated using unified auth system
+      if (!window.inexAuth || !window.inexAuth.isAuthenticated()) {
+        alert('Please sign in to send messages. This helps us track who is contacting us.');
         return;
       }
       
       const nameInput = document.getElementById('messageName');
       const textInput = document.getElementById('messageText');
       
+      // Get Firebase user information for proper identification
+      const currentUser = window.inexAuth.getCurrentUser();
+      const firebaseName = currentUser.displayName || currentUser.email.split('@')[0] || 'Anonymous';
+      
       // Use Firebase user info if available, fallback to input
-      const name = currentUser.displayName || 
-                   currentUser.email.split('@')[0] || 
-                   nameInput.value.trim() || 
-                   'Anonymous';
+      const name = nameInput.value.trim() || firebaseName;
       const text = textInput.value.trim();
       
       if (!text) {
@@ -1292,6 +1305,7 @@
               name: name,
               text: text,
               email: currentUser.email, // Include user's email from Firebase
+              firebaseUid: currentUser.uid, // Include Firebase user ID
               priority: 'normal',
               category: 'client-feedback'
             })
@@ -1334,6 +1348,7 @@
               name: name,
               text: text,
               email: currentUser.email, // Include user's email from Firebase
+              firebaseUid: currentUser.uid, // Include Firebase user ID
               priority: 'normal',
               category: 'client-feedback'
             })
@@ -1376,6 +1391,7 @@
           name: name,
           text: text,
           email: currentUser.email, // Include user's email from Firebase
+          firebaseUid: currentUser.uid, // Include Firebase user ID
           timestamp: new Date().toISOString(),
           id: Date.now(),
           priority: 'normal',
