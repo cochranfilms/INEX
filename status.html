@@ -438,6 +438,7 @@
     
     // Update authentication UI based on user state
     function updateAuthUI() {
+      // Always get fresh references to elements
       const userInfo = document.getElementById('userInfo');
       const messageForm = document.getElementById('messageForm');
       const userInfoContent = document.getElementById('userInfoContent');
@@ -458,22 +459,54 @@
         console.log('👤 User authenticated:', user?.email);
         
         // User is signed in
-        if (authGate) authGate.style.display = 'none';
+        if (authGate) {
+          authGate.style.display = 'none';
+          console.log('✅ Auth gate hidden');
+        }
+        
         if (userInfo) {
           userInfo.style.display = 'block';
+          console.log('✅ User info shown');
+          
+          // Ensure userInfoContent exists and has content
           if (userInfoContent) {
             userInfoContent.innerHTML = `
               <strong>👤 Signed in as: ${user.email}</strong><br>
               <small>You have access to all status page features.</small>
             `;
+            console.log('✅ User info content updated');
+          } else {
+            console.log('❌ userInfoContent not found, creating it...');
+            // Create userInfoContent if it doesn't exist
+            const newUserInfoContent = document.createElement('div');
+            newUserInfoContent.id = 'userInfoContent';
+            newUserInfoContent.innerHTML = `
+              <strong>👤 Signed in as: ${user.email}</strong><br>
+              <small>You have access to all status page features.</small>
+            `;
+            userInfo.appendChild(newUserInfoContent);
           }
-        }
-        if (signOutBtn) {
-          signOutBtn.style.display = 'inline-block';
-          console.log('✅ Sign out button should now be visible in status.html');
+          
+          // Ensure signOutBtn exists
+          if (signOutBtn) {
+            signOutBtn.style.display = 'inline-block';
+            console.log('✅ Sign out button should now be visible in status.html');
+          } else {
+            console.log('❌ Sign out button element not found, creating it...');
+            // Create signOutBtn if it doesn't exist
+            const newSignOutBtn = document.createElement('button');
+            newSignOutBtn.id = 'signOutBtn';
+            newSignOutBtn.className = 'btn secondary';
+            newSignOutBtn.style.cssText = 'display:inline-block;padding:8px 16px;font-size:12px;margin-top:8px;background:rgba(220,38,38,0.1);color:#dc2626;border:1px solid rgba(220,38,38,0.3);border-radius:6px;cursor:pointer;font-weight:600;transition:all 0.2s ease;width:auto;height:auto;opacity:1;visibility:visible';
+            newSignOutBtn.innerHTML = '🚪 Sign Out';
+            newSignOutBtn.onclick = handleSignOut;
+            userInfo.appendChild(newSignOutBtn);
+            console.log('✅ Sign out button created and added');
+          }
         } else {
-          console.log('❌ Sign out button element not found!');
+          console.log('❌ userInfo not found!');
         }
+        
         if (messageForm) messageForm.style.display = 'grid';
       } else {
         // User is signed out
