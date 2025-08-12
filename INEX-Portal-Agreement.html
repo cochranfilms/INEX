@@ -84,6 +84,8 @@
     };
     document.head.appendChild(script);
   </script>
+  <!-- INEX Unified Authentication System -->
+  <script src="auth-system.js"></script>
   <!-- jsPDF -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <!-- html2canvas for high-fidelity HTML->PDF rendering -->
@@ -371,13 +373,16 @@
       }
     }
     
+    // INEX Unified Authentication System Integration
+    // The auth-system.js handles all Firebase authentication automatically
+    
     // Minimal inline email/password gate (for Cody + Zeb testing)
     // If you have created accounts in Firebase Auth, this will allow immediate sign-in.
     async function ensureTestAuthGate(){
       try{
-        const hasFirebase = !!window.firebaseAuth;
-        const user = hasFirebase ? window.firebaseAuth.currentUser : null;
-        if (hasFirebase && user && isAllowedEmail(user.email)) return; // already signed in & allowed
+        // Use the unified auth system
+        if (window.inexAuth && window.inexAuth.isAuthenticated()) return; // already signed in & allowed
+        
         // Create a lightweight banner with email+password inputs
         const root = document.querySelector('.head');
         if (!root || document.getElementById('authGate')) return;
@@ -387,7 +392,7 @@
         gate.innerHTML = `
           <span style="color:#FFB200;font-weight:800;font-size:14px;">🔐 Restricted Access - Sign In Required</span>
           <input id="authEmail" class="sig-input" placeholder="Email" style="max-width:240px">
-          ${hasFirebase ? '<input id="authPass" class="sig-input" placeholder="Password" type="password" style="max-width:180px">' : ''}
+          <input id="authPass" class="sig-input" placeholder="Password" type="password" style="max-width:180px">
           <button id="authLoginBtn" class="btn btn-secondary"><i class="fa-solid fa-right-to-bracket"></i> Sign In</button>
           <span id="authStatus" class="muted" style="margin-left:6px"></span>
         `;
@@ -395,30 +400,23 @@
         const status = gate.querySelector('#authStatus');
         gate.querySelector('#authLoginBtn').addEventListener('click', async ()=>{
           const e = gate.querySelector('#authEmail').value.trim();
+          const p = gate.querySelector('#authPass').value;
           if (!e) { status.textContent = 'Enter your email'; return; }
-          if (hasFirebase) {
-            const p = gate.querySelector('#authPass').value;
-            if (!p) { status.textContent = 'Enter password'; return; }
-            try{
-              status.textContent = 'Signing in…';
-              await window.firebaseAuth.signInWithEmailAndPassword(e,p);
-              if (!isAllowedEmail(e)) { await window.firebaseAuth.signOut(); status.textContent = 'Email not permitted'; return; }
-              status.textContent = 'Signed in';
-              gate.style.display = 'none';
-            }catch(err){
-              status.textContent = 'Sign-in failed';
-              console.warn('auth error', err?.message);
-            }
-          } else {
-            // Fallback: simple allowlist check without Firebase
-            if (!isAllowedEmail(e)) { status.textContent = 'Email not permitted'; return; }
-            window.__accessGranted = true;
-            status.textContent = 'Access granted';
+          if (!p) { status.textContent = 'Enter password'; return; }
+          
+          try{
+            status.textContent = 'Signing in…';
+            await window.inexAuth.signIn(e, p);
+            status.textContent = 'Signed in';
             gate.style.display = 'none';
+          }catch(err){
+            status.textContent = 'Sign-in failed: ' + err.message;
+            console.warn('auth error', err?.message);
           }
         });
       }catch(_){ }
     }
+    
     function isValidFullName(name){
       if (!name) return false;
       const cleaned = String(name).trim().replace(/\s+/g,' ');
@@ -428,49 +426,27 @@
       const partOk = /^[A-Za-z][A-Za-z'\-]{1,}$/;
       return parts.every(p => partOk.test(p));
     }
-    // Allowed emails (gate access) — base list + optional overrides (query/local)
-    function getAllowedEmails(){
-      const base = ['info@inexsystemsdesigns.com','info@cochranfilms.com','codylcochran89@gmail.com'];
-      try{
-        const qp = new URLSearchParams(location.search).get('allow');
-        if (qp) qp.split(',').map(s=>s.trim().toLowerCase()).filter(Boolean).forEach(e=>{ if(!base.includes(e)) base.push(e); });
-      }catch(_){ }
-      try{
-        const winList = Array.isArray(window.ALLOWED_EMAILS) ? window.ALLOWED_EMAILS : [];
-        winList.map(s=>String(s||'').trim().toLowerCase()).filter(Boolean).forEach(e=>{ if(!base.includes(e)) base.push(e); });
-      }catch(_){ }
-      return base;
-    }
+    
+    // Use the unified auth system for email validation
     function isAllowedEmail(email){
       if (!email) return false;
-      return getAllowedEmails().includes(String(email).trim().toLowerCase());
+      return window.inexAuth ? window.inexAuth.isAllowedEmail(email) : false;
     }
-    async function hydrateAllowedFromJson(){
-      try{
-        const res = await fetch('allowed-users.json', { cache: 'no-store' });
-        if (!res.ok) return;
-        const data = await res.json();
-        if (Array.isArray(data?.allowedEmails)) {
-          window.ALLOWED_EMAILS = (window.ALLOWED_EMAILS || []).concat(
-            data.allowedEmails.map(e=>String(e||'').trim().toLowerCase()).filter(Boolean)
-          );
-        }
-      }catch(_){ }
-    }
+    
     async function completeSignInIfNeeded(){
       try{
-        if (!window.firebaseAuth) return; // Firebase not available (static mode)
+        if (!window.inexAuth) return; // Auth system not available
         const href = window.location.href;
-        if (window.firebaseAuth.isSignInWithEmailLink(href)){
+        if (window.inexAuth.firebaseAuth && window.inexAuth.firebaseAuth.isSignInWithEmailLink(href)){
           let email = window.localStorage.getItem('emailForSignIn');
           if (!email) email = prompt('Confirm your email to complete sign-in');
           if (!email) return;
-          const cred = await window.firebaseAuth.signInWithEmailLink(email, href);
+          const cred = await window.inexAuth.firebaseAuth.signInWithEmailLink(email, href);
           window.localStorage.removeItem('emailForSignIn');
           const authedEmail = cred?.user?.email || email;
-          if (!isAllowedEmail(authedEmail)){
+          if (!window.inexAuth.isAllowedEmail(authedEmail)){
             alert('Access restricted. This page is limited to authorized emails.');
-            try { await window.firebaseAuth.signOut(); } catch(_){ }
+            try { await window.inexAuth.firebaseAuth.signOut(); } catch(_){ }
           } else {
             console.log('Signed in as', authedEmail);
           }
@@ -496,7 +472,7 @@
         scopeSummary: 'INEX‑branded Operations Portal (Dashboard, Jobs, Inventory, RMA, SLAs, Clients, Careers) with documentation and deployment.',
         projectScopeSummary: 'INEX‑branded Operations Portal (Dashboard, Jobs, Inventory, RMA, SLAs, Clients, Careers) with documentation and deployment.',
         contactName: 'Zebadiah Henry',
-        contactEmail: window.firebaseAuth?.currentUser?.email || '',
+        contactEmail: window.inexAuth?.getCurrentUser()?.email || '',
         clientSignature: (document.getElementById('clientSignatureInput')?.value || '').trim(),
         ceoSignature: (document.getElementById('ceoSignatureInput')?.value || '').trim()
       };
@@ -1166,40 +1142,21 @@
       finalizeBtn.disabled = true; finalizeBtn.innerHTML = '<i class="fa-solid fa-hourglass-half"></i> Processing...';
       try{
         // Ensure logged-in access before showing contract
-        try { await initFirebasePublic(); } catch(_){ }
         try { await ensureTestAuthGate(); } catch(_){ }
-        if (window.firebaseAuth) {
-          // Show lightweight login if not signed in
-          const user = window.firebaseAuth.currentUser;
-          if (!user) {
-            const email = (document.getElementById('freelancerEmail')?.value || '').trim();
-            let promptEmail = email || prompt('Enter your email to verify access');
-            if (!promptEmail) throw new Error('Email required for verification');
-            if (!isAllowedEmail(promptEmail)) { alert('Access restricted to authorized emails.'); throw new Error('Unauthorized email'); }
-            try {
-              await window.firebaseAuth.sendSignInLinkToEmail(promptEmail, {
-                url: window.location.href,
-                handleCodeInApp: true,
-              });
-              try { window.localStorage.setItem('emailForSignIn', promptEmail); } catch(_){ }
-              alert('A secure sign-in link was sent to your email. Open it on this device to continue.');
-              finalizeBtn.disabled = false; finalizeBtn.innerHTML = '<i class="fa-solid fa-file-signature"></i> Sign & Send Contract';
-              return;
-            } catch (e) { console.warn('Link sign-in failed', e); }
-          }
-          // If signed in, enforce allowlist
-          try {
-            const authedEmail = window.firebaseAuth.currentUser?.email;
-            if (!isAllowedEmail(authedEmail)) { alert('Access restricted to authorized emails.'); throw new Error('Unauthorized email'); }
-          } catch(_){ /* handled by catch below */ }
-        } else {
-          // No Firebase available: require allowlist verification via gate
-          if (!window.__accessGranted) {
-            alert('Please verify your email to continue.');
-            // Removed scrollIntoView to prevent unwanted scrolling
-            finalizeBtn.disabled = false; finalizeBtn.innerHTML = '<i class="fa-solid fa-file-signature"></i> Sign & Send Contract';
-            return;
-          }
+        
+        // Check if user is authenticated using the unified auth system
+        if (!window.inexAuth || !window.inexAuth.isAuthenticated()) {
+          alert('Please sign in to continue. This page requires authentication.');
+          finalizeBtn.disabled = false; finalizeBtn.innerHTML = '<i class="fa-solid fa-file-signature"></i> Sign & Send Contract';
+          return;
+        }
+        
+        // Verify the authenticated user is allowed
+        const user = window.inexAuth.getCurrentUser();
+        if (!user || !window.inexAuth.isAllowedEmail(user.email)) {
+          alert('Access restricted to authorized emails.');
+          finalizeBtn.disabled = false; finalizeBtn.innerHTML = '<i class="fa-solid fa-file-signature"></i> Sign & Send Contract';
+          return;
         }
         lastData = buildContractData();
         // Require both signatures
@@ -1257,15 +1214,20 @@
       const safe = 'INEX-Agreement-' + lastData.contractId + '.pdf';
       lastDoc.save(safe);
     });
-    // Initialize public Firebase early (best effort) and show auth gate immediately
-    // Hydrate allowlist first, then init Firebase, then show auth gate
-    hydrateAllowedFromJson()
-      .then(()=> initFirebasePublic())
-      .then(()=>{ try{ completeSignInIfNeeded(); }catch(_){} return ensureTestAuthGate(); })
-      .then(()=>{
-        // Page scroll to top is now handled at the beginning of the page load
-      })
-      .catch(()=>{});
+    // Initialize the unified auth system and show auth gate when ready
+    const waitForAuth = () => {
+      if (window.inexAuth && window.inexAuth.isInitialized) {
+        try { 
+          completeSignInIfNeeded(); 
+        } catch(_) {}
+        ensureTestAuthGate();
+        console.log('✅ INEX Agreement Page initialized with unified auth system');
+      } else {
+        setTimeout(waitForAuth, 100);
+      }
+    };
+    
+    waitForAuth();
 </script>
   
   <!-- Hidden, print-accurate HTML template rendered to PDF (US Letter) -->

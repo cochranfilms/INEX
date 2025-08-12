@@ -140,6 +140,8 @@
     };
     document.head.appendChild(script);
   </script>
+  <!-- INEX Unified Authentication System -->
+  <script src="auth-system.js"></script>
 </head>
 <body>
   <header class="topbar">
@@ -312,9 +314,8 @@
             </div>
             
             <!-- User Info Display (shown when logged in) -->
-            <div id="userInfoDisplay" style="display:none;margin-bottom:16px;padding:12px;background:rgba(34,197,94,.1);border:1px solid rgba(34,197,94,.2);border-radius:8px;font-size:12px">
-              <strong>👤 Signed in as: <span id="userEmail"></span></strong><br>
-              <small>Your messages will be automatically attributed to your account.</small>
+            <div id="userInfo" style="display:none;margin-bottom:16px;padding:12px;background:rgba(34,197,94,.1);border:1px solid rgba(34,197,94,.2);border-radius:8px;font-size:12px">
+              <div id="userInfoContent"></div>
               <button id="signOutBtn" class="btn secondary" style="padding:4px 8px;font-size:11px;margin-left:8px">Sign Out</button>
             </div>
 
@@ -391,117 +392,99 @@
       maxRetries: 3
     };
 
-    // Firebase Authentication System
-    let firebaseAuth = null;
-    let currentUser = null;
-
-    // Initialize Firebase
-    async function initFirebase() {
-      try {
-        if (typeof firebase === 'undefined') {
-          console.log('Firebase not loaded yet, retrying...');
-          setTimeout(initFirebase, 1000);
-          return;
-        }
-
-        firebase.initializeApp(window.FIREBASE_CONFIG);
-        firebaseAuth = firebase.auth();
-        
-        // Listen for auth state changes
-        firebaseAuth.onAuthStateChanged((user) => {
-          currentUser = user;
-          updateAuthUI();
-          if (user) {
-            console.log('User signed in:', user.email);
-            // Auto-populate name field with user's display name or email
-            const nameInput = document.getElementById('messageName');
-            if (nameInput) {
-              nameInput.value = user.displayName || user.email.split('@')[0] || '';
-            }
-          } else {
-            console.log('User signed out');
-          }
-        });
-
-        console.log('Firebase initialized successfully');
-      } catch (error) {
-        console.error('Firebase initialization failed:', error);
-      }
-    }
-
+    // INEX Unified Authentication System Integration
+    // The auth-system.js handles all Firebase authentication automatically
+    
     // Update authentication UI based on user state
     function updateAuthUI() {
       const authBanner = document.getElementById('authBanner');
-      const userInfoDisplay = document.getElementById('userInfoDisplay');
+      const userInfo = document.getElementById('userInfo');
       const messageForm = document.getElementById('messageForm');
+      const userInfoContent = document.getElementById('userInfoContent');
 
-      if (currentUser) {
+      if (window.inexAuth && window.inexAuth.isAuthenticated()) {
+        const user = window.inexAuth.getCurrentUser();
         // User is signed in
         if (authBanner) authBanner.style.display = 'none';
-        if (userInfoDisplay) {
-          userInfoDisplay.style.display = 'block';
-          document.getElementById('userEmail').textContent = currentUser.email;
+        if (userInfo) {
+          userInfo.style.display = 'block';
+          if (userInfoContent) {
+            userInfoContent.innerHTML = `
+              <strong>👤 Signed in as: ${user.email}</strong><br>
+              <small>You have access to all status page features.</small>
+            `;
+          }
         }
         if (messageForm) messageForm.style.display = 'grid';
       } else {
         // User is signed out
         if (authBanner) authBanner.style.display = 'block';
-        if (userInfoDisplay) userInfoDisplay.style.display = 'none';
-        if (messageForm) messageForm.style.display = 'none';
+        if (userInfo) userInfo.style.display = 'none';
+        if (messageForm) messageForm.style.display = 'grid';
       }
     }
 
-    // Handle sign in
+    // Handle sign in using the unified system
     async function handleSignIn() {
-      const email = document.getElementById('authEmail').value.trim();
-      const password = document.getElementById('authPassword').value;
-      const status = document.getElementById('authStatus');
-
-      if (!email || !password) {
-        status.textContent = 'Please enter both email and password';
-        return;
-      }
-
       try {
+        const email = document.getElementById('authEmail').value.trim();
+        const password = document.getElementById('authPassword').value;
+        const status = document.getElementById('authStatus');
+        
+        if (!email || !password) {
+          status.textContent = 'Please enter both email and password';
+          return;
+        }
+        
         status.textContent = 'Signing in...';
-        await firebaseAuth.signInWithEmailAndPassword(email, password);
-        status.textContent = 'Signed in successfully!';
+        await window.inexAuth.signIn(email, password);
+        status.textContent = 'Sign in successful!';
+        
+        // Clear form
+        document.getElementById('authEmail').value = '';
+        document.getElementById('authPassword').value = '';
+        
       } catch (error) {
         console.error('Sign in error:', error);
         status.textContent = 'Sign in failed: ' + error.message;
       }
     }
 
-    // Handle sign up
+    // Handle sign up using the unified system
     async function handleSignUp() {
-      const email = document.getElementById('authEmail').value.trim();
-      const password = document.getElementById('authPassword').value;
-      const status = document.getElementById('authStatus');
-
-      if (!email || !password) {
-        status.textContent = 'Please enter both email and password';
-        return;
-      }
-
-      if (password.length < 6) {
-        status.textContent = 'Password must be at least 6 characters';
-        return;
-      }
-
       try {
+        const email = document.getElementById('authEmail').value.trim();
+        const password = document.getElementById('authPassword').value;
+        const status = document.getElementById('authStatus');
+        
+        if (!email || !password) {
+          status.textContent = 'Please enter both email and password';
+          return;
+        }
+        
+        if (password.length < 6) {
+          status.textContent = 'Password must be at least 6 characters';
+          return;
+        }
+        
         status.textContent = 'Creating account...';
-        await firebaseAuth.createUserWithEmailAndPassword(email, password);
+        await window.inexAuth.signUp(email, password);
         status.textContent = 'Account created successfully!';
+        
+        // Clear form
+        document.getElementById('authEmail').value = '';
+        document.getElementById('authPassword').value = '';
+        
       } catch (error) {
         console.error('Sign up error:', error);
         status.textContent = 'Account creation failed: ' + error.message;
       }
     }
 
-    // Handle sign out
+    // Handle sign out using the unified system
     async function handleSignOut() {
       try {
-        await firebaseAuth.signOut();
+        await window.inexAuth.signOut();
         console.log('User signed out');
       } catch (error) {
         console.error('Sign out error:', error);
@@ -1573,43 +1556,54 @@
 
     // Add event listeners for authentication
     document.addEventListener('DOMContentLoaded', function() {
-      // Initialize Firebase
-      initFirebase();
-      
-      // Add event listeners for auth buttons
-      const authLoginBtn = document.getElementById('authLoginBtn');
-      const authSignupBtn = document.getElementById('authSignupBtn');
-      const signOutBtn = document.getElementById('signOutBtn');
-      
-      if (authLoginBtn) {
-        authLoginBtn.addEventListener('click', handleSignIn);
-      }
-      
-      if (authSignupBtn) {
-        authSignupBtn.addEventListener('click', handleSignUp);
-      }
-      
-      if (signOutBtn) {
-        signOutBtn.addEventListener('click', handleSignOut);
-      }
-      
-      // Add enter key support for auth form
-      const authEmail = document.getElementById('authEmail');
-      const authPassword = document.getElementById('authPassword');
-      
-      if (authEmail && authPassword) {
-        authEmail.addEventListener('keypress', function(e) {
-          if (e.key === 'Enter') {
-            authPassword.focus();
+      // Wait for the unified auth system to be ready
+      const waitForAuth = () => {
+        if (window.inexAuth && window.inexAuth.isInitialized) {
+          // Add auth state listener to update UI
+          window.inexAuth.addAuthStateListener(updateAuthUI);
+          
+          // Add event listeners for auth buttons
+          const authLoginBtn = document.getElementById('authLoginBtn');
+          const authSignupBtn = document.getElementById('authSignupBtn');
+          const signOutBtn = document.getElementById('signOutBtn');
+          
+          if (authLoginBtn) {
+            authLoginBtn.addEventListener('click', handleSignIn);
           }
-        });
-        
-        authPassword.addEventListener('keypress', function(e) {
-          if (e.key === 'Enter') {
-            handleSignIn();
+          
+          if (authSignupBtn) {
+            authSignupBtn.addEventListener('click', handleSignUp);
           }
-        });
-      }
+          
+          if (signOutBtn) {
+            signOutBtn.addEventListener('click', handleSignOut);
+          }
+          
+          // Add enter key support for auth form
+          const authEmail = document.getElementById('authEmail');
+          const authPassword = document.getElementById('authPassword');
+          
+          if (authEmail && authPassword) {
+            authEmail.addEventListener('keypress', function(e) {
+              if (e.key === 'Enter') {
+                authPassword.focus();
+              }
+            });
+            
+            authPassword.addEventListener('keypress', function(e) {
+              if (e.key === 'Enter') {
+                handleSignIn();
+              }
+            });
+          }
+          
+          console.log('✅ INEX Status Page initialized with unified auth system');
+        } else {
+          setTimeout(waitForAuth, 100);
+        }
+      };
+      
+      waitForAuth();
     });
   </script>
 </body>
