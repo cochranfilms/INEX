@@ -1170,14 +1170,14 @@
     
     try {
       // Try to update via API first
-      const response = await fetch(API_MESSAGES, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          id: messageId,
-          response: responseText.trim()
-        })
-      });
+              const response = await fetch(API_MESSAGES, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            messageId: messageId,
+            response: responseText.trim()
+          })
+        });
       
       if (response.ok) {
         // Reload messages to show the response
@@ -1285,7 +1285,7 @@
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            id: messageId,
+            messageId: messageId,
             action: 'markRead'
           })
         });

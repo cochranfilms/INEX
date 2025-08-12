@@ -1493,7 +1493,7 @@
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            id: messageId,
+            messageId: messageId,
             action: 'addResponse',
             responseText: responseText,
             responder: 'Development Team'
@@ -1530,7 +1530,7 @@
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            id: messageId,
+            messageId: messageId,
             action: 'markRead'
           })
         });

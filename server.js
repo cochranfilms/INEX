@@ -457,9 +457,12 @@ app.post('/api/messages', (req, res) => {
 // Add PUT endpoint to /api/messages for message updates (delegates to same logic as /api/message-manager)
 app.put('/api/messages', (req, res) => {
   try {
-    const { id, action, responseText, responder, status, read, responded, response, priority, category } = req.body;
+    const { id, messageId, action, responseText, responder, status, read, responded, response, priority, category } = req.body;
+    
+    // Support both 'id' and 'messageId' for compatibility
+    const actualId = id || messageId;
 
-    if (!id) {
+    if (!actualId) {
       return res.status(400).json({
         success: false,
         error: 'Message ID is required'
@@ -478,7 +481,7 @@ app.put('/api/messages', (req, res) => {
     const data = JSON.parse(fileContents || '{}');
     const messages = Array.isArray(data.messages) ? data.messages : [];
 
-    const messageIndex = messages.findIndex(msg => msg.id === id);
+    const messageIndex = messages.findIndex(msg => msg.id === actualId);
     if (messageIndex === -1) {
       return res.status(404).json({
         success: false,
